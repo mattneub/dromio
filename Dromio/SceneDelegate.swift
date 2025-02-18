@@ -1,5 +1,4 @@
 import UIKit
-import CryptoKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 

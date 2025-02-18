@@ -1,6 +1,6 @@
 import Foundation
 
-struct SubsonicResponse<T: Decodable>: Decodable {
+struct SubsonicResponse<T: Codable>: Codable {
     let subsonicResponse: T
     enum CodingKeys: String, CodingKey {
         case subsonicResponse = "subsonic-response"

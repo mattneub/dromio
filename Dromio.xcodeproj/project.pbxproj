@@ -6,7 +6,23 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3FAB3F602D64CDED007323B0 /* WaitWhile in Frameworks */ = {isa = PBXBuildFile; productRef = 3FAB3F5F2D64CDED007323B0 /* WaitWhile */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3F0AB68D2D64C243001D5DAF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3F8BE7812D62A3BE009A9DD1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3F8BE7882D62A3BE009A9DD1;
+			remoteInfo = Dromio;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		3F0AB6892D64C243001D5DAF /* DromioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DromioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3F0AB7672D64C46A001D5DAF /* Dromio.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Dromio.xctestplan; sourceTree = "<group>"; };
 		3F8BE7892D62A3BE009A9DD1 /* Dromio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Dromio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -21,6 +37,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		3F0AB68A2D64C243001D5DAF /* DromioTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DromioTests;
+			sourceTree = "<group>";
+		};
 		3F8BE78B2D62A3BE009A9DD1 /* Dromio */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -32,6 +53,14 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		3F0AB6862D64C243001D5DAF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3FAB3F602D64CDED007323B0 /* WaitWhile in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3F8BE7862D62A3BE009A9DD1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -45,7 +74,9 @@
 		3F8BE7802D62A3BE009A9DD1 = {
 			isa = PBXGroup;
 			children = (
+				3F0AB7672D64C46A001D5DAF /* Dromio.xctestplan */,
 				3F8BE78B2D62A3BE009A9DD1 /* Dromio */,
+				3F0AB68A2D64C243001D5DAF /* DromioTests */,
 				3F8BE78A2D62A3BE009A9DD1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,6 +85,7 @@
 			isa = PBXGroup;
 			children = (
 				3F8BE7892D62A3BE009A9DD1 /* Dromio.app */,
+				3F0AB6892D64C243001D5DAF /* DromioTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,6 +93,30 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		3F0AB6882D64C243001D5DAF /* DromioTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3F0AB6912D64C243001D5DAF /* Build configuration list for PBXNativeTarget "DromioTests" */;
+			buildPhases = (
+				3F0AB6852D64C243001D5DAF /* Sources */,
+				3F0AB6862D64C243001D5DAF /* Frameworks */,
+				3F0AB6872D64C243001D5DAF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3F0AB68E2D64C243001D5DAF /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3F0AB68A2D64C243001D5DAF /* DromioTests */,
+			);
+			name = DromioTests;
+			packageProductDependencies = (
+				3FAB3F5F2D64CDED007323B0 /* WaitWhile */,
+			);
+			productName = DromioTests;
+			productReference = 3F0AB6892D64C243001D5DAF /* DromioTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		3F8BE7882D62A3BE009A9DD1 /* Dromio */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 3F8BE79C2D62A3BF009A9DD1 /* Build configuration list for PBXNativeTarget "Dromio" */;
@@ -93,6 +149,11 @@
 				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1620;
 				TargetAttributes = {
+					3F0AB6882D64C243001D5DAF = {
+						CreatedOnToolsVersion = 16.2;
+						LastSwiftMigration = 1620;
+						TestTargetID = 3F8BE7882D62A3BE009A9DD1;
+					};
 					3F8BE7882D62A3BE009A9DD1 = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -107,17 +168,28 @@
 			);
 			mainGroup = 3F8BE7802D62A3BE009A9DD1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3FAB3F5E2D64CDED007323B0 /* XCRemoteSwiftPackageReference "WaitWhile" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3F8BE78A2D62A3BE009A9DD1 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				3F8BE7882D62A3BE009A9DD1 /* Dromio */,
+				3F0AB6882D64C243001D5DAF /* DromioTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3F0AB6872D64C243001D5DAF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3F8BE7872D62A3BE009A9DD1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -128,6 +200,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		3F0AB6852D64C243001D5DAF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3F8BE7852D62A3BE009A9DD1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -137,7 +216,54 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		3F0AB68E2D64C243001D5DAF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3F8BE7882D62A3BE009A9DD1 /* Dromio */;
+			targetProxy = 3F0AB68D2D64C243001D5DAF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		3F0AB68F2D64C243001D5DAF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W3LHX5RGV2;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.neuburg.matt.DromioTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Dromio.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Dromio";
+			};
+			name = Debug;
+		};
+		3F0AB6902D64C243001D5DAF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W3LHX5RGV2;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.neuburg.matt.DromioTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Dromio.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Dromio";
+			};
+			name = Release;
+		};
 		3F8BE79D2D62A3BF009A9DD1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -316,6 +442,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		3F0AB6912D64C243001D5DAF /* Build configuration list for PBXNativeTarget "DromioTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3F0AB68F2D64C243001D5DAF /* Debug */,
+				3F0AB6902D64C243001D5DAF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3F8BE7842D62A3BE009A9DD1 /* Build configuration list for PBXProject "Dromio" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -335,6 +470,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3FAB3F5E2D64CDED007323B0 /* XCRemoteSwiftPackageReference "WaitWhile" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mattneub/WaitWhile";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3FAB3F5F2D64CDED007323B0 /* WaitWhile */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3FAB3F5E2D64CDED007323B0 /* XCRemoteSwiftPackageReference "WaitWhile" */;
+			productName = WaitWhile;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3F8BE7812D62A3BE009A9DD1 /* Project object */;
 }

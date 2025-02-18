@@ -1,6 +1,6 @@
 import Foundation
 
-struct SubsonicError: Decodable {
+struct SubsonicError: Codable {
     let code: Int
     let message: String
 }

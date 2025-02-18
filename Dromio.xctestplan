@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "77031ABC-14C8-4EC4-954A-C41959FD14F7",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Dromio.xcodeproj",
+      "identifier" : "3F8BE7882D62A3BE009A9DD1",
+      "name" : "Dromio"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:Dromio.xcodeproj",
+        "identifier" : "3F0AB6882D64C243001D5DAF",
+        "name" : "DromioTests"
+      }
+    }
+  ],
+  "version" : 1
+}

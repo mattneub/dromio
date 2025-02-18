@@ -1,6 +1,6 @@
 import Foundation
 
-struct PingResponse: Decodable {
+struct PingResponse: Codable {
     let status: String // "ok" or "failed"
     let version: String
     let type: String // better be "navidrome" or we're outta here
