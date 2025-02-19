@@ -18,6 +18,7 @@ struct PingViewControllerTests {
         #expect(subject.title == "Ping")
         #expect(subject.view.backgroundColor == .systemBackground)
         #expect(subject.successLabel.isHidden)
+        #expect(subject.failureLabel.isHidden)
     }
 
     @Test("viewDidAppear: sends doPing to processor")
@@ -25,5 +26,19 @@ struct PingViewControllerTests {
         subject.viewDidAppear(false)
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived == [.doPing])
+    }
+
+    @Test("present: sets the two labels as expected")
+    func present() {
+        subject.loadViewIfNeeded()
+        #expect(subject.successLabel.isHidden)
+        #expect(subject.failureLabel.isHidden)
+        subject.present(.init(success: .success))
+        #expect(!subject.successLabel.isHidden)
+        #expect(subject.failureLabel.isHidden)
+        subject.present(.init(success: .failure(message: "oops")))
+        #expect(subject.successLabel.isHidden)
+        #expect(!subject.failureLabel.isHidden)
+        #expect(subject.failureLabel.text == "oops")
     }
 }

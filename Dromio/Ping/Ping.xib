@@ -10,6 +10,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PingViewController" customModule="Dromio" customModuleProvider="target">
             <connections>
+                <outlet property="failureLabel" destination="Mpo-fM-QrY" id="T3o-wH-boo"/>
                 <outlet property="successLabel" destination="NW3-C5-yms" id="GAK-Uz-ffc"/>
                 <outlet property="view" destination="iN0-l3-epB" id="I3P-Px-hVy"/>
             </connections>
@@ -26,7 +27,13 @@
                     <nil key="highlightedColor"/>
                 </label>
                 <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Success!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NW3-C5-yms">
-                    <rect key="frame" x="162" y="286" width="69" height="21"/>
+                    <rect key="frame" x="162" y="280" width="69" height="21"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Failure!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mpo-fM-QrY">
+                    <rect key="frame" x="10" y="280" width="373" height="20.333333333333314"/>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
@@ -35,10 +42,13 @@
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
-                <constraint firstItem="NW3-C5-yms" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="26" id="8kP-zh-Ofb"/>
+                <constraint firstItem="NW3-C5-yms" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="20" id="8kP-zh-Ofb"/>
+                <constraint firstItem="Mpo-fM-QrY" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="Ejh-ID-iYX"/>
                 <constraint firstItem="1WM-wj-KSO" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="180" id="ONP-nu-Voh"/>
+                <constraint firstItem="Mpo-fM-QrY" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="Ogs-Q3-UG9"/>
                 <constraint firstItem="NW3-C5-yms" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="Qnd-yM-jlK"/>
                 <constraint firstItem="1WM-wj-KSO" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="ZkU-zh-cyb"/>
+                <constraint firstItem="Mpo-fM-QrY" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="20" id="nZK-F8-aeb"/>
             </constraints>
             <point key="canvasLocation" x="132" y="9"/>
         </view>

@@ -4,6 +4,7 @@ class PingViewController: UIViewController, Presenter {
     var processor: (any Processor<PingAction, PingState>)?
 
     @IBOutlet var successLabel: UILabel!
+    @IBOutlet var failureLabel: UILabel!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,7 +20,15 @@ class PingViewController: UIViewController, Presenter {
     }
 
     func present(_ state: PingState) {
-        successLabel.isHidden = !state.success
+        switch state.success {
+        case .success:
+            successLabel.isHidden = false
+            failureLabel.isHidden = true
+        case .failure(let message):
+            successLabel.isHidden = true
+            failureLabel.text = message
+            failureLabel.isHidden = false
+        }
     }
 }
 

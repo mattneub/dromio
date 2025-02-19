@@ -14,8 +14,14 @@ final class PingProcessor: Processor {
     func receive(_ action: PingAction) async {
         switch action {
         case .doPing:
-            let result = await services.networker.ping()
-            state.success = result
+            do {
+                try await services.networker.ping()
+                state.success = .success
+            } catch NetworkerError.message(let message) {
+                state.success = .failure(message: message)
+            } catch {
+                state.success = .failure(message: error.localizedDescription)
+            }
         }
     }
 }

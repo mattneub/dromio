@@ -2,11 +2,13 @@
 
 @MainActor
 final class MockNetworker: NetworkerType {
-    var valueToReturnFromPing = false
+    var pingError: Error?
     var methodsCalled = [String]()
 
-    func ping() -> Bool {
+    func ping() async throws {
         methodsCalled.append(#function)
-        return valueToReturnFromPing
+        if let pingError {
+            throw pingError
+        }
     }
 }
