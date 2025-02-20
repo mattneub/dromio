@@ -6,10 +6,10 @@ import Foundation
 struct PingProcessorTests {
     let subject = PingProcessor()
     let presenter = MockReceiverPresenter<PingAction, PingState>()
-    let networker = MockNetworker()
+    let requestMaker = MockRequestMaker()
 
     init() {
-        services.networker = networker
+        services.requestMaker = requestMaker
         subject.presenter = presenter
     }
 
@@ -23,22 +23,22 @@ struct PingProcessorTests {
     @Test("receive doPing: calls networker ping")
     func receiveDoPing() async {
         await subject.receive(.doPing)
-        #expect(networker.methodsCalled == ["ping()"])
+        #expect(requestMaker.methodsCalled[0] == "ping()")
     }
 
     @Test("receive doPing: calls networker ping, sets state success to .success if no throw")
     func receiveDoPingSuccess() async {
-        networker.pingError = nil
+        requestMaker.pingError = nil
         await subject.receive(.doPing)
-        #expect(networker.methodsCalled == ["ping()"])
+        #expect(requestMaker.methodsCalled[0] == "ping()")
         #expect(presenter.statePresented?.success == .success)
     }
 
     @Test("receive doPing: calls networker ping, sets state success to .failure and message if throw NetworkerError")
     func receiveDoPingFailure() async {
-        networker.pingError = NetworkerError.message("test")
+        requestMaker.pingError = NetworkerError.message("test")
         await subject.receive(.doPing)
-        #expect(networker.methodsCalled == ["ping()"])
+        #expect(requestMaker.methodsCalled == ["ping()"])
         #expect(presenter.statePresented?.success == .failure(message: "test"))
     }
 
@@ -47,9 +47,9 @@ struct PingProcessorTests {
         class MyError: NSError, @unchecked Sendable {
             override var localizedDescription: String { "oops" }
         }
-        networker.pingError = MyError(domain: "domain", code: 0)
+        requestMaker.pingError = MyError(domain: "domain", code: 0)
         await subject.receive(.doPing)
-        #expect(networker.methodsCalled == ["ping()"])
+        #expect(requestMaker.methodsCalled == ["ping()"])
         #expect(presenter.statePresented?.success == .failure(message: "oops"))
     }
 }

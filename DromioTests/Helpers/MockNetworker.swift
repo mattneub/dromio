@@ -1,14 +1,18 @@
 @testable import Dromio
+import Foundation
 
-@MainActor
 final class MockNetworker: NetworkerType {
-    var pingError: Error?
+    var dataToReturn = [Data()]
+    var errorToThrow: (any Error)?
     var methodsCalled = [String]()
+    var url: URL?
 
-    func ping() async throws {
+    func performRequest(url: URL) async throws -> Data {
+        self.url = url
         methodsCalled.append(#function)
-        if let pingError {
-            throw pingError
+        if let errorToThrow {
+            throw errorToThrow
         }
+        return dataToReturn.removeFirst()
     }
 }

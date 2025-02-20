@@ -1,6 +1,6 @@
 import Foundation
 
-struct PingResponse: Codable {
+struct PingResponse: InnerResponse {
     let status: String // "ok" or "failed"
     let version: String
     let type: String // better be "navidrome" or we're outta here

@@ -15,8 +15,12 @@ final class PingProcessor: Processor {
         switch action {
         case .doPing:
             do {
-                try await services.networker.ping()
+                try await services.requestMaker.ping()
                 state.success = .success
+                // TODO: fake code, just practice for when we have the albums view controller
+                let albums = try await services.requestMaker.getAlbumList()
+                print(albums.count)
+                albums.forEach { print($0.name) }
             } catch NetworkerError.message(let message) {
                 state.success = .failure(message: message)
             } catch {

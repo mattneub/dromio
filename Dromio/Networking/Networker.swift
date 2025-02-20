@@ -1,17 +1,23 @@
 import Foundation
 
+/// Error enum that carries a message suitable for display to the user.
 enum NetworkerError: Error, Equatable {
     case message(String)
 }
 
+/// Protocol defining the public face of our Networker.
 @MainActor protocol NetworkerType {
-    func ping() async throws
+    func performRequest(url: URL) async throws -> Data
 }
 
+/// Class embodying all networking activity vis-a-vis the Navidrome server.
 @MainActor
 final class Networker: NetworkerType {
     let session: URLSession
-
+    
+    /// Initializer.
+    /// - Parameter session: Optional session, to be used by tests. The app itself should supply nothing
+    ///   here, so the Networker instance configures itself.
     init(session: URLSession? = nil) {
         if let session {
             self.session = session
@@ -22,10 +28,7 @@ final class Networker: NetworkerType {
         }
     }
 
-    func ping() async throws {
-        guard let url = URLMaker.urlFor(action: "ping") else {
-            throw NetworkerError.message("We created a malformed URL.")
-        }
+    func performRequest(url: URL) async throws -> Data {
         let request = URLRequest(url: url)
         let (data, response) = try await session.data(for: request)
         guard let statusCode = (response as? HTTPURLResponse)?.statusCode else {
@@ -34,18 +37,6 @@ final class Networker: NetworkerType {
         guard statusCode == 200 else {
             throw NetworkerError.message("We got a status code \(statusCode).")
         }
-        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<PingResponse>.self, from: data)
-        dump(jsonResponse) // and we can decode that response into a struct!
-        guard jsonResponse.subsonicResponse.type == "navidrome" else {
-            throw NetworkerError.message("The server does not appear to be a Navidrome server.")
-        }
-        // TODO: Should check the serverVersion too, eventually
-        guard jsonResponse.subsonicResponse.status == "ok" else {
-            if let subsonicError = jsonResponse.subsonicResponse.error {
-                throw NetworkerError.message(subsonicError.message)
-            } else {
-                throw NetworkerError.message("We got a failed status from the Navidrome server.")
-            }
-        }
+        return data
     }
 }
