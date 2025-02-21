@@ -1,0 +1,46 @@
+@testable import Dromio
+import Testing
+import UIKit
+import WaitWhile
+
+@MainActor
+struct RootCoordinatorTests {
+    let requestMaker = MockRequestMaker()
+
+    init() {
+        // prevent accidental networking
+        services.requestMaker = requestMaker
+    }
+
+    @Test("createInitialInterface: creates the initial interface and module")
+    func createInitialInterface() throws {
+        let subject = RootCoordinator()
+        let window = UIWindow()
+        subject.createInitialInterface(window: window)
+        let pingProcessor = try #require(subject.pingProcessor as? PingProcessor)
+        let rootViewController = try #require(subject.rootViewController as? UINavigationController)
+        let pingViewController = try #require(rootViewController.viewControllers.first as? PingViewController)
+        #expect(pingViewController.processor === pingProcessor)
+        #expect(pingProcessor.presenter === pingViewController)
+        #expect(pingProcessor.coordinator === subject)
+    }
+
+    @Test("showAlbums: presents albums view controller, configures module")
+    func showAlbums() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        // ok, here we go!
+        subject.showAlbums()
+        await #while(subject.rootViewController?.presentedViewController == nil)
+        let navigationController = try #require(subject.rootViewController?.presentedViewController as? UINavigationController)
+        #expect(navigationController.modalPresentationStyle == .fullScreen)
+        let albumsViewController = try #require(navigationController.children.first as? AlbumsViewController)
+        let albumsProcessor = try #require(subject.albumsProcessor as? AlbumsProcessor)
+        #expect(albumsViewController.processor === albumsProcessor)
+        #expect(albumsProcessor.presenter === albumsViewController)
+        #expect(albumsProcessor.coordinator === subject)
+    }
+}

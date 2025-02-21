@@ -7,10 +7,12 @@ struct PingProcessorTests {
     let subject = PingProcessor()
     let presenter = MockReceiverPresenter<PingAction, PingState>()
     let requestMaker = MockRequestMaker()
+    let coordinator = MockRootCoordinator()
 
     init() {
         services.requestMaker = requestMaker
         subject.presenter = presenter
+        subject.coordinator = coordinator
     }
 
     @Test("changing the state presents the state")
@@ -26,12 +28,13 @@ struct PingProcessorTests {
         #expect(requestMaker.methodsCalled[0] == "ping()")
     }
 
-    @Test("receive doPing: calls networker ping, sets state success to .success if no throw")
+    @Test("receive doPing: calls networker ping, sets state success to .success if no throw and calls coordinator showAlbums")
     func receiveDoPingSuccess() async {
         requestMaker.pingError = nil
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled[0] == "ping()")
         #expect(presenter.statePresented?.success == .success)
+        #expect(coordinator.methodsCalled[0] == "showAlbums()")
     }
 
     @Test("receive doPing: calls networker ping, sets state success to .failure and message if throw NetworkerError")
@@ -40,6 +43,7 @@ struct PingProcessorTests {
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled == ["ping()"])
         #expect(presenter.statePresented?.success == .failure(message: "test"))
+        #expect(coordinator.methodsCalled.isEmpty)
     }
 
     @Test("receive doPing: calls networker ping, sets state success to .failure and localized description if throw other error")
@@ -51,5 +55,6 @@ struct PingProcessorTests {
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled == ["ping()"])
         #expect(presenter.statePresented?.success == .failure(message: "oops"))
+        #expect(coordinator.methodsCalled.isEmpty)
     }
 }

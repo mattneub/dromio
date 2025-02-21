@@ -7,8 +7,8 @@ protocol RequestMakerType {
     func getAlbumList() async throws -> [SubsonicAlbum]
 }
 
-/// Class that makes requests to the server. If you want to talk to the server, this is the
-/// class you turn to. Other types such as URLMaker, Networker, and ResponseValidator are separated
+/// Class that makes constructs and sends requests to the server. If you want to talk to the server,
+/// this is the class you turn to. Other types such as URLMaker, Networker, and ResponseValidator are separated
 /// from and subservient to this class, and are expressed as separate services, partly for clarity
 /// of factoring and partly because it makes everything so much more testable.
 ///

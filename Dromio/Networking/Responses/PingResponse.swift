@@ -1,10 +1,12 @@
 import Foundation
 
+/// Inner response for the `ping` request. Contains enough info to tell whether you're talking
+/// correctly to the server.
 struct PingResponse: InnerResponse {
-    let status: String // "ok" or "failed"
+    let status: String
     let version: String
-    let type: String // better be "navidrome" or we're outta here
-    let serverVersion: String // better start with "0.54.4" or higher
+    let type: String
+    let serverVersion: String
     let openSubsonic: Bool
-    let error: SubsonicError? // if `status` was "failed"
+    let error: SubsonicError?
 }

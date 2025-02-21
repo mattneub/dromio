@@ -1,5 +1,6 @@
 import UIKit
 
+/// The sole global instance of the services.
 @MainActor
 var services: Services = Services()
 

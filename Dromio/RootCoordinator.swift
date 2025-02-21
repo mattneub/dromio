@@ -6,6 +6,7 @@ protocol RootCoordinatorType: AnyObject {
     // Processors are rooted here. They are all expressed as protocols, for testability.
 
     var pingProcessor: (any Processor<PingAction, PingState>)? { get }
+    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)? { get }
 
     // The root coordinator also needs a reference to the true root view controller.
 
@@ -15,6 +16,9 @@ protocol RootCoordinatorType: AnyObject {
     /// - Parameter window: The window
     func createInitialInterface(window: UIWindow)
 
+    /// Create the Albums module and show the view controller.
+    func showAlbums()
+
 }
 
 /// Class of single instance responsible for all view controller manipulation.
@@ -22,6 +26,7 @@ protocol RootCoordinatorType: AnyObject {
 final class RootCoordinator: RootCoordinatorType {
 
     var pingProcessor: (any Processor<PingAction, PingState>)?
+    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
 
     weak var rootViewController: UIViewController?
 
@@ -34,6 +39,19 @@ final class RootCoordinator: RootCoordinatorType {
         self.pingProcessor = pingProcessor
         pingProcessor.presenter = pingController
         pingController.processor = pingProcessor
+        pingProcessor.coordinator = self
+    }
+
+    func showAlbums() {
+        let albumsController = AlbumsViewController(nibName: nil, bundle: nil)
+        let navigationController = UINavigationController(rootViewController: albumsController)
+        let albumsProcessor = AlbumsProcessor()
+        self.albumsProcessor = albumsProcessor
+        albumsProcessor.presenter = albumsController
+        albumsController.processor = albumsProcessor
+        albumsProcessor.coordinator = self
+        navigationController.modalPresentationStyle = .fullScreen
+        rootViewController?.present(navigationController, animated: true)
     }
 }
 

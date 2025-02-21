@@ -1,5 +1,6 @@
 import Foundation
 
+/// Struct describing a Navidrome server.
 struct ServerInfo {
     let scheme: String
     let host: String

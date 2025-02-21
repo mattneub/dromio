@@ -2,7 +2,11 @@
 ///
 @MainActor
 final class PingProcessor: Processor {
-    var presenter: (any Presenter<PingState>)?
+    /// A reference to the root coordinator, set by the coordinator on creation.
+    weak var coordinator: (any RootCoordinatorType)?
+
+    /// A reference to our presenter (the Ping view controller), set by the coordinator on creation.
+    weak var presenter: (any Presenter<PingState>)?
 
     /// The state. Mutating the state causes the presenter to present the state.
     var state = PingState() {
@@ -17,10 +21,7 @@ final class PingProcessor: Processor {
             do {
                 try await services.requestMaker.ping()
                 state.success = .success
-                // TODO: fake code, just practice for when we have the albums view controller
-                let albums = try await services.requestMaker.getAlbumList()
-                print(albums.count)
-                albums.forEach { print($0.name) }
+                coordinator?.showAlbums()
             } catch NetworkerError.message(let message) {
                 state.success = .failure(message: message)
             } catch {

@@ -1,5 +1,6 @@
 import Foundation
 
+/// Protocol that describes the public face of our URLMaker.
 @MainActor
 protocol URLMakerType {
     var currentServerInfo: ServerInfo? { get set }
@@ -12,7 +13,7 @@ extension URLMakerType {
 }
 
 /// Struct that embodies the knowledge of how to construct the sort of URL that we request to talk
-/// to the Navidrome server.
+/// to the Navidrome server. A servant to the RequestMaker.
 @MainActor
 final class URLMaker: URLMakerType {
     /// Bundle of properties expressing what we need to know about the server to talk to it.

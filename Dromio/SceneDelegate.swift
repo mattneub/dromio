@@ -22,6 +22,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         bootstrap(scene: scene)
     }
 
+    /// Make the window, tell the coordinator to build the initial interface, and show the window.
+    /// - Parameter scene: The window scene to use for the window.
     func bootstrap(scene: UIWindowScene) {
         let window = UIWindow(windowScene: scene)
         self.window = window

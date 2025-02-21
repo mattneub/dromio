@@ -1,5 +1,6 @@
 import Foundation
 
+/// Inner response for the `getAlbumsList2` request.
 struct AlbumList2Response: InnerResponse {
     let status: String
     let version: String
@@ -10,10 +11,13 @@ struct AlbumList2Response: InnerResponse {
     let error: SubsonicError? // may not be possible, but present for parity with ping
 }
 
+/// Type of the `albumList2` property of the AlbumList2Response.
 struct AlbumsResponse: Codable {
     let album: [SubsonicAlbum]
 }
 
+/// Type of the array element of the `album` property of the AlbumsResponse.
+/// Serves as actual data for the app.
 struct SubsonicAlbum: Codable, Equatable {
     let id: String
     let name: String
