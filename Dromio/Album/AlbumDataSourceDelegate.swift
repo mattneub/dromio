@@ -1,11 +1,11 @@
 import UIKit
 
-/// Class that functions as data source and delegate for AlbumsViewController table view.
+/// Class that functions as data source and delegate for AlbumViewController table view.
 @MainActor
-final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDelegate {
+final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDelegate {
 
     /// Processor to whom we can send action messages.
-    weak var processor: (any Receiver<AlbumsAction>)?
+    weak var processor: (any Receiver<AlbumAction>)?
 
     weak var tableView: UITableView?
 
@@ -25,9 +25,9 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
         }
     }
 
-    func present(_ state: AlbumsState) {
-        if data != state.albums {
-            data = state.albums
+    func present(_ state: AlbumState) {
+        if data != state.songs {
+            data = state.songs
             Task {
                 await updateTableView()
             }
@@ -38,7 +38,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
     // MARK: - Table view contents
 
     /// Data to be displayed by the table view.
-    var data = [SubsonicAlbum]()
+    var data = [SubsonicSong]()
 
     /// Type of the diffable data source.
     typealias Datasource = UITableViewDiffableDataSource<String, String>
@@ -49,7 +49,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
     /// Create the data source and populate it with its initial snapshot. Called by our initializer.
     /// - Parameter tableView: The table view.
     /// - Returns: The data source.
-    /// 
+    ///
     func createDataSource(tableView: UITableView) async -> Datasource {
         let datasource = Datasource(tableView: tableView) { [unowned self] tableView, indexPath, identifier in
             return cellProvider(tableView, indexPath, identifier)
@@ -65,12 +65,12 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
     /// - Returns: A populated cell.
     ///
     func cellProvider(_ tableView: UITableView, _ indexPath: IndexPath, _ identifier: String) -> UITableViewCell? {
-        guard let album = data.first(where: { $0.id == identifier }) else {
+        guard let song = data.first(where: { $0.id == identifier }) else {
             return nil
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         var configuration = cell.defaultContentConfiguration()
-        configuration.text = album.name
+        configuration.text = song.title
         cell.contentConfiguration = configuration
         return cell
     }
@@ -83,12 +83,4 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
         snapshot.appendItems(data.map {$0.id})
         await datasource.apply(snapshot, animatingDifferences: false)
     }
-
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        Task {
-            guard let id = datasource.itemIdentifier(for: indexPath) else { return }
-            await processor?.receive(.showAlbum(albumId: id))
-        }
-    }
-
 }

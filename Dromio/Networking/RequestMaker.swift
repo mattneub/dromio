@@ -5,6 +5,7 @@ import Foundation
 protocol RequestMakerType {
     func ping() async throws
     func getAlbumList() async throws -> [SubsonicAlbum]
+    func getSongsFor(albumId: String) async throws -> [SubsonicSong]
 }
 
 /// Class that makes constructs and sends requests to the server. If you want to talk to the server,
@@ -85,4 +86,17 @@ final class RequestMaker: RequestMakerType {
         return jsonResponse.subsonicResponse.albumList2.album
     }
 
+    /// Get an album along with its songs, and return the songs, throwing if anything goes wrong.
+    /// - Parameter albumId: The id of the album.
+    /// - Returns: An array of the songs of the specified albums.
+    func getSongsFor(albumId: String) async throws -> [SubsonicSong] {
+        let url = try services.urlMaker.urlFor(
+            action: "getAlbum",
+            additional: ["id": albumId]
+        )
+        let data = try await services.networker.performRequest(url: url)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<AlbumResponse>.self, from: data)
+        try await services.responseValidator.validateResponse(jsonResponse)
+        return jsonResponse.subsonicResponse.album.song ?? []
+    }
 }

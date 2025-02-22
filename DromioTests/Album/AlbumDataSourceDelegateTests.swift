@@ -4,8 +4,8 @@ import UIKit
 import WaitWhile
 
 @MainActor
-struct AlbumsDataSourceDelegateTests {
-    var subject: AlbumsDataSourceDelegate!
+struct AlbumDataSourceDelegateTests {
+    var subject: AlbumDataSourceDelegate!
     let tableView = UITableView()
 
     init() {
@@ -21,10 +21,10 @@ struct AlbumsDataSourceDelegateTests {
         #expect(subject.tableView === tableView)
     }
 
-    @Test("present: datasource reflects `albums`")
+    @Test("present: datasource reflects `songs`")
     func presentWithDataDatasourceItems() async {
-        var state = AlbumsState()
-        state.albums = [.init(id: "1", name: "Yoho", songCount: 30, song: nil)]
+        var state = AlbumState()
+        state.songs = [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
@@ -35,14 +35,14 @@ struct AlbumsDataSourceDelegateTests {
     @Test("present: cells are correctly populated")
     func presentWithDataCell() async throws {
         makeWindow(view: tableView)
-        var state = AlbumsState()
-        state.albums = [.init(id: "1", name: "Yoho", songCount: 30, song: nil)]
+        var state = AlbumState()
+        state.songs = [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
         let configuration = try #require(cell?.contentConfiguration as? UIListContentConfiguration)
-        #expect(configuration.text == "Yoho")
+        #expect(configuration.text == "Title")
     }
 
 }

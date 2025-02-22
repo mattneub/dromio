@@ -1,0 +1,98 @@
+{
+    "subsonic-response": {
+        "status": "ok",
+        "version": "1.16.1",
+        "type": "navidrome",
+        "serverVersion": "0.54.4-SNAPSHOT (pr-2709/b4fd8d52)",
+        "openSubsonic": true,
+        "album": {
+            "id": "95276009046bb8ecd84a10e450d91ccc",
+            "name": "BBC Age of Irreverence",
+            "artist": "Annie Nightingale",
+            "artistId": "4VM3b1zvPyOro1mw9MBurQ",
+            "coverArt": "al-95276009046bb8ecd84a10e450d91ccc_67599bda",
+            "songCount": 1,
+            "duration": 3341,
+            "created": "2024-01-04T05:05:54-08:00",
+            "userRating": 0,
+            "genres": [],
+            "musicBrainzId": "",
+            "isCompilation": false,
+            "sortName": "bbc age of irreverence",
+            "discTitles": [
+                {
+                    "disc": 1,
+                    "title": ""
+                }
+            ],
+            "originalReleaseDate": {},
+            "releaseDate": {},
+            "releaseTypes": [],
+            "recordLabels": [],
+            "moods": [],
+            "artists": [
+                {
+                    "id": "4VM3b1zvPyOro1mw9MBurQ",
+                    "name": "Annie Nightingale"
+                }
+            ],
+            "displayArtist": "Annie Nightingale",
+            "explicitStatus": "",
+            "version": "",
+            "song": [
+                {
+                    "id": "f3ab41630db2667c9f9bc8b409c91f7b",
+                    "parent": "95276009046bb8ecd84a10e450d91ccc",
+                    "isDir": false,
+                    "title": "Age of Irreverence",
+                    "album": "BBC Age of Irreverence",
+                    "artist": "Annie Nightingale",
+                    "track": 1,
+                    "coverArt": "al-95276009046bb8ecd84a10e450d91ccc_0",
+                    "size": 48052532,
+                    "contentType": "audio/mpeg",
+                    "suffix": "mp3",
+                    "duration": 3341,
+                    "bitRate": 115,
+                    "path": "Annie Nightingale/BBC Age of Irreverence/01 - Age of Irreverence.mp3",
+                    "created": "2024-01-04T05:05:54-08:00",
+                    "albumId": "95276009046bb8ecd84a10e450d91ccc",
+                    "artistId": "4VM3b1zvPyOro1mw9MBurQ",
+                    "type": "music",
+                    "isVideo": false,
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "age of irreverence",
+                    "mediaType": "song",
+                    "musicBrainzId": "",
+                    "genres": [],
+                    "replayGain": {
+                        "trackPeak": 1,
+                        "albumPeak": 1
+                    },
+                    "channelCount": 2,
+                    "samplingRate": 44100,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "4VM3b1zvPyOro1mw9MBurQ",
+                            "name": "Annie Nightingale"
+                        }
+                    ],
+                    "displayArtist": "Annie Nightingale",
+                    "albumArtists": [
+                        {
+                            "id": "4VM3b1zvPyOro1mw9MBurQ",
+                            "name": "Annie Nightingale"
+                        }
+                    ],
+                    "displayAlbumArtist": "Annie Nightingale",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                }
+            ]
+        }
+    }
+}

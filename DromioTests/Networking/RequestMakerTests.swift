@@ -122,7 +122,7 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                albumList2: AlbumsResponse(album: [SubsonicAlbum(id: "1", name: "title", songCount: 10)]),
+                albumList2: AlbumsResponse(album: [SubsonicAlbum(id: "1", name: "title", songCount: 10, song: nil)]),
                 error: nil
             )
         )
@@ -136,7 +136,7 @@ struct RequestMakerTests {
         #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
-        #expect(list == [SubsonicAlbum(id: "1", name: "title", songCount: 10)])
+        #expect(list == [SubsonicAlbum(id: "1", name: "title", songCount: 10, song: nil)])
     }
 
     @Test("getAlbumList: paginates with chunk 500")
@@ -148,7 +148,7 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", songCount: 10), count: 500)),
+                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", songCount: 10, song: nil), count: 500)),
                 error: nil
             )
         )
@@ -159,7 +159,7 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", songCount: 10), count: 2)),
+                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", songCount: 10, song: nil), count: 2)),
                 error: nil
             )
         )
@@ -192,7 +192,7 @@ struct RequestMakerTests {
     func getAlbumListDecoderThrow() async throws {
         networker.dataToReturn = [try! JSONEncoder().encode(#"{"howdy": "hey"}"#)]
         await #expect {
-            try await subject.ping()
+            try await subject.getAlbumList()
         } throws: { error in
             error is DecodingError
         }
@@ -207,7 +207,7 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                albumList2: AlbumsResponse(album: [SubsonicAlbum(id: "1", name: "title", songCount: 10)]),
+                albumList2: AlbumsResponse(album: [SubsonicAlbum(id: "1", name: "title", songCount: 10, song: nil)]),
                 error: nil
             )
         )
@@ -219,4 +219,95 @@ struct RequestMakerTests {
             error as! NetworkerError == .message("yipes")
         }
     }
+
+    @Test("getSongsFor: calls url maker with action getAlbum and additional id, calls networker, calls validator, returns list")
+    func getSongFor() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: AlbumResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                album: SubsonicAlbum(
+                    id: "1",
+                    name: "title",
+                    songCount: 10,
+                    song: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1")]
+                ),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        let list = try await subject.getSongsFor(albumId: "1")
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "getAlbum")
+        let expectedAdditional: KeyValuePairs = ["id": "1"]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+        #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
+        #expect(list == [
+            .init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1"),
+        ])
+    }
+
+    @Test("getSongsFor: rethrows urlMaker throw")
+    func getSongsForUrlMakerThrow() async throws {
+        urlMaker.errorToThrow = NetworkerError.message("oops")
+        await #expect {
+            try await subject.getSongsFor(albumId: "1")
+        } throws: { error in
+            error as! NetworkerError == .message("oops")
+        }
+    }
+
+    @Test("getSongsFor: rethrows networker throw")
+    func getSongsForNetworkerThrow() async throws {
+        networker.errorToThrow = NetworkerError.message("darn")
+        await #expect {
+            try await subject.getSongsFor(albumId: "1")
+        } throws: { error in
+            error as! NetworkerError == .message("darn")
+        }
+    }
+
+    @Test("getSongsFor: rethrows decode error")
+    func getSongsForDecoderThrow() async throws {
+        networker.dataToReturn = [try! JSONEncoder().encode(#"{"howdy": "hey"}"#)]
+        await #expect {
+            try await subject.getSongsFor(albumId: "1")
+        } throws: { error in
+            error is DecodingError
+        }
+    }
+
+    @Test("getSongsFor: rethrows validator error")
+    func getSongsForValidatorThrow() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: AlbumResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                album: SubsonicAlbum(
+                    id: "1",
+                    name: "title",
+                    songCount: 10,
+                    song: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1")]
+                ),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        responseValidator.errorToThrow = NetworkerError.message("yipes")
+        await #expect {
+            try await subject.getSongsFor(albumId: "1")
+        } throws: { error in
+            error as! NetworkerError == .message("yipes")
+        }
+    }
+
 }

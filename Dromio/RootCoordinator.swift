@@ -7,6 +7,7 @@ protocol RootCoordinatorType: AnyObject {
 
     var pingProcessor: (any Processor<PingAction, PingState>)? { get }
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)? { get }
+    var albumProcessor: (any Processor<AlbumAction, AlbumState>)? { get }
 
     // The root coordinator also needs a reference to the true root view controller.
 
@@ -19,6 +20,9 @@ protocol RootCoordinatorType: AnyObject {
     /// Create the Albums module and show the view controller.
     func showAlbums()
 
+    /// Create the Album module and show the view controller.
+    func showAlbum(albumId: String)
+
 }
 
 /// Class of single instance responsible for all view controller manipulation.
@@ -27,6 +31,7 @@ final class RootCoordinator: RootCoordinatorType {
 
     var pingProcessor: (any Processor<PingAction, PingState>)?
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
+    var albumProcessor: (any Processor<AlbumAction, AlbumState>)?
 
     weak var rootViewController: UIViewController?
 
@@ -52,6 +57,20 @@ final class RootCoordinator: RootCoordinatorType {
         albumsProcessor.coordinator = self
         navigationController.modalPresentationStyle = .fullScreen
         rootViewController?.present(navigationController, animated: true)
+    }
+
+    func showAlbum(albumId: String) {
+        let albumController = AlbumViewController(nibName: nil, bundle: nil)
+        let albumProcessor = AlbumProcessor()
+        albumProcessor.state.albumId = albumId
+        self.albumProcessor = albumProcessor
+        albumProcessor.presenter = albumController
+        albumController.processor = albumProcessor
+        albumProcessor.coordinator = self
+        guard let navigationController = rootViewController?.presentedViewController as? UINavigationController else {
+            return
+        }
+        navigationController.pushViewController(albumController, animated: true)
     }
 }
 

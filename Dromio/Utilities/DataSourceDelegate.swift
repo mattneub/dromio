@@ -11,6 +11,9 @@ import UIKit
     /// Processor to whom to send any action messages.
     var processor: (any Receiver<ActionType>)? { get set }
 
+    /// Weak reference, purely for testing purposes.
+    var tableView: UITableView? { get }
+
     /// Initializer.
     /// - Parameter tableView: The table view whose `dataSource` and `delegate` we will set.
     init(tableView: UITableView)

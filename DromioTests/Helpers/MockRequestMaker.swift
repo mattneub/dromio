@@ -3,6 +3,8 @@
 @MainActor
 final class MockRequestMaker: RequestMakerType {
     var albumList = [SubsonicAlbum]()
+    var songList = [SubsonicSong]()
+    var albumId: String?
     var pingError: Error?
     var methodsCalled = [String]()
 
@@ -19,6 +21,15 @@ final class MockRequestMaker: RequestMakerType {
             throw pingError
         }
         return albumList
+    }
+
+    func getSongsFor(albumId: String) async throws -> [SubsonicSong] {
+        methodsCalled.append(#function)
+        self.albumId = albumId
+        if let pingError {
+            throw pingError
+        }
+        return songList
     }
 
 }

@@ -1,0 +1,460 @@
+{
+    "subsonic-response": {
+        "status": "ok",
+        "version": "1.16.1",
+        "type": "navidrome",
+        "serverVersion": "0.54.4-SNAPSHOT (pr-2709/b4fd8d52)",
+        "openSubsonic": true,
+        "albumList2": {
+            "album": [
+                {
+                    "id": "7nkIImKPPoyKzJzpFKNuLc",
+                    "parent": "1O876d96ZqN1xnkhL2zzlp",
+                    "isDir": true,
+                    "title": "2000 Year Old Man",
+                    "name": "2000 Year Old Man",
+                    "album": "2000 Year Old Man",
+                    "artist": "Carl Reiner \u0026 Mel Brooks",
+                    "genre": "Books \u0026 Spoken",
+                    "coverArt": "al-7nkIImKPPoyKzJzpFKNuLc_6434147b",
+                    "duration": 10992,
+                    "created": "2017-02-07T15:18:52-08:00",
+                    "artistId": "1O876d96ZqN1xnkhL2zzlp",
+                    "songCount": 55,
+                    "isVideo": false,
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "",
+                    "mediaType": "album",
+                    "musicBrainzId": "",
+                    "genres": [
+                        {
+                            "name": "Books \u0026 Spoken"
+                        }
+                    ],
+                    "replayGain": {},
+                    "channelCount": 0,
+                    "samplingRate": 0,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "1O876d96ZqN1xnkhL2zzlp",
+                            "name": "Carl Reiner \u0026 Mel Brooks"
+                        }
+                    ],
+                    "displayArtist": "Carl Reiner \u0026 Mel Brooks",
+                    "albumArtists": [
+                        {
+                            "id": "1O876d96ZqN1xnkhL2zzlp",
+                            "name": "Carl Reiner \u0026 Mel Brooks"
+                        }
+                    ],
+                    "displayAlbumArtist": "Carl Reiner \u0026 Mel Brooks",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                },
+                {
+                    "id": "0oe7uZlwMZJCQ0c2GJfDHD",
+                    "parent": "2dgekG0C3Y3Kh8KTxLRVDe",
+                    "isDir": true,
+                    "title": "300 Years of Guitar Masterpieces",
+                    "name": "300 Years of Guitar Masterpieces",
+                    "album": "300 Years of Guitar Masterpieces",
+                    "artist": "Manuel Barrueco",
+                    "coverArt": "al-0oe7uZlwMZJCQ0c2GJfDHD_5660b1b7",
+                    "duration": 9840,
+                    "created": "2015-12-03T13:18:44-08:00",
+                    "artistId": "2dgekG0C3Y3Kh8KTxLRVDe",
+                    "songCount": 45,
+                    "isVideo": false,
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "",
+                    "mediaType": "album",
+                    "musicBrainzId": "",
+                    "genres": [],
+                    "replayGain": {},
+                    "channelCount": 0,
+                    "samplingRate": 0,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "2dgekG0C3Y3Kh8KTxLRVDe",
+                            "name": "Manuel Barrueco"
+                        }
+                    ],
+                    "displayArtist": "Manuel Barrueco",
+                    "albumArtists": [
+                        {
+                            "id": "2dgekG0C3Y3Kh8KTxLRVDe",
+                            "name": "Manuel Barrueco"
+                        }
+                    ],
+                    "displayAlbumArtist": "Manuel Barrueco",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                },
+                {
+                    "id": "2lANc8ReJdAmAbE2oag9hp",
+                    "parent": "0edS5nihYRfklc8MueiMHv",
+                    "isDir": true,
+                    "title": "50 Things That Made the Modern Economy",
+                    "name": "50 Things That Made the Modern Economy",
+                    "album": "50 Things That Made the Modern Economy",
+                    "artist": "BBC World Service",
+                    "year": 2017,
+                    "coverArt": "al-2lANc8ReJdAmAbE2oag9hp_657e22bc",
+                    "duration": 28992,
+                    "created": "2023-11-12T06:53:18-08:00",
+                    "artistId": "0edS5nihYRfklc8MueiMHv",
+                    "songCount": 52,
+                    "isVideo": false,
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "",
+                    "mediaType": "album",
+                    "musicBrainzId": "",
+                    "genres": [],
+                    "replayGain": {},
+                    "channelCount": 0,
+                    "samplingRate": 0,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "0edS5nihYRfklc8MueiMHv",
+                            "name": "BBC World Service"
+                        }
+                    ],
+                    "displayArtist": "BBC World Service",
+                    "albumArtists": [
+                        {
+                            "id": "0edS5nihYRfklc8MueiMHv",
+                            "name": "BBC World Service"
+                        }
+                    ],
+                    "displayAlbumArtist": "BBC World Service",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                },
+                {
+                    "id": "7y7BZ3rIukbLwFdMEDcEeU",
+                    "parent": "5YfoqkqEq1g3nscNkoUPSs",
+                    "isDir": true,
+                    "title": "Adam Ballet",
+                    "name": "Adam Ballet",
+                    "album": "Adam Ballet",
+                    "artist": "Robert Irving, Philharmonia Orchestra",
+                    "genre": "Classical",
+                    "coverArt": "al-7y7BZ3rIukbLwFdMEDcEeU_6466df05",
+                    "duration": 2496,
+                    "created": "2023-05-18T19:29:25-07:00",
+                    "artistId": "5YfoqkqEq1g3nscNkoUPSs",
+                    "songCount": 19,
+                    "isVideo": false,
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "",
+                    "mediaType": "album",
+                    "musicBrainzId": "",
+                    "genres": [
+                        {
+                            "name": "Classical"
+                        }
+                    ],
+                    "replayGain": {},
+                    "channelCount": 0,
+                    "samplingRate": 0,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "5YfoqkqEq1g3nscNkoUPSs",
+                            "name": "Robert Irving, Philharmonia Orchestra"
+                        }
+                    ],
+                    "displayArtist": "Robert Irving, Philharmonia Orchestra",
+                    "albumArtists": [
+                        {
+                            "id": "5YfoqkqEq1g3nscNkoUPSs",
+                            "name": "Robert Irving, Philharmonia Orchestra"
+                        }
+                    ],
+                    "displayAlbumArtist": "Robert Irving, Philharmonia Orchestra",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                },
+                {
+                    "id": "380D5Rh0ErvEIwEbSZCPZi",
+                    "parent": "63sqASlAfjbGMuLP4JhnZU",
+                    "isDir": true,
+                    "title": "Adams Earbox",
+                    "name": "Adams Earbox",
+                    "album": "Adams Earbox",
+                    "artist": "Various Artists",
+                    "year": 1996,
+                    "coverArt": "al-380D5Rh0ErvEIwEbSZCPZi_5f68a976",
+                    "duration": 39589,
+                    "created": "2020-09-21T06:19:55-07:00",
+                    "artistId": "63sqASlAfjbGMuLP4JhnZU",
+                    "songCount": 103,
+                    "isVideo": false,
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "",
+                    "mediaType": "album",
+                    "musicBrainzId": "",
+                    "genres": [],
+                    "replayGain": {},
+                    "channelCount": 0,
+                    "samplingRate": 0,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "63sqASlAfjbGMuLP4JhnZU",
+                            "name": "Various Artists"
+                        }
+                    ],
+                    "displayArtist": "Various Artists",
+                    "albumArtists": [
+                        {
+                            "id": "63sqASlAfjbGMuLP4JhnZU",
+                            "name": "Various Artists"
+                        }
+                    ],
+                    "displayAlbumArtist": "Various Artists",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                },
+                {
+                    "id": "31FVzgHRMYKdUwCetC2OST",
+                    "parent": "7saXQVFKTT1LRFukcwzWzo",
+                    "isDir": true,
+                    "title": "Albéniz Piano",
+                    "name": "Albéniz Piano",
+                    "album": "Albéniz Piano",
+                    "artist": "Alicia de Larrocha",
+                    "coverArt": "al-31FVzgHRMYKdUwCetC2OST_565e2e56",
+                    "duration": 7532,
+                    "created": "2015-12-01T15:33:40-08:00",
+                    "artistId": "7saXQVFKTT1LRFukcwzWzo",
+                    "songCount": 21,
+                    "isVideo": false,
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "",
+                    "mediaType": "album",
+                    "musicBrainzId": "",
+                    "genres": [],
+                    "replayGain": {},
+                    "channelCount": 0,
+                    "samplingRate": 0,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "7saXQVFKTT1LRFukcwzWzo",
+                            "name": "Alicia de Larrocha"
+                        }
+                    ],
+                    "displayArtist": "Alicia de Larrocha",
+                    "albumArtists": [
+                        {
+                            "id": "7saXQVFKTT1LRFukcwzWzo",
+                            "name": "Alicia de Larrocha"
+                        }
+                    ],
+                    "displayAlbumArtist": "Alicia de Larrocha",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                },
+                {
+                    "id": "5mmRX8xyUchk1L08FfaS4A",
+                    "parent": "63sqASlAfjbGMuLP4JhnZU",
+                    "isDir": true,
+                    "title": "Albéniz Piano 2",
+                    "name": "Albéniz Piano 2",
+                    "album": "Albéniz Piano 2",
+                    "artist": "Various Artists",
+                    "year": 1908,
+                    "coverArt": "al-5mmRX8xyUchk1L08FfaS4A_50c2aece",
+                    "duration": 30031,
+                    "created": "2012-12-07T19:06:10-08:00",
+                    "artistId": "63sqASlAfjbGMuLP4JhnZU",
+                    "songCount": 105,
+                    "isVideo": false,
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "",
+                    "mediaType": "album",
+                    "musicBrainzId": "",
+                    "genres": [],
+                    "replayGain": {},
+                    "channelCount": 0,
+                    "samplingRate": 0,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "63sqASlAfjbGMuLP4JhnZU",
+                            "name": "Various Artists"
+                        }
+                    ],
+                    "displayArtist": "Various Artists",
+                    "albumArtists": [
+                        {
+                            "id": "63sqASlAfjbGMuLP4JhnZU",
+                            "name": "Various Artists"
+                        }
+                    ],
+                    "displayAlbumArtist": "Various Artists",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                },
+                {
+                    "id": "3Syw00YTrPLwlhAEzdoiu2",
+                    "parent": "63sqASlAfjbGMuLP4JhnZU",
+                    "isDir": true,
+                    "title": "Albinoni Concertos",
+                    "name": "Albinoni Concertos",
+                    "album": "Albinoni Concertos",
+                    "artist": "Various Artists",
+                    "coverArt": "al-3Syw00YTrPLwlhAEzdoiu2_65f75737",
+                    "duration": 13843,
+                    "playCount": 3,
+                    "created": "2014-04-26T16:47:20-07:00",
+                    "artistId": "63sqASlAfjbGMuLP4JhnZU",
+                    "songCount": 88,
+                    "isVideo": false,
+                    "played": "2024-06-15T15:12:37.359632-07:00",
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "",
+                    "mediaType": "album",
+                    "musicBrainzId": "",
+                    "genres": [],
+                    "replayGain": {},
+                    "channelCount": 0,
+                    "samplingRate": 0,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "63sqASlAfjbGMuLP4JhnZU",
+                            "name": "Various Artists"
+                        }
+                    ],
+                    "displayArtist": "Various Artists",
+                    "albumArtists": [
+                        {
+                            "id": "63sqASlAfjbGMuLP4JhnZU",
+                            "name": "Various Artists"
+                        }
+                    ],
+                    "displayAlbumArtist": "Various Artists",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                },
+                {
+                    "id": "3nBVsmPXjTfBxxyLQv6IYg",
+                    "parent": "63sqASlAfjbGMuLP4JhnZU",
+                    "isDir": true,
+                    "title": "Albinoni Oboe Concertos",
+                    "name": "Albinoni Oboe Concertos",
+                    "album": "Albinoni Oboe Concertos",
+                    "artist": "Various Artists",
+                    "coverArt": "al-3nBVsmPXjTfBxxyLQv6IYg_5361b6b5",
+                    "duration": 10493,
+                    "playCount": 3,
+                    "created": "2014-04-30T19:51:24-07:00",
+                    "artistId": "63sqASlAfjbGMuLP4JhnZU",
+                    "songCount": 57,
+                    "isVideo": false,
+                    "played": "2024-07-13T10:02:29.845432-07:00",
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "",
+                    "mediaType": "album",
+                    "musicBrainzId": "",
+                    "genres": [],
+                    "replayGain": {},
+                    "channelCount": 0,
+                    "samplingRate": 0,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "63sqASlAfjbGMuLP4JhnZU",
+                            "name": "Various Artists"
+                        }
+                    ],
+                    "displayArtist": "Various Artists",
+                    "albumArtists": [
+                        {
+                            "id": "63sqASlAfjbGMuLP4JhnZU",
+                            "name": "Various Artists"
+                        }
+                    ],
+                    "displayAlbumArtist": "Various Artists",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                },
+                {
+                    "id": "0TjYwaHEMvwYGO0k5B9rGl",
+                    "parent": "2J843E2B3b8GnwDi3U7E77",
+                    "isDir": true,
+                    "title": "Albinoni Sonatas",
+                    "name": "Albinoni Sonatas",
+                    "album": "Albinoni Sonatas",
+                    "artist": "Chiara Banchini, Ensemble 415",
+                    "coverArt": "al-0TjYwaHEMvwYGO0k5B9rGl_53630790",
+                    "duration": 3252,
+                    "created": "2014-05-01T19:47:30-07:00",
+                    "artistId": "2J843E2B3b8GnwDi3U7E77",
+                    "songCount": 24,
+                    "isVideo": false,
+                    "bpm": 0,
+                    "comment": "",
+                    "sortName": "",
+                    "mediaType": "album",
+                    "musicBrainzId": "",
+                    "genres": [],
+                    "replayGain": {},
+                    "channelCount": 0,
+                    "samplingRate": 0,
+                    "bitDepth": 0,
+                    "moods": [],
+                    "artists": [
+                        {
+                            "id": "2J843E2B3b8GnwDi3U7E77",
+                            "name": "Chiara Banchini, Ensemble 415"
+                        }
+                    ],
+                    "displayArtist": "Chiara Banchini, Ensemble 415",
+                    "albumArtists": [
+                        {
+                            "id": "2J843E2B3b8GnwDi3U7E77",
+                            "name": "Chiara Banchini, Ensemble 415"
+                        }
+                    ],
+                    "displayAlbumArtist": "Chiara Banchini, Ensemble 415",
+                    "contributors": [],
+                    "displayComposer": "",
+                    "explicitStatus": ""
+                }
+            ]
+        }
+    }
+}

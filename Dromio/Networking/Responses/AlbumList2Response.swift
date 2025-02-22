@@ -15,11 +15,3 @@ struct AlbumList2Response: InnerResponse {
 struct AlbumsResponse: Codable {
     let album: [SubsonicAlbum]
 }
-
-/// Type of the array element of the `album` property of the AlbumsResponse.
-/// Serves as actual data for the app.
-struct SubsonicAlbum: Codable, Equatable {
-    let id: String
-    let name: String
-    let songCount: Int
-}
