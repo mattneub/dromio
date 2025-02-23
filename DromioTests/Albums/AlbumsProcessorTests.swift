@@ -35,4 +35,9 @@ struct AlbumsProcessorTests {
         #expect(coordinator.albumId == "1")
     }
 
+    @Test("receive showPlaylist: tells coordinator to showPlaylist")
+    func showPlaylist() async {
+        await subject.receive(.showPlaylist)
+        #expect(coordinator.methodsCalled.last == "showPlaylist()")
+    }
 }

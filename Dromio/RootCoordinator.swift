@@ -8,6 +8,7 @@ protocol RootCoordinatorType: AnyObject {
     var pingProcessor: (any Processor<PingAction, PingState>)? { get }
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)? { get }
     var albumProcessor: (any Processor<AlbumAction, AlbumState>)? { get }
+    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)? { get }
 
     // The root coordinator also needs a reference to the true root view controller.
 
@@ -23,6 +24,8 @@ protocol RootCoordinatorType: AnyObject {
     /// Create the Album module and show the view controller.
     func showAlbum(albumId: String)
 
+    /// Create the Playlist module and show the view controller.
+    func showPlaylist()
 }
 
 /// Class of single instance responsible for all view controller manipulation.
@@ -32,6 +35,7 @@ final class RootCoordinator: RootCoordinatorType {
     var pingProcessor: (any Processor<PingAction, PingState>)?
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
     var albumProcessor: (any Processor<AlbumAction, AlbumState>)?
+    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)?
 
     weak var rootViewController: UIViewController?
 
@@ -71,6 +75,19 @@ final class RootCoordinator: RootCoordinatorType {
             return
         }
         navigationController.pushViewController(albumController, animated: true)
+    }
+
+    func showPlaylist() {
+        let playlistController = PlaylistViewController(nibName: nil, bundle: nil)
+        let playlistProcessor = PlaylistProcessor()
+        self.playlistProcessor = playlistProcessor
+        playlistProcessor.presenter = playlistController
+        playlistController.processor = playlistProcessor
+        playlistProcessor.coordinator = self
+        guard let navigationController = rootViewController?.presentedViewController as? UINavigationController else {
+            return
+        }
+        navigationController.pushViewController(playlistController, animated: true)
     }
 }
 

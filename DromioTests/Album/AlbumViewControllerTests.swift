@@ -21,6 +21,13 @@ struct AlbumViewControllerTests {
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
     }
 
+    @Test("Initialize: creates right bar button item")
+    func initializeRight() throws {
+        let item = try #require(subject.navigationItem.rightBarButtonItem)
+        #expect(item.target === subject)
+        #expect(item.action == #selector(subject.showPlaylist))
+    }
+
     @Test("Setting the processor sets the data source's processor")
     func setProcessor() {
         let processor2 = MockReceiver<AlbumAction>()
@@ -51,5 +58,12 @@ struct AlbumViewControllerTests {
         #expect(subject.tableView.indexPathForSelectedRow != nil)
         subject.receive(.deselectAll)
         #expect(subject.tableView.indexPathForSelectedRow == nil)
+    }
+
+    @Test("showPlaylist: sends showPlaylist to processor")
+    func showPlaylist() async {
+        subject.showPlaylist()
+        await #while(processor.thingsReceived.last != .showPlaylist)
+        #expect(processor.thingsReceived.last == .showPlaylist)
     }
 }

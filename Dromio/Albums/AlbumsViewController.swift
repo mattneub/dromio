@@ -16,6 +16,8 @@ final class AlbumsViewController: UITableViewController, Presenter {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         dataSourceDelegate = AlbumsDataSourceDelegate(tableView: tableView)
         title = "Albums"
+        let item = UIBarButtonItem(title: nil, image: UIImage(systemName: "list.bullet"), target: self, action: #selector(showPlaylist))
+        navigationItem.rightBarButtonItem = item
     }
 
     required init?(coder: NSCoder) {
@@ -33,5 +35,11 @@ final class AlbumsViewController: UITableViewController, Presenter {
 
     func present(_ state: AlbumsState) {
         dataSourceDelegate?.present(state)
+    }
+
+    @objc func showPlaylist() {
+        Task {
+            await processor?.receive(.showPlaylist)
+        }
     }
 }

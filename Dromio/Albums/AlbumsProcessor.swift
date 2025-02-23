@@ -27,6 +27,8 @@ final class AlbumsProcessor: Processor {
             }
         case .showAlbum(let id):
             coordinator?.showAlbum(albumId: id)
+        case .showPlaylist:
+            coordinator?.showPlaylist()
         }
     }
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-/// State presented by AlbumsProcessor to AlbumsViewController.
+/// State presented by AlbumProcessor to AlbumViewController.
 @MainActor
 struct AlbumState: Equatable {
     var albumId: String?

@@ -6,4 +6,6 @@ enum AlbumsAction: Equatable {
     case initialData
     /// The user wants to see the song list for the given album.
     case showAlbum(albumId: String)
+    /// The user would like to view the playlist.
+    case showPlaylist
 }

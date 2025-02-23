@@ -63,4 +63,25 @@ struct RootCoordinatorTests {
         #expect(albumProcessor.presenter === albumViewController)
         #expect(albumProcessor.coordinator === subject)
     }
+
+    @Test("showPlaylist: pushes playlist view controller, configures module")
+    func showPlaylist() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        let presentedViewController = UINavigationController(rootViewController: UIViewController())
+        rootViewController.present(presentedViewController, animated: false)
+        await #while(rootViewController.presentedViewController == nil)
+        // ok, here we go!
+        subject.showPlaylist()
+        await #while(presentedViewController.children.count < 2)
+        let playlistViewController = try #require(presentedViewController.children[1] as? PlaylistViewController)
+        let playlistProcessor = try #require(subject.playlistProcessor as? PlaylistProcessor)
+        #expect(playlistViewController.processor === playlistProcessor)
+        #expect(playlistProcessor.presenter === playlistViewController)
+        #expect(playlistProcessor.coordinator === subject)
+    }
+
 }

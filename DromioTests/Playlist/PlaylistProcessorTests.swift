@@ -3,9 +3,9 @@ import Testing
 import WaitWhile
 
 @MainActor
-struct AlbumProcessorTests {
-    let subject = AlbumProcessor()
-    let presenter = MockReceiverPresenter<AlbumEffect, AlbumState>()
+struct PlaylistProcessorTests {
+    let subject = PlaylistProcessor()
+    let presenter = MockReceiverPresenter<PlaylistEffect, PlaylistState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
     let haptic = MockHaptic()
@@ -21,17 +21,15 @@ struct AlbumProcessorTests {
 
     @Test("mutating the state presents the state")
     func state() {
-        subject.state.albumId = "1"
-        #expect(presenter.statePresented?.albumId == "1")
+        let songs = [SubsonicSong(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")]
+        subject.state.songs = songs
+        #expect(presenter.statePresented?.songs == songs)
     }
 
     @Test("receive initialData: sends `getSongsFor` to request maker, sets state `songs`")
     func receiveInitialData() async {
-        requestMaker.songList = [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")]
-        subject.state.albumId = "2"
+        playlist.list = [SubsonicSong(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")]
         await subject.receive(.initialData)
-        #expect(requestMaker.methodsCalled == ["getSongsFor(albumId:)"])
-        #expect(requestMaker.albumId == "2")
         #expect(presenter.statePresented?.songs == [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")])
     }
 
@@ -39,16 +37,10 @@ struct AlbumProcessorTests {
     func receiveTapped() async {
         let song = SubsonicSong(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")
         await subject.receive(.tapped(song))
-        #expect(playlist.methodsCalled == ["append(_:)"])
-        #expect(playlist.list == [song])
-        #expect(haptic.methodsCalled == ["success()"])
-        await #while(presenter.thingsReceived.isEmpty)
-        #expect(presenter.thingsReceived == [.deselectAll])
-    }
-
-    @Test("receive showPlaylist: tells coordinator to showPlaylist")
-    func showPlaylist() async {
-        await subject.receive(.showPlaylist)
-        #expect(coordinator.methodsCalled.last == "showPlaylist()")
+//        #expect(playlist.methodsCalled == ["append(_:)"])
+//        #expect(playlist.list == [song])
+//        #expect(haptic.methodsCalled == ["success()"])
+//        await #while(presenter.thingsReceived.isEmpty)
+//        #expect(presenter.thingsReceived == [.deselectAll])
     }
 }

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Processor containing logic for the AlbumsViewController.
+/// Processor containing logic for the AlbumViewController.
 @MainActor
 final class AlbumProcessor: Processor {
     /// Reference to the coordinator, set by coordinator on creation.
@@ -31,6 +31,8 @@ final class AlbumProcessor: Processor {
             services.haptic.success()
             try? await Task.sleep(for: .seconds(0.3))
             await (presenter as? any Receiver<AlbumEffect>)?.receive(.deselectAll)
+        case .showPlaylist:
+            coordinator?.showPlaylist()
         }
     }
 }
