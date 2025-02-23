@@ -7,9 +7,11 @@ import WaitWhile
 struct AlbumDataSourceDelegateTests {
     var subject: AlbumDataSourceDelegate!
     let tableView = UITableView()
+    let processor = MockProcessor<AlbumAction, AlbumState>()
 
     init() {
         subject = .init(tableView: tableView)
+        subject.processor = processor
     }
 
     @Test("initializer: creates and sets the data source, sets the delegate")
@@ -45,4 +47,16 @@ struct AlbumDataSourceDelegateTests {
         #expect(configuration.text == "Title")
     }
 
+    @Test("didSelect: sends tapped to processor")
+    func didSelect() async {
+        let song = SubsonicSong(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")
+        makeWindow(view: tableView)
+        var state = AlbumState()
+        state.songs = [song]
+        subject.present(state)
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        subject.tableView(tableView, didSelectRowAt: IndexPath(row: 0, section: 0))
+        await #while(processor.thingsReceived.isEmpty)
+        #expect(processor.thingsReceived.contains(.tapped(song)))
+    }
 }

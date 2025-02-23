@@ -4,6 +4,8 @@ import Foundation
 /// AppDelegate as a global (crude but effective).
 @MainActor
 struct Services {
+    var currentPlaylist: PlaylistType = Playlist()
+    var haptic: HapticType = Haptic()
     var networker: NetworkerType = Networker()
     var requestMaker: RequestMakerType = RequestMaker()
     var responseValidator: ResponseValidatorType = ResponseValidator()

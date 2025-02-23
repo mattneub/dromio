@@ -44,4 +44,12 @@ struct AlbumViewControllerTests {
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }
+
+    @Test("receive deselectAll: tells the table view to select nil")
+    func receiveDeselectAll() {
+        subject.tableView.selectRow(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .none)
+        #expect(subject.tableView.indexPathForSelectedRow != nil)
+        subject.receive(.deselectAll)
+        #expect(subject.tableView.indexPathForSelectedRow == nil)
+    }
 }

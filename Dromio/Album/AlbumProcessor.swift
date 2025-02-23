@@ -26,6 +26,11 @@ final class AlbumProcessor: Processor {
             } catch {
                 print(error)
             }
+        case .tapped(let song):
+            services.currentPlaylist.append(song)
+            services.haptic.success()
+            try? await Task.sleep(for: .seconds(0.3))
+            await (presenter as? any Receiver<AlbumEffect>)?.receive(.deselectAll)
         }
     }
 }

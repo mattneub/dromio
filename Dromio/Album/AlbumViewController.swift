@@ -1,7 +1,7 @@
 import UIKit
 
 /// View controller that displays a list of all songs in an album.
-final class AlbumViewController: UITableViewController, Presenter {
+final class AlbumViewController: UITableViewController, ReceiverPresenter {
     /// Data source and delegate object, created in `init`.
     var dataSourceDelegate: (any DataSourceDelegate<AlbumAction, AlbumState>)?
 
@@ -32,5 +32,12 @@ final class AlbumViewController: UITableViewController, Presenter {
 
     func present(_ state: AlbumState) {
         dataSourceDelegate?.present(state)
+    }
+
+    func receive(_ effect: AlbumEffect) {
+        switch effect {
+        case .deselectAll:
+            tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
+        }
     }
 }

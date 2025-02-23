@@ -83,4 +83,16 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
         snapshot.appendItems(data.map {$0.id})
         await datasource.apply(snapshot, animatingDifferences: false)
     }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let identifier = datasource.itemIdentifier(for: indexPath) else {
+            return
+        }
+        guard let song = data.first(where: { $0.id == identifier }) else {
+            return
+        }
+        Task {
+            await processor?.receive(.tapped(song))
+        }
+    }
 }

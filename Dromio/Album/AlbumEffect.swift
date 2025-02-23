@@ -1,0 +1,3 @@
+enum AlbumEffect {
+    case deselectAll
+}
