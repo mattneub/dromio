@@ -66,6 +66,55 @@ class NetworkerTests {
         #expect(result == data)
     }
 
+    @Test("performDownloadRequest: throws if response is not HTTPURLResponse")
+    func performDownloadRequestWrongResponseType() async throws {
+        MockURLProtocol.requestHandler = { request in
+            return (URLResponse(), Data())
+        }
+        await #expect {
+            try await subject.performDownloadRequest(url: URL(string: "https://www.example.com")!)
+        } throws: { error in
+            let error = try #require(error as? NetworkerError)
+            return error == .message("We received a non-HTTPURLResponse.")
+        }
+    }
+
+    @Test("performDownloadRequest: throws if response status code is not 200")
+    func performDownloadRequestWrongResponseStatusCode() async throws {
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 400,
+                httpVersion: nil,
+                headerFields: nil
+            )
+            return (response!, Data())
+        }
+        await #expect {
+            try await subject.performDownloadRequest(url: URL(string: "https://www.example.com")!)
+        } throws: { error in
+            let error = try #require(error as? NetworkerError)
+            return error == .message("We got a status code 400.")
+        }
+    }
+
+    @Test("performDownloadRequest: returns url if all is well, url contains data")
+    func performDownloadRequestReturnsURL() async throws {
+        let data = "howdy".data(using: .utf8)
+        MockURLProtocol.requestHandler = { request in
+            let response = HTTPURLResponse(
+                url: request.url!,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            )
+            return (response!, data!)
+        }
+        let url = try await subject.performDownloadRequest(url: URL(string: "https://www.example.com")!)
+        let resultData = try Data(contentsOf: url)
+        #expect(resultData == data)
+    }
+
 }
 
 @MainActor

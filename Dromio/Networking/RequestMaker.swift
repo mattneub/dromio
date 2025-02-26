@@ -6,6 +6,7 @@ protocol RequestMakerType {
     func ping() async throws
     func getAlbumList() async throws -> [SubsonicAlbum]
     func getSongsFor(albumId: String) async throws -> [SubsonicSong]
+    func download(songId: String) async throws -> URL
 }
 
 /// Class that makes constructs and sends requests to the server. If you want to talk to the server,
@@ -99,4 +100,16 @@ final class RequestMaker: RequestMakerType {
         try await services.responseValidator.validateResponse(jsonResponse)
         return jsonResponse.subsonicResponse.album.song ?? []
     }
+    
+    /// Download a song, throwing if anything goes wrong.
+    /// - Parameter songId: The id of the desired song.
+    /// - Returns: The URL where the song data resides.
+    func download(songId: String) async throws -> URL {
+        let url = try services.urlMaker.urlFor(
+            action: "download",
+            additional: ["id": songId]
+        )
+        return try await services.networker.performDownloadRequest(url: url)
+    }
+
 }

@@ -1,12 +1,15 @@
 @testable import Dromio
+import Foundation
 
 @MainActor
 final class MockRequestMaker: RequestMakerType {
     var albumList = [SubsonicAlbum]()
     var songList = [SubsonicSong]()
     var albumId: String?
+    var songId: String?
     var pingError: Error?
     var methodsCalled = [String]()
+    var url = URL(string: "http://example.com")!
 
     func ping() async throws {
         methodsCalled.append(#function)
@@ -32,4 +35,12 @@ final class MockRequestMaker: RequestMakerType {
         return songList
     }
 
+    func download(songId: String) async throws -> URL {
+        methodsCalled.append(#function)
+        self.songId = songId
+        if let pingError {
+            throw pingError
+        }
+        return url
+    }
 }

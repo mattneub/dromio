@@ -2,6 +2,7 @@ import UIKit
 
 @MainActor
 protocol HapticType {
+    func failure()
     func success()
 }
 
@@ -16,6 +17,10 @@ extension UINotificationFeedbackGenerator: GeneratorType {}
 @MainActor
 final class Haptic: HapticType {
     var generator: GeneratorType = UINotificationFeedbackGenerator()
+
+    func failure() {
+        generator.notificationOccurred(.error)
+    }
 
     func success() {
         generator.prepare()

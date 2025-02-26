@@ -14,4 +14,14 @@ import UIKit
         #expect(window.isKeyWindow)
         #expect(mockRootCoordinator.methodsCalled == ["createInitialInterface(window:)"])
     }
+
+    @Test("sceneWillEnterForeground: sets the audio session category")
+    func testForeground() throws {
+        let mockAudioSession = MockAudioSession()
+        services.audioSession = mockAudioSession
+        let scene = try #require(UIApplication.shared.connectedScenes.first as? UIWindowScene)
+        let subject = SceneDelegate()
+        subject.sceneWillEnterForeground(scene)
+        #expect(mockAudioSession.methodsCalled == ["setCategory(_:mode:options:)"])
+    }
 }

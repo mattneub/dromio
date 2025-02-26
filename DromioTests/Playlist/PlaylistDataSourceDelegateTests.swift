@@ -26,7 +26,7 @@ struct PlaylistDataSourceDelegateTests {
     @Test("present: datasource reflects `songs`")
     func presentWithDataDatasourceItems() async {
         var state = PlaylistState()
-        state.songs = [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")]
+        state.songs = [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2", suffix: nil, duration: nil)]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
@@ -38,7 +38,7 @@ struct PlaylistDataSourceDelegateTests {
     func presentWithDataCell() async throws {
         makeWindow(view: tableView)
         var state = PlaylistState()
-        state.songs = [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")]
+        state.songs = [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2", suffix: nil, duration: nil)]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
@@ -49,7 +49,7 @@ struct PlaylistDataSourceDelegateTests {
 
     @Test("didSelect: sends tapped to processor")
     func didSelect() async {
-        let song = SubsonicSong(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2")
+        let song = SubsonicSong(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2", suffix: nil, duration: nil)
         makeWindow(view: tableView)
         var state = PlaylistState()
         state.songs = [song]

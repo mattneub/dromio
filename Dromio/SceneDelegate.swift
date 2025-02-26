@@ -30,5 +30,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         rootCoordinator.createInitialInterface(window: window)
         window.makeKeyAndVisible()
     }
+
+    func sceneWillEnterForeground(_ scene: UIScene) {
+        try? services.audioSession.setCategory(.playback, mode: .default, options: [])
+    }
 }
 

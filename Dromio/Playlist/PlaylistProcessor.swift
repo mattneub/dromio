@@ -20,7 +20,15 @@ final class PlaylistProcessor: Processor {
         switch action {
         case .initialData:
             state.songs = services.currentPlaylist.list
-        case .tapped(let song): break
+        case .tapped(let song):
+            do {
+                services.haptic.success()
+                try? services.audioSession.setActive(true, options: [])
+                let url = try await services.download.download(song: song)
+                services.player.play(url: url, song: song)
+            } catch {
+                print(error)
+            }
         }
     }
 }

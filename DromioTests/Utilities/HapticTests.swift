@@ -18,6 +18,13 @@ struct HapticTests {
         #expect(mockGenerator.methodsCalled[1] == "notificationOccurred(_:)")
         #expect(mockGenerator.type == .success)
     }
+
+    @Test("failure: calls notificationOccurred with error")
+    func failure() {
+        subject.failure()
+        #expect(mockGenerator.methodsCalled == ["notificationOccurred(_:)"])
+        #expect(mockGenerator.type == .error)
+    }
 }
 
 @MainActor

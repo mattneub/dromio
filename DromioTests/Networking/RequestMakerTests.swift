@@ -233,7 +233,7 @@ struct RequestMakerTests {
                     id: "1",
                     name: "title",
                     songCount: 10,
-                    song: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1")]
+                    song: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1", suffix: nil, duration: nil)]
                 ),
                 error: nil
             )
@@ -249,7 +249,7 @@ struct RequestMakerTests {
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
         #expect(list == [
-            .init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1"),
+            .init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1", suffix: nil, duration: nil),
         ])
     }
 
@@ -296,7 +296,7 @@ struct RequestMakerTests {
                     id: "1",
                     name: "title",
                     songCount: 10,
-                    song: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1")]
+                    song: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1", suffix: nil, duration: nil)]
                 ),
                 error: nil
             )
@@ -307,6 +307,40 @@ struct RequestMakerTests {
             try await subject.getSongsFor(albumId: "1")
         } throws: { error in
             error as! NetworkerError == .message("yipes")
+        }
+    }
+
+    @Test("download: calls url maker with action download and additional id, calls networker, returns url")
+    func download() async throws {
+        networker.urlToReturn = URL(string: "file://myfile")!
+        let url = try await subject.download(songId: "1")
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "download")
+        let expectedAdditional: KeyValuePairs = ["id": "1"]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled == ["performDownloadRequest(url:)"])
+        #expect(url == URL(string: "file://myfile")!)
+    }
+
+    @Test("download: rethrows urlMaker throw")
+    func downloadUrlMakerThrow() async throws {
+        urlMaker.errorToThrow = NetworkerError.message("oops")
+        await #expect {
+            try await subject.download(songId: "1")
+        } throws: { error in
+            error as! NetworkerError == .message("oops")
+        }
+    }
+
+    @Test("download: rethrows networker throw")
+    func downloadNetworkerThrow() async throws {
+        networker.errorToThrow = NetworkerError.message("darn")
+        await #expect {
+            try await subject.download(songId: "1")
+        } throws: { error in
+            error as! NetworkerError == .message("darn")
         }
     }
 

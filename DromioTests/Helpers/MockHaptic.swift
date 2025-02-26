@@ -8,4 +8,8 @@ final class MockHaptic: HapticType {
     func success() {
         methodsCalled.append(#function)
     }
+
+    func failure() {
+        methodsCalled.append(#function)
+    }
 }
