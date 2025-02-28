@@ -4,7 +4,7 @@ import AVFoundation
 import MediaPlayer
 
 @MainActor
-struct PlayerTests {
+final class PlayerTests {
     let subject = Player()
     let audioSession = MockAudioSession()
     let audioPlayer = MockQueuePlayer()
@@ -16,15 +16,17 @@ struct PlayerTests {
         services.nowPlayingInfo = nowPlayingInfo
     }
 
-    @Test("play(url:song:) replaces player item, activates audio session, calls play")
+    @Test("play(url:song:) calls removeAllItems, calls insertAfter nil, sets category active, calls play, sets action to advance, adds to known songs")
     func play() {
         let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: nil, duration: nil)
         let url = URL(string: "http://example.com")!
         subject.play(url: url, song: song)
-        #expect(audioPlayer.methodsCalled.contains("replaceCurrentItem(with:)"))
+        #expect(audioPlayer.methodsCalled == ["removeAllItems()", "insert(_:after:)", "play()"])
         #expect((audioPlayer.item?.asset as? AVURLAsset)?.url == url)
         #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioPlayer.methodsCalled.contains("play()"))
+        #expect(audioPlayer.after == nil)
+        #expect(audioPlayer.actionAtItemEnd == .advance)
+        #expect(subject.knownSongs["1"] == song)
     }
 
     @Test("play(url:song:) configures now playing info")
@@ -37,6 +39,17 @@ struct PlayerTests {
         #expect(nowPlayingInfo.info[.time] as? Double == 0)
         #expect(nowPlayingInfo.info[.rate] as? Double == 1)
         #expect(nowPlayingInfo.info[.duration] as? Int == 100)
+    }
+
+    @Test("playNext(url:song:) calls insertAfter nil, adds to known songs")
+    func playNext() {
+        let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: nil, duration: nil)
+        let url = URL(string: "http://example.com")!
+        subject.playNext(url: url, song: song)
+        #expect(audioPlayer.methodsCalled == ["insert(_:after:)"])
+        #expect((audioPlayer.item?.asset as? AVURLAsset)?.url == url)
+        #expect(audioPlayer.after == nil)
+        #expect(subject.knownSongs["1"] == song)
     }
 
     @Test("doPlay: activates audio session, calls play, configures now playing info")
@@ -58,29 +71,4 @@ struct PlayerTests {
         #expect(nowPlayingInfo.info[.rate] as? Double == 0)
     }
 
-}
-
-final class MockQueuePlayer: AVQueuePlayer {
-    nonisolated(unsafe) var methodsCalled = [String]()
-    nonisolated(unsafe) var item: AVPlayerItem?
-    nonisolated(unsafe) var time: Double = 100
-
-    override func play() {
-        methodsCalled.append(#function)
-    }
-
-    override func pause() {
-        methodsCalled.append(#function)
-    }
-
-    override func replaceCurrentItem(with item: AVPlayerItem?) {
-        methodsCalled.append(#function)
-        self.item = item
-    }
-
-    override func currentTime() -> CMTime {
-        methodsCalled.append(#function)
-        let time = CMTime(seconds: self.time, preferredTimescale: CMTimeScale(1.0))
-        return time
-    }
 }

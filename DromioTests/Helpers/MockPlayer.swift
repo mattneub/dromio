@@ -12,4 +12,10 @@ final class MockPlayer: PlayerType {
         self.url = url
         self.song = song
     }
+
+    func playNext(url: URL, song: Dromio.SubsonicSong) {
+        methodsCalled.append(#function)
+        self.url = url
+        self.song = song
+    }
 }

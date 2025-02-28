@@ -20,8 +20,6 @@ final class Networker: NetworkerType {
     /// The URLSession set by `init`.
     let session: URLSession
 
-    var backgroundTaskID: UIBackgroundTaskIdentifier?
-
     /// Initializer.
     /// - Parameter session: Optional session, to be used by tests. The app itself should supply nothing
     ///   here, so the Networker instance configures the session itself.
@@ -50,30 +48,23 @@ final class Networker: NetworkerType {
     /// - Returns: The url returned from the server, containing the downloaded data; throws if the status code is not 200.
     func performDownloadRequest(url: URL) async throws -> URL {
         let request = URLRequest(url: url)
-        logger.log("beginning background task")
-        backgroundTaskID = UIApplication.shared.beginBackgroundTask(withName: "downloading \(url)") {
-            Task {
-                for task in await self.session.allTasks {
-                    task.cancel()
-                }
-                if let id = self.backgroundTaskID {
-                    UIApplication.shared.endBackgroundTask(id)
-                }
-                self.backgroundTaskID = nil
+        // Perform the download inside background task boilerplate, in hopes of being allowed to
+        // complete it even if the user puts the app into the background as we begin. If the
+        // system times us out before the download completes, cancel the download in good order.
+        let operation = BackgroundTaskOperation { [weak self] in
+            guard let self else { fatalError("oop") }
+            logger.log("download started")
+            let (url, response) = try await self.session.download(for: request)
+            logger.log("download finished")
+            return (url, response)
+        } cleanup: { [weak self] in
+            guard let self else { return }
+            for task in await session.allTasks {
+                task.cancel()
             }
         }
-        logger.log("download started")
-        let (url, response) = try await session.download(for: request)
-        Task {
-            try await Task.sleep(for: .seconds(1))
-            logger.log("ending background task")
-            if let id = self.backgroundTaskID {
-                UIApplication.shared.endBackgroundTask(id)
-            }
-            self.backgroundTaskID = nil
-        }
+        let (url, response) = try await operation.start()
         try validate(response: response)
-        logger.log("download finished, returning URL")
         return url
     }
     
