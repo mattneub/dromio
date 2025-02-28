@@ -32,9 +32,18 @@ struct PlaylistViewControllerTests {
     func viewDidLoad() async {
         subject.loadViewIfNeeded()
         #expect(mockDataSourceDelegate.processor === subject.processor)
-        #expect(subject.view.backgroundColor == .yellow)
+        #expect(subject.view.backgroundColor == .systemBackground)
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .initialData)
+    }
+
+    @Test("viewDidLoad: creates right bar button item")
+    func viewDidLoadRight() async throws {
+        subject.loadViewIfNeeded()
+        let rightBarButtonItem = try #require(subject.navigationItem.rightBarButtonItem)
+        #expect(rightBarButtonItem.title == "Clear")
+        #expect(rightBarButtonItem.target === subject)
+        #expect(rightBarButtonItem.action == #selector(subject.doClear))
     }
 
     @Test("present: presents to the data source")
@@ -51,5 +60,12 @@ struct PlaylistViewControllerTests {
         #expect(subject.tableView.indexPathForSelectedRow != nil)
         subject.receive(.deselectAll)
         #expect(subject.tableView.indexPathForSelectedRow == nil)
+    }
+
+    @Test("doClear: sends .clear to the processor")
+    func doClear() async {
+        subject.doClear()
+        await #while(processor.thingsReceived.isEmpty)
+        #expect(processor.thingsReceived.last == .clear)
     }
 }

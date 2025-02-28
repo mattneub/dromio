@@ -9,6 +9,7 @@ protocol PlaylistType {
     var list: [SubsonicSong] { get set }
     func append(_ song: SubsonicSong) throws
     func buildSequence(startingWith song: SubsonicSong) -> [SubsonicSong]
+    func clear()
 }
 
 @MainActor
@@ -34,5 +35,10 @@ final class Playlist: PlaylistType {
             return []
         }
         return Array(list[start...])
+    }
+
+    /// Clear the list.
+    func clear() {
+        list.removeAll()
     }
 }

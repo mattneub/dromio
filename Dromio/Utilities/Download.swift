@@ -8,24 +8,13 @@ enum DownloadError: Error {
 @MainActor
 protocol DownloadType {
     func download(song: SubsonicSong) async throws -> URL
+    func clear()
 }
 
 @MainActor
 final class Download: DownloadType {
     func downloadsDirectory() -> URL {
         URL.cachesDirectory
-    }
-
-    init() {
-        // TODO: For now, we are emptying the cache on each startup
-        let fileManager = FileManager.default
-        let contents: [URL] = (try? fileManager.contentsOfDirectory(
-            at: downloadsDirectory(),
-            includingPropertiesForKeys: []
-        )) ?? []
-        for url in contents {
-            try? fileManager.removeItem(at: url)
-        }
     }
 
     func download(song: SubsonicSong) async throws -> URL {
@@ -59,5 +48,27 @@ final class Download: DownloadType {
         }
         // if that failed, punt: return the renamed URL so we are playing _something_
         return url
+    }
+
+    func clear() {
+        let fileManager = FileManager.default
+        do {
+            let contents: [URL] = (try? fileManager.contentsOfDirectory(
+                at: downloadsDirectory(),
+                includingPropertiesForKeys: []
+            )) ?? []
+            for url in contents {
+                try? fileManager.removeItem(at: url)
+            }
+        }
+        do {
+            let contents: [URL] = (try? fileManager.contentsOfDirectory(
+                at: URL.temporaryDirectory,
+                includingPropertiesForKeys: []
+            )) ?? []
+            for url in contents {
+                try? fileManager.removeItem(at: url)
+            }
+        }
     }
 }

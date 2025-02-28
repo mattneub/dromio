@@ -4,7 +4,7 @@ import AVFoundation
 import MediaPlayer
 
 @MainActor
-final class PlayerTests {
+struct PlayerTests {
     let subject = Player()
     let audioSession = MockAudioSession()
     let audioPlayer = MockQueuePlayer()
@@ -69,6 +69,15 @@ final class PlayerTests {
         #expect(audioPlayer.methodsCalled.contains("pause()"))
         #expect(nowPlayingInfo.info[.time] as? Double == 30)
         #expect(nowPlayingInfo.info[.rate] as? Double == 0)
+    }
+
+    @Test("clear: call pause and removeAllItems, empties the known list")
+    func clear() {
+        let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: nil, duration: nil)
+        subject.knownSongs["1"] = song
+        subject.clear()
+        #expect(audioPlayer.methodsCalled == ["pause()", "removeAllItems()"])
+        #expect(subject.knownSongs.isEmpty)
     }
 
 }

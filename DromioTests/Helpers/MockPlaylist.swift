@@ -20,4 +20,8 @@ final class MockPlaylist: PlaylistType {
         methodsCalled.append(#function)
         return sequenceToReturn
     }
+
+    func clear() {
+        methodsCalled.append(#function)
+    }
 }

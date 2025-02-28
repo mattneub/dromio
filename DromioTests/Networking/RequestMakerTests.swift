@@ -344,4 +344,27 @@ struct RequestMakerTests {
         }
     }
 
+    @Test("stream: calls url maker with action download and additional id, does not call networker, returns url")
+    func stream() async throws {
+        urlMaker.urlToReturn = URL(string: "http://example.com")!
+        let url = try await subject.stream(songId: "1")
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "stream")
+        let expectedAdditional: KeyValuePairs = ["id": "1"]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled.isEmpty)
+        #expect(url == URL(string: "http://example.com")!)
+    }
+
+    @Test("stream: rethrows urlMaker throw")
+    func streamUrlMakerThrow() async throws {
+        urlMaker.errorToThrow = NetworkerError.message("oops")
+        await #expect {
+            try await subject.stream(songId: "1")
+        } throws: { error in
+            error as! NetworkerError == .message("oops")
+        }
+    }
 }

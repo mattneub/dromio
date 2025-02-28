@@ -26,7 +26,7 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
     override func viewDidLoad() {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
-        view.backgroundColor = .red
+        view.backgroundColor = .systemBackground
         Task {
             await processor?.receive(.initialData)
         }

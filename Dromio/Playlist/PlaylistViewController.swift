@@ -24,7 +24,9 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     override func viewDidLoad() {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
-        view.backgroundColor = .yellow
+        view.backgroundColor = .systemBackground
+        let rightBarButtonItem = UIBarButtonItem(title: "Clear", image: nil, target: self, action: #selector(doClear))
+        navigationItem.rightBarButtonItem = rightBarButtonItem
         Task {
             await processor?.receive(.initialData)
         }
@@ -38,6 +40,12 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         switch effect {
         case .deselectAll:
             tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
+        }
+    }
+
+    @objc func doClear() {
+        Task {
+            await processor?.receive(.clear)
         }
     }
 }

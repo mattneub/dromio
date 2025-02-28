@@ -43,4 +43,14 @@ final class MockRequestMaker: RequestMakerType {
         }
         return url
     }
+
+    func stream(songId: String) async throws -> URL {
+        methodsCalled.append(#function)
+        self.songId = songId
+        if let pingError {
+            throw pingError
+        }
+        return url
+    }
+
 }

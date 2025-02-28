@@ -3,11 +3,33 @@ import Testing
 import Foundation
 
 @MainActor
-struct DownloadTests {
+final class DownloadTests { // class, because we have cleanup to perform after each test
     let requestMaker = MockRequestMaker()
 
     init() {
         services.requestMaker = requestMaker
+    }
+
+    deinit {
+        let fileManager = FileManager.default
+        do {
+            let contents: [URL] = (try? fileManager.contentsOfDirectory(
+                at: URL.cachesDirectory,
+                includingPropertiesForKeys: []
+            )) ?? []
+            for url in contents {
+                try? fileManager.removeItem(at: url)
+            }
+        }
+        do {
+            let contents: [URL] = (try? fileManager.contentsOfDirectory(
+                at: URL.temporaryDirectory,
+                includingPropertiesForKeys: []
+            )) ?? []
+            for url in contents {
+                try? fileManager.removeItem(at: url)
+            }
+        }
     }
 
     @Test("downloadsDirectory is Caches")
@@ -15,21 +37,6 @@ struct DownloadTests {
         let subject = Download()
         let url = try #require(subject.downloadsDirectory())
         #expect(url.lastPathComponent == "Caches")
-    }
-
-    @Test("initializer: cleans out the Caches")
-    func initializeCleansCaches() throws {
-        var subject = Download()
-        let url = try #require(subject.downloadsDirectory())
-        let file = url.appendingPathComponent("test.txt")
-        try "howdy".write(to: file, atomically: true, encoding: .utf8)
-        #expect(try file.checkResourceIsReachable())
-        subject = Download()
-        #expect {
-            try !file.checkResourceIsReachable()
-        } throws: { error in
-            error._code == 260
-        }
     }
 
     @Test("download: song without a suffix throws")
@@ -88,4 +95,33 @@ struct DownloadTests {
         }
     }
     // TODO: Not testing what happens when the move to Caches fails
+
+    @Test("clear: empties the caches directory and the temporary directory")
+    func clear() async throws {
+        let subject = Download()
+        do {
+            let url = try #require(subject.downloadsDirectory())
+            let file = url.appendingPathComponent("test.txt")
+            try "howdy".write(to: file, atomically: true, encoding: .utf8)
+            #expect(try file.checkResourceIsReachable())
+            subject.clear()
+            #expect {
+                try !file.checkResourceIsReachable()
+            } throws: { error in
+                error._code == 260
+            }
+        }
+        do {
+            let url = URL.temporaryDirectory
+            let file = url.appendingPathComponent("test.txt")
+            try "howdy".write(to: file, atomically: true, encoding: .utf8)
+            #expect(try file.checkResourceIsReachable())
+            subject.clear()
+            #expect {
+                try !file.checkResourceIsReachable()
+            } throws: { error in
+                error._code == 260
+            }
+        }
+    }
 }

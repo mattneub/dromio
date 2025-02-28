@@ -18,4 +18,8 @@ final class MockPlayer: PlayerType {
         self.url = url
         self.song = song
     }
+
+    func clear() {
+        methodsCalled.append(#function)
+    }
 }

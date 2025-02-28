@@ -12,4 +12,8 @@ final class MockDownload: DownloadType {
         self.song = song
         return urlToReturn
     }
+
+    func clear() {
+        methodsCalled.append(#function)
+    }
 }

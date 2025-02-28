@@ -39,7 +39,7 @@ struct AlbumViewControllerTests {
     func viewDidLoad() async {
         subject.loadViewIfNeeded()
         #expect(mockDataSourceDelegate.processor === subject.processor)
-        #expect(subject.view.backgroundColor == .red)
+        #expect(subject.view.backgroundColor == .systemBackground)
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .initialData)
     }

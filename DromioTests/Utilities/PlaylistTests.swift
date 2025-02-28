@@ -39,4 +39,13 @@ struct PlaylistTests {
         let result = subject.buildSequence(startingWith: song2)
         #expect(result.isEmpty)
     }
+
+    @Test("clear: empties the list")
+    func clear() {
+        let song1 = SubsonicSong(id: "1", title: "Title1", artist: "Artist1", track: 1, albumId: "2", suffix: nil, duration: nil)
+        let song2 = SubsonicSong(id: "2", title: "Title2", artist: "Artist2", track: 2, albumId: "2", suffix: nil, duration: nil)
+        subject.list = [song1, song2]
+        subject.clear()
+        #expect(subject.list.isEmpty)
+    }
 }

@@ -19,6 +19,7 @@ extension AVQueuePlayer: QueuePlayerType {}
 protocol PlayerType {
     func play(url: URL, song: SubsonicSong)
     func playNext(url: URL, song: SubsonicSong)
+    func clear()
 }
 
 @MainActor
@@ -37,11 +38,11 @@ final class Player: NSObject, PlayerType {
         commandCenter.playCommand.addTarget(self, action:#selector(doPlay(_:)))
         commandCenter.pauseCommand.addTarget(self, action:#selector(doPause(_:)))
         commandCenter.changePlaybackPositionCommand.isEnabled = false
-//        observation = player.observe(\.currentItem) { [weak self] _, _ in
-//            Task {
-//                await self?.adjustNowPlayingItemToCurrentItem()
-//            }
-//        }
+        observation = (player as? AVPlayer)?.observe(\.currentItem) { [weak self] _, _ in
+            Task {
+                await self?.adjustNowPlayingItemToCurrentItem()
+            }
+        }
     }
 
     deinit {
@@ -129,5 +130,12 @@ final class Player: NSObject, PlayerType {
         // order matters
         services.nowPlayingInfo.info[.time] = player.currentTime().seconds
         services.nowPlayingInfo.info[.rate] = 0.0
+    }
+
+    func clear() {
+        player.pause()
+        player.removeAllItems()
+        knownSongs.removeAll()
+        // TODO: but I suppose we should also clear the now playing item info?
     }
 }
