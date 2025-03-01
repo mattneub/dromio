@@ -11,6 +11,7 @@ struct Services {
     var haptic: HapticType = Haptic()
     var networker: NetworkerType = Networker()
     var nowPlayingInfo: NowPlayingInfoType = NowPlayingInfo()
+    var persistence: PersistenceType = Persistence()
     var player: PlayerType = Player()
     var requestMaker: RequestMakerType = RequestMaker()
     var responseValidator: ResponseValidatorType = ResponseValidator()

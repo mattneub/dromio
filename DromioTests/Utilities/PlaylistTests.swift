@@ -4,6 +4,27 @@ import Testing
 @MainActor
 struct PlaylistTests {
     let subject = Playlist()
+    let persistence = MockPersistence()
+
+    init() {
+        services.persistence = persistence
+    }
+
+    @Test("modifying list saves to defaults")
+    func setList() {
+        let song1 = SubsonicSong(id: "1", title: "Title1", artist: "Artist1", track: 1, albumId: "2", suffix: nil, duration: nil)
+        subject.list = [song1]
+        #expect(persistence.songList == [song1])
+        #expect(persistence.key == .currentPlaylist)
+    }
+
+    @Test("retrieving list retrieves from defaults")
+    func getList() {
+        let song1 = SubsonicSong(id: "1", title: "Title1", artist: "Artist1", track: 1, albumId: "2", suffix: nil, duration: nil)
+        persistence.songList = [song1]
+        #expect(subject.list == [song1])
+        #expect(persistence.key == .currentPlaylist)
+    }
 
     @Test("append: appends to the list, throws if already in list")
     func append() throws {
