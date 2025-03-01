@@ -49,6 +49,7 @@ struct PlaylistProcessorTests {
         #expect(playlist.methodsCalled == ["buildSequence(startingWith:)"])
         #expect(haptic.methodsCalled == ["success()"])
         #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.active == true)
     }
 
     @Test("receive tapped: given a sequence, calls stream, play, and download for the first one, download and playNext for the rest")

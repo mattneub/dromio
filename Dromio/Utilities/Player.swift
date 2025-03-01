@@ -58,6 +58,9 @@ final class Player: NSObject, PlayerType {
             services.nowPlayingInfo.info[.title] = song.title
             services.nowPlayingInfo.info[.duration] = song.duration
             print("current item change", song.title)
+        } else if player.currentItem == nil {
+            services.nowPlayingInfo.clear()
+            try? services.audioSession.setActive(false, options: [])
         }
     }
 
@@ -83,9 +86,6 @@ final class Player: NSObject, PlayerType {
         }
         player.play()
         print("said play!")
-        // TODO: But even after that call, if we have gone into the background, the first time,
-        // we might not play. I suspect that we need to prime the pump by playing a silent sound
-        // the moment the user asks for the download.
         player.actionAtItemEnd = .advance
         // TODO: Whether because of that line or something else, if you switch from phone to
         // (say) wifi speaker route, we immediately advance to the next item in the queue
@@ -136,6 +136,7 @@ final class Player: NSObject, PlayerType {
         player.pause()
         player.removeAllItems()
         knownSongs.removeAll()
-        // TODO: but I suppose we should also clear the now playing item info?
+        services.nowPlayingInfo.clear()
+        try? services.audioSession.setActive(false, options: [])
     }
 }

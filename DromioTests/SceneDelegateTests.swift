@@ -23,5 +23,6 @@ import UIKit
         let subject = SceneDelegate()
         subject.sceneWillEnterForeground(scene)
         #expect(mockAudioSession.methodsCalled == ["setCategory(_:mode:options:)"])
+        #expect(mockAudioSession.category == .playback)
     }
 }

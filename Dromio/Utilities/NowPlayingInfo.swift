@@ -1,11 +1,18 @@
 import MediaPlayer
 
+protocol NowPlayingInfoCenterType {
+    var nowPlayingInfo: [String : Any]? { get set }
+}
+
+extension MPNowPlayingInfoCenter: NowPlayingInfoCenterType {}
+
 protocol NowPlayingInfoType {
     var info: [NowPlayingInfoKey: Any] { get set }
+    func clear()
 }
 
 final class NowPlayingInfo: NowPlayingInfoType {
-    let center = MPNowPlayingInfoCenter.default()
+    var center: NowPlayingInfoCenterType = MPNowPlayingInfoCenter.default()
 
     var info: [NowPlayingInfoKey: Any] = [:] {
         didSet {
@@ -19,6 +26,10 @@ final class NowPlayingInfo: NowPlayingInfoType {
                 center.nowPlayingInfo = centerInfo
             }
         }
+    }
+
+    func clear() {
+        center.nowPlayingInfo = nil
     }
 }
 
