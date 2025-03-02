@@ -3,8 +3,6 @@ import Foundation
 /// See https://github.com/dagostini/DAKeychain
 final class Keychain: @unchecked Sendable {
 
-    var loggingEnabled = false
-
     private init() {}
     public static let shared = Keychain()
 

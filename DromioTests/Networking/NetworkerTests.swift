@@ -24,7 +24,7 @@ class NetworkerTests {
             return (URLResponse(), Data())
         }
         await #expect {
-            try await subject.performRequest(url: URL(string: "https://www.example.com")!)
+            try await self.subject.performRequest(url: URL(string: "https://www.example.com")!)
         } throws: { error in
             let error = try #require(error as? NetworkerError)
             return error == .message("We received a non-HTTPURLResponse.")
@@ -43,7 +43,7 @@ class NetworkerTests {
             return (response!, Data())
         }
         await #expect {
-            try await subject.performRequest(url: URL(string: "https://www.example.com")!)
+            try await self.subject.performRequest(url: URL(string: "https://www.example.com")!)
         } throws: { error in
             let error = try #require(error as? NetworkerError)
             return error == .message("We got a status code 400.")
@@ -72,7 +72,7 @@ class NetworkerTests {
             return (URLResponse(), Data())
         }
         await #expect {
-            try await subject.performDownloadRequest(url: URL(string: "https://www.example.com")!)
+            try await self.subject.performDownloadRequest(url: URL(string: "https://www.example.com")!)
         } throws: { error in
             let error = try #require(error as? NetworkerError)
             return error == .message("We received a non-HTTPURLResponse.")
@@ -91,7 +91,7 @@ class NetworkerTests {
             return (response!, Data())
         }
         await #expect {
-            try await subject.performDownloadRequest(url: URL(string: "https://www.example.com")!)
+            try await self.subject.performDownloadRequest(url: URL(string: "https://www.example.com")!)
         } throws: { error in
             let error = try #require(error as? NetworkerError)
             return error == .message("We got a status code 400.")

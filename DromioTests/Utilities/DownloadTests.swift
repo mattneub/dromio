@@ -35,7 +35,7 @@ final class DownloadTests { // class, because we have cleanup to perform after e
     @Test("downloadsDirectory is Caches")
     func downloadsDirectory() throws {
         let subject = Download()
-        let url = try #require(subject.downloadsDirectory())
+        let url = subject.downloadsDirectory()
         #expect(url.lastPathComponent == "Caches")
     }
 
@@ -54,7 +54,7 @@ final class DownloadTests { // class, because we have cleanup to perform after e
     func downloadSongExists() async throws {
         let subject = Download()
         let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: "mp3", duration: nil)
-        let url = try #require(subject.downloadsDirectory())
+        let url = subject.downloadsDirectory()
         let file = url.appendingPathComponent("1.mp3")
         try "howdy".write(to: file, atomically: true, encoding: .utf8)
         let result = try await subject.download(song: song)
@@ -100,7 +100,7 @@ final class DownloadTests { // class, because we have cleanup to perform after e
     func clear() async throws {
         let subject = Download()
         do {
-            let url = try #require(subject.downloadsDirectory())
+            let url = subject.downloadsDirectory()
             let file = url.appendingPathComponent("test.txt")
             try "howdy".write(to: file, atomically: true, encoding: .utf8)
             #expect(try file.checkResourceIsReachable())

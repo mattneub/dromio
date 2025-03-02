@@ -2,6 +2,7 @@ import Foundation
 
 enum PersistenceKey: String {
     case currentPlaylist
+    case servers
 }
 
 @MainActor
@@ -12,15 +13,24 @@ protocol UserDefaultsType {
 
 extension UserDefaults: UserDefaultsType {}
 
+protocol KeychainType {
+    subscript(key: String) -> String? { get set }
+}
+
+extension Keychain: KeychainType {}
+
 @MainActor
 protocol PersistenceType {
     func save(songList: [SubsonicSong], key: PersistenceKey) throws
     func loadSongList(key: PersistenceKey) throws -> [SubsonicSong]
+    func save(servers: [ServerInfo]) throws
+    func loadServers() throws -> [ServerInfo]
 }
 
 @MainActor
 struct Persistence: PersistenceType {
     static var defaults: UserDefaultsType = UserDefaults.standard
+    static var keychain: KeychainType = Keychain.shared
 
     func save(songList: [SubsonicSong], key: PersistenceKey) throws {
         Self.defaults.set(try songList.map { song in
@@ -39,5 +49,34 @@ struct Persistence: PersistenceType {
             let data = song.data(using: .utf8) ?? Data()
             return try JSONDecoder().decode(SubsonicSong.self, from: data)
         }
+    }
+
+    func save(servers: [ServerInfo]) throws {
+        Self.defaults.set(try servers.map { server in
+            let encoder = JSONEncoder()
+            if NSClassFromString("XCTest") != nil {
+                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            }
+            let data = try encoder.encode(server.updateWithoutPassword())
+            return String(data: data, encoding: .utf8)
+        }, forKey: PersistenceKey.servers.rawValue)
+        for server in servers {
+            let (host, username, password) = (server.host, server.username, server.password)
+            let key = host + username
+            Self.keychain[key] = password
+        }
+    }
+
+    func loadServers() throws -> [ServerInfo] {
+        let list = Self.defaults.stringArray(forKey: PersistenceKey.servers.rawValue) ?? []
+        let servers = try list.map { server in
+            let data = server.data(using: .utf8) ?? Data()
+            return try JSONDecoder().decode(ServerInfo.self, from: data)
+        }.map { server in
+            let key = server.host + server.username
+            let newPassword = Self.keychain[key] ?? ""
+            return server.updateWithPassword(newPassword)
+        }
+        return servers
     }
 }

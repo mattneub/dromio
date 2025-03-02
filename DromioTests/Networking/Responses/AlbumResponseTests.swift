@@ -10,8 +10,6 @@ final class AlbumResponseTests {
             Bundle(for: Self.self).url(forResource: "subsonic album with song list", withExtension: "json")
         )
         let json = try Data(contentsOf: jsonUrl)
-        _ = try #require(
-            try JSONDecoder().decode(SubsonicResponse<AlbumResponse>.self, from: json)
-        )
+        _ = try JSONDecoder().decode(SubsonicResponse<AlbumResponse>.self, from: json)
     }
 }
