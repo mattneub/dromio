@@ -19,14 +19,24 @@ final class PingProcessor: Processor {
         switch action {
         case .doPing:
             do {
+                if services.urlMaker.currentServerInfo == nil {
+                    guard let server = try services.persistence.loadServers().first else {
+                        coordinator?.showServer()
+                        return
+                    }
+                    services.urlMaker.currentServerInfo = server
+                }
                 try await services.requestMaker.ping()
                 state.success = .success
+                try await Task.sleep(for: .seconds(unlessTesting(0.6)))
                 coordinator?.showAlbums()
             } catch NetworkerError.message(let message) {
                 state.success = .failure(message: message)
             } catch {
                 state.success = .failure(message: error.localizedDescription)
             }
+        case .reenterServerInfo:
+            coordinator?.showServer()
         }
     }
 }

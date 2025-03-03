@@ -3,7 +3,9 @@ import Foundation
 /// Processor containing the logic for the server view controller.
 @MainActor
 final class ServerProcessor: Processor {
-    var presenter: (any Presenter<ServerState>)?
+    weak var coordinator: (any RootCoordinatorType)?
+
+    weak var presenter: (any Presenter<ServerState>)?
 
     /// Sometimes we want to maintain state without presenting, so this temporary toggle lets us
     /// mutate the state without presenting.
@@ -43,6 +45,7 @@ final class ServerProcessor: Processor {
                 )
                 try services.persistence.save(servers: [serverInfo])
                 services.urlMaker.currentServerInfo = serverInfo
+                coordinator?.dismissServer()
             } catch let error as ServerInfo.ValidationError {
                 let issue: String = switch error {
                 case .hostEmpty: "The host cannot be empty."

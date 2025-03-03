@@ -15,11 +15,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let scene = (scene as? UIWindowScene) else { return }
 
         // do not bootstrap any interface if we are unit testing
-        if NSClassFromString("XCTest") != nil {
-            return
+        unlessTesting {
+            bootstrap(scene: scene)
         }
-
-        bootstrap(scene: scene)
     }
 
     /// Make the window, tell the coordinator to build the initial interface, and show the window.

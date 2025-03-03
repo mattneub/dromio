@@ -28,17 +28,27 @@ struct PingViewControllerTests {
         #expect(processor.thingsReceived == [.doPing])
     }
 
-    @Test("present: sets the two labels as expected")
+    @Test("present: sets the two labels and button as expected")
     func present() {
         subject.loadViewIfNeeded()
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
+        #expect(subject.reenterButton.isHidden)
         subject.present(.init(success: .success))
         #expect(!subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
+        #expect(subject.reenterButton.isHidden)
         subject.present(.init(success: .failure(message: "oops")))
         #expect(subject.successLabel.isHidden)
         #expect(!subject.failureLabel.isHidden)
         #expect(subject.failureLabel.text == "oops")
+        #expect(!subject.reenterButton.isHidden)
+    }
+
+    @Test("doReenterButton: sends processor reenterServerInfo")
+    func doReenterButton() async {
+        subject.doReenterButton(UIButton())
+        await #while(processor.thingsReceived.isEmpty)
+        #expect(processor.thingsReceived == [.reenterServerInfo])
     }
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23504" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23506"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23719.2"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -11,6 +11,7 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PingViewController" customModule="Dromio" customModuleProvider="target">
             <connections>
                 <outlet property="failureLabel" destination="Mpo-fM-QrY" id="T3o-wH-boo"/>
+                <outlet property="reenterButton" destination="uMr-C9-MHs" id="1Iz-QZ-Amk"/>
                 <outlet property="successLabel" destination="NW3-C5-yms" id="GAK-Uz-ffc"/>
                 <outlet property="view" destination="iN0-l3-epB" id="I3P-Px-hVy"/>
             </connections>
@@ -21,29 +22,39 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pinging the Navidrome server..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1WM-wj-KSO">
-                    <rect key="frame" x="78.000000000000014" y="239" width="237.33333333333337" height="21"/>
+                    <rect key="frame" x="78.000000000000014" y="298" width="237.33333333333337" height="21"/>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Success!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NW3-C5-yms">
-                    <rect key="frame" x="162" y="280" width="69" height="21"/>
+                    <rect key="frame" x="162" y="339" width="69" height="21"/>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Failure!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mpo-fM-QrY">
-                    <rect key="frame" x="10" y="280" width="373" height="20.333333333333314"/>
+                    <rect key="frame" x="10" y="339" width="373" height="20.333333333333314"/>
                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
+                <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uMr-C9-MHs">
+                    <rect key="frame" x="107.66666666666669" y="389.33333333333331" width="178" height="35"/>
+                    <state key="normal" title="Button"/>
+                    <buttonConfiguration key="configuration" style="plain" title="Re-enter Server Info"/>
+                    <connections>
+                        <action selector="doReenterButton:" destination="-1" eventType="touchUpInside" id="o7n-QJ-Vos"/>
+                    </connections>
+                </button>
             </subviews>
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
+                <constraint firstItem="uMr-C9-MHs" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="5tZ-KF-BlJ"/>
                 <constraint firstItem="NW3-C5-yms" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="20" id="8kP-zh-Ofb"/>
                 <constraint firstItem="Mpo-fM-QrY" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="Ejh-ID-iYX"/>
+                <constraint firstItem="uMr-C9-MHs" firstAttribute="top" secondItem="Mpo-fM-QrY" secondAttribute="bottom" constant="30" id="HAh-DK-9vV"/>
                 <constraint firstItem="1WM-wj-KSO" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="180" id="ONP-nu-Voh"/>
                 <constraint firstItem="Mpo-fM-QrY" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="Ogs-Q3-UG9"/>
                 <constraint firstItem="NW3-C5-yms" firstAttribute="centerX" secondItem="vUN-kp-3ea" secondAttribute="centerX" id="Qnd-yM-jlK"/>

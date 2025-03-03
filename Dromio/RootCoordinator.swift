@@ -9,6 +9,7 @@ protocol RootCoordinatorType: AnyObject {
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)? { get }
     var albumProcessor: (any Processor<AlbumAction, AlbumState>)? { get }
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)? { get }
+    var serverProcessor: (any Processor<ServerAction, ServerState>)? { get }
 
     // The root coordinator also needs a reference to the true root view controller.
 
@@ -17,6 +18,12 @@ protocol RootCoordinatorType: AnyObject {
     /// Create the entire initial interface and modules, rooted in the given window.
     /// - Parameter window: The window
     func createInitialInterface(window: UIWindow)
+
+    /// Create the Server module and show the view controller.
+    func showServer()
+
+    /// Dismiss the Server module's view controller.
+    func dismissServer()
 
     /// Create the Albums module and show the view controller.
     func showAlbums()
@@ -36,6 +43,7 @@ final class RootCoordinator: RootCoordinatorType {
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
     var albumProcessor: (any Processor<AlbumAction, AlbumState>)?
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)?
+    var serverProcessor: (any Processor<ServerAction, ServerState>)?
 
     weak var rootViewController: UIViewController?
 
@@ -51,6 +59,28 @@ final class RootCoordinator: RootCoordinatorType {
         pingProcessor.coordinator = self
     }
 
+    func showServer() {
+        let serverController = ServerViewController(nibName: "Server", bundle: nil)
+        let serverProcessor = ServerProcessor()
+        self.serverProcessor = serverProcessor
+        serverProcessor.presenter = serverController
+        serverController.processor = serverProcessor
+        serverProcessor.coordinator = self
+        serverController.modalPresentationStyle = .pageSheet
+        rootViewController?.present(serverController, animated: unlessTesting(true))
+    }
+
+    func dismissServer() {
+        guard let serverController = rootViewController?.presentedViewController as? ServerViewController else {
+            return
+        }
+        serverController.dismiss(animated: unlessTesting(true)) {
+            Task {
+                await self.pingProcessor?.receive(.doPing)
+            }
+        }
+    }
+
     func showAlbums() {
         let albumsController = AlbumsViewController(nibName: nil, bundle: nil)
         let navigationController = UINavigationController(rootViewController: albumsController)
@@ -60,7 +90,7 @@ final class RootCoordinator: RootCoordinatorType {
         albumsController.processor = albumsProcessor
         albumsProcessor.coordinator = self
         navigationController.modalPresentationStyle = .fullScreen
-        rootViewController?.present(navigationController, animated: true)
+        rootViewController?.present(navigationController, animated: unlessTesting(true))
     }
 
     func showAlbum(albumId: String) {
@@ -74,7 +104,7 @@ final class RootCoordinator: RootCoordinatorType {
         guard let navigationController = rootViewController?.presentedViewController as? UINavigationController else {
             return
         }
-        navigationController.pushViewController(albumController, animated: true)
+        navigationController.pushViewController(albumController, animated: unlessTesting(true))
     }
 
     func showPlaylist() {
@@ -87,7 +117,7 @@ final class RootCoordinator: RootCoordinatorType {
         guard let navigationController = rootViewController?.presentedViewController as? UINavigationController else {
             return
         }
-        navigationController.pushViewController(playlistController, animated: true)
+        navigationController.pushViewController(playlistController, animated: unlessTesting(true))
     }
 }
 

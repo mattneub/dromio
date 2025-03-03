@@ -11,6 +11,9 @@ class PingViewController: UIViewController, Presenter {
     /// Label to be displayed when the ping fails.
     @IBOutlet var failureLabel: UILabel!
 
+    /// Button that lets the user ask to summon the Server view again.
+    @IBOutlet var reenterButton: UIButton!
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Ping"
@@ -29,11 +32,20 @@ class PingViewController: UIViewController, Presenter {
         case .success:
             successLabel.isHidden = false
             failureLabel.isHidden = true
+            reenterButton.isHidden = true
         case .failure(let message):
             successLabel.isHidden = true
             failureLabel.text = message
             failureLabel.isHidden = false
+            reenterButton.isHidden = false
         }
     }
+
+    @IBAction func doReenterButton (_ sender: UIButton) {
+        Task {
+            await processor?.receive(.reenterServerInfo)
+        }
+    }
+
 }
 

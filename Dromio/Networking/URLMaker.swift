@@ -18,14 +18,7 @@ extension URLMakerType {
 final class URLMaker: URLMakerType {
     /// Bundle of properties expressing what we need to know about the server to talk to it.
     /// To change what server we talk to, just change this info.
-    var currentServerInfo: ServerInfo? = ServerInfo(
-        scheme: "http",
-        host: "mattneub.ddns.net",
-        port: 4533,
-        username: "mattneub", // "u"
-        password: "bEM§a1oeTh2CEt#",
-        version: "1.16.1" // "v"; Navidrome says it is compatible with this
-    ) // TODO: Remove those defaults before shipping!
+    var currentServerInfo: ServerInfo?
 
     /// Generate a URL, using the parameters and the information in `currentServerInfo`.
     /// - Parameters:

@@ -6,6 +6,11 @@ import Foundation
 struct URLMakerTests {
     let subject = URLMaker()
 
+    @Test("subject is born with a nil current server")
+    func nilCurrentServer() {
+        #expect(subject.currentServerInfo == nil)
+    }
+
     @Test("urlFor(action:) returns correctly constructed URL for given action")
     func urlfor() throws {
         subject.currentServerInfo = .init(scheme: "scheme", host: "host", port: 1, username: "username", password: "password", version: "version")

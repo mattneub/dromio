@@ -3,6 +3,8 @@ import UIKit
 
 @MainActor
 final class MockRootCoordinator: RootCoordinatorType {
+    var serverProcessor: (any Dromio.Processor<Dromio.ServerAction, Dromio.ServerState>)?
+
     var albumProcessor: (any Dromio.Processor<Dromio.AlbumAction, Dromio.AlbumState>)?
     var albumsProcessor: (any Dromio.Processor<Dromio.AlbumsAction, Dromio.AlbumsState>)?
     var playlistProcessor: (any Dromio.Processor<Dromio.PlaylistAction, Dromio.PlaylistState>)?
@@ -13,6 +15,14 @@ final class MockRootCoordinator: RootCoordinatorType {
     var albumId: String?
 
     func createInitialInterface(window: UIWindow) {
+        methodsCalled.append(#function)
+    }
+
+    func showServer() {
+        methodsCalled.append(#function)
+    }
+
+    func dismissServer() {
         methodsCalled.append(#function)
     }
 

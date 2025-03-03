@@ -7,9 +7,11 @@ struct ServerProcessorTests {
     let presenter = MockReceiverPresenter<ServerEffect, ServerState>()
     let urlMaker = MockURLMaker()
     let persistence = MockPersistence()
+    let coordinator = MockRootCoordinator()
 
     init() {
         subject.presenter = presenter
+        subject.coordinator = coordinator
         services.urlMaker = urlMaker
         services.persistence = persistence
     }
@@ -47,7 +49,7 @@ struct ServerProcessorTests {
         #expect(presenter.statePresented == nil)
     }
 
-    @Test("receive done: makes the correct ServerInfo, saves it, sets it as current")
+    @Test("receive done: makes the correct ServerInfo, saves it, sets it as current, calls dismissServer")
     func doDone() async {
         subject.state = .init(
             scheme: .http,
@@ -68,9 +70,10 @@ struct ServerProcessorTests {
         #expect(persistence.methodsCalled == ["save(servers:)"])
         #expect(persistence.servers == [expected])
         #expect(urlMaker.currentServerInfo == expected)
+        #expect(coordinator.methodsCalled == ["dismissServer()"])
     }
 
-    @Test("receive done: makes the correct ServerInfo with https, saves it, sets it as current")
+    @Test("receive done: makes the correct ServerInfo with https, saves it, sets it as current, calls dismissServer")
     func doDoneHttps() async {
         subject.state = .init(
             scheme: .https,
@@ -91,6 +94,7 @@ struct ServerProcessorTests {
         #expect(persistence.methodsCalled == ["save(servers:)"])
         #expect(persistence.servers == [expected])
         #expect(urlMaker.currentServerInfo == expected)
+        #expect(coordinator.methodsCalled == ["dismissServer()"])
     }
 
     @Test("receive done: if ServerInfo throws empty host, sends alertWithMessage effect to presenter")

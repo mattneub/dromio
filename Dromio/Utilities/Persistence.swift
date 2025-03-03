@@ -35,8 +35,9 @@ struct Persistence: PersistenceType {
     func save(songList: [SubsonicSong], key: PersistenceKey) throws {
         Self.defaults.set(try songList.map { song in
             let encoder = JSONEncoder()
-            if NSClassFromString("XCTest") != nil {
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            unlessTesting {
+                encoder.outputFormatting = []
             }
             let data = try encoder.encode(song)
             return String(data: data, encoding: .utf8)
@@ -54,8 +55,9 @@ struct Persistence: PersistenceType {
     func save(servers: [ServerInfo]) throws {
         Self.defaults.set(try servers.map { server in
             let encoder = JSONEncoder()
-            if NSClassFromString("XCTest") != nil {
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            unlessTesting {
+                encoder.outputFormatting = []
             }
             let data = try encoder.encode(server.updateWithoutPassword())
             return String(data: data, encoding: .utf8)

@@ -25,6 +25,44 @@ struct RootCoordinatorTests {
         #expect(pingProcessor.coordinator === subject)
     }
 
+    @Test("showServer: configures server module, presents server view controller")
+    func showServer() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        // ok, here we go!
+        subject.showServer()
+        await #while(subject.rootViewController?.presentedViewController == nil)
+        let serverViewController = try #require(subject.rootViewController?.presentedViewController as? ServerViewController)
+        #expect(serverViewController.modalPresentationStyle == .pageSheet)
+        let serverProcessor = try #require(subject.serverProcessor as? ServerProcessor)
+        #expect(serverViewController.processor === serverProcessor)
+        #expect(serverProcessor.presenter === serverViewController)
+        #expect(serverProcessor.coordinator === subject)
+    }
+
+    @Test("dismissServer: dismisses the server view controller, sends .doPing to the ping processor")
+    func dismissServer() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let pingProcessor = MockProcessor<PingAction, PingState>()
+        subject.pingProcessor = pingProcessor
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        // ok, here we go!
+        subject.showServer()
+        await #while(subject.rootViewController?.presentedViewController == nil)
+        _ = try #require(subject.rootViewController?.presentedViewController as? ServerViewController)
+        #expect(pingProcessor.thingsReceived.isEmpty)
+        subject.dismissServer()
+        await #while(subject.rootViewController?.presentedViewController != nil)
+        #expect(subject.rootViewController?.presentedViewController == nil)
+        #expect(pingProcessor.thingsReceived == [.doPing])
+    }
+
     @Test("showAlbums: presents albums view controller, configures module")
     func showAlbums() async throws {
         // fake minimal initial interface

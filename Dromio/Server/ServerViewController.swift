@@ -10,6 +10,13 @@ final class ServerViewController: UIViewController, ReceiverPresenter {
     @IBOutlet var username: UITextField!
     @IBOutlet var password: UITextField!
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if let controller = presentationController {
+            controller.delegate = self
+        }
+    }
+
     /// We don't actually need to be presented with any state.
     func present(_ state: ServerState) {}
 
@@ -18,7 +25,7 @@ final class ServerViewController: UIViewController, ReceiverPresenter {
         case .alertWithMessage(let message):
             let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
             alert.addAction(.init(title: "OK", style: .cancel))
-            present(alert, animated: true)
+            present(alert, animated: unlessTesting(true))
         }
     }
 
@@ -50,9 +57,16 @@ final class ServerViewController: UIViewController, ReceiverPresenter {
 
     /// Action of the Done button.
     @IBAction func doDone (_ sender: Any) {
+        view.endEditing(true)
         Task {
             await processor?.receive(.done)
         }
     }
+}
 
+extension ServerViewController: UIAdaptivePresentationControllerDelegate {
+    // sheet presentation, but don't let the user dismiss it
+    func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
+        false
+    }
 }

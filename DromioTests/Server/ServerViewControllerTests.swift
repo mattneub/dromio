@@ -12,6 +12,16 @@ struct ServerViewControllerTests {
         subject.processor = processor
     }
 
+    @Test("viewDidAppear: sets subject as delegate of presentation controller")
+    func viewDidAppear() throws {
+        let viewController = UIViewController()
+        makeWindow(viewController: viewController)
+        viewController.present(subject, animated: false)
+        subject.viewDidAppear(false)
+        let presentationController = try #require(subject.presentationController)
+        #expect(presentationController.delegate === subject)
+    }
+
     @Test("receive alertWithMessage: puts up alert with message")
     func receiveAlert() async throws {
         makeWindow(viewController: subject)
@@ -81,5 +91,16 @@ struct ServerViewControllerTests {
         subject.doDone("howdy")
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .done)
+    }
+
+    @Test("presentationControllerShouldDismiss: returns false")
+    func shouldDismiss() throws {
+        let viewController = UIViewController()
+        makeWindow(viewController: viewController)
+        viewController.present(subject, animated: false)
+        subject.viewDidAppear(false)
+        let presentationController = try #require(subject.presentationController)
+        let result = subject.presentationControllerShouldDismiss(presentationController)
+        #expect(result == false)
     }
 }

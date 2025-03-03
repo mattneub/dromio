@@ -2,7 +2,7 @@
 struct ServerState {
     var scheme: ServerAction.Scheme = .http
     var host: String = ""
-    var port: String = ""
+    var port: String = "4533"
     var username: String = ""
     var password: String = ""
 }

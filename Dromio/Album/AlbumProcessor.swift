@@ -33,7 +33,7 @@ final class AlbumProcessor: Processor {
             } catch {
                 services.haptic.failure()
             }
-            try? await Task.sleep(for: .seconds(0.3))
+            try? await Task.sleep(for: .seconds(unlessTesting(0.3)))
             await (presenter as? any Receiver<AlbumEffect>)?.receive(.deselectAll)
         case .showPlaylist:
             coordinator?.showPlaylist()
