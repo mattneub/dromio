@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23719.2"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="AlbumsCellContentView" customModule="Dromio" customModuleProvider="target">
+            <connections>
+                <outlet property="artist" destination="jF7-tx-NHW" id="DuJ-su-O1Z"/>
+                <outlet property="title" destination="YW7-7k-Jv6" id="q26-L9-bTb"/>
+                <outlet property="tracks" destination="6Z5-gm-sGw" id="fAC-Sz-kJz"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="393" height="133"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YW7-7k-Jv6">
+                    <rect key="frame" x="16" y="14.000000000000002" width="324" height="20.666666666666671"/>
+                    <fontDescription key="fontDescription" name="Verdana-Bold" family="Verdana" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jF7-tx-NHW">
+                    <rect key="frame" x="16" y="46.666666666666664" width="324" height="72.333333333333343"/>
+                    <fontDescription key="fontDescription" name="Verdana" family="Verdana" pointSize="13"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="1000" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Z5-gm-sGw">
+                    <rect key="frame" x="348" y="46.666666666666657" width="45" height="40"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="45" id="X6A-QM-fcv"/>
+                        <constraint firstAttribute="height" constant="40" id="bQh-GL-WYK"/>
+                    </constraints>
+                    <string key="text">101
+tracks</string>
+                    <fontDescription key="fontDescription" name="Verdana" family="Verdana" pointSize="10"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+            <constraints>
+                <constraint firstItem="6Z5-gm-sGw" firstAttribute="leading" secondItem="YW7-7k-Jv6" secondAttribute="trailing" constant="8" id="3qW-MJ-bRo"/>
+                <constraint firstItem="jF7-tx-NHW" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="43F-iQ-RNa"/>
+                <constraint firstItem="6Z5-gm-sGw" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="8Cs-hb-XW8"/>
+                <constraint firstAttribute="trailing" secondItem="6Z5-gm-sGw" secondAttribute="trailing" id="M68-Ic-WDE"/>
+                <constraint firstItem="YW7-7k-Jv6" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="14" id="Ocz-Ht-SLd"/>
+                <constraint firstItem="jF7-tx-NHW" firstAttribute="top" secondItem="YW7-7k-Jv6" secondAttribute="bottom" constant="12" id="QsI-mT-YR8"/>
+                <constraint firstItem="YW7-7k-Jv6" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="Swi-yn-TtX"/>
+                <constraint firstAttribute="bottom" secondItem="jF7-tx-NHW" secondAttribute="bottom" priority="999" constant="14" id="cSP-Yd-uCv"/>
+                <constraint firstItem="6Z5-gm-sGw" firstAttribute="leading" secondItem="jF7-tx-NHW" secondAttribute="trailing" constant="8" id="z3A-2d-ey5"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="130.53435114503816" y="-244.71830985915494"/>
+        </view>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

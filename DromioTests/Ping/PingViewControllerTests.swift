@@ -16,7 +16,6 @@ struct PingViewControllerTests {
     func viewDidLoad() {
         subject.loadViewIfNeeded()
         #expect(subject.title == "Ping")
-        #expect(subject.view.backgroundColor == .systemBackground)
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
     }

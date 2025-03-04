@@ -24,7 +24,7 @@ struct AlbumsDataSourceDelegateTests {
     @Test("present: datasource reflects `albums`")
     func presentWithDataDatasourceItems() async {
         var state = AlbumsState()
-        state.albums = [.init(id: "1", name: "Yoho", songCount: 30, song: nil)]
+        state.albums = [.init(id: "1", name: "Yoho", artist: "Artist", songCount: 30, song: nil)]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
@@ -36,13 +36,15 @@ struct AlbumsDataSourceDelegateTests {
     func presentWithDataCell() async throws {
         makeWindow(view: tableView)
         var state = AlbumsState()
-        state.albums = [.init(id: "1", name: "Yoho", songCount: 30, song: nil)]
+        state.albums = [.init(id: "1", name: "Yoho", artist: "Artist", songCount: 30, song: nil)]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
-        let configuration = try #require(cell?.contentConfiguration as? UIListContentConfiguration)
-        #expect(configuration.text == "Yoho")
+        let configuration = try #require(cell?.contentConfiguration as? AlbumsCellContentConfiguration)
+        #expect(configuration.title == "Yoho")
+        #expect(configuration.artist == "Artist")
+        #expect(configuration.tracks == 30)
     }
 
 }

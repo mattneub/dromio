@@ -69,9 +69,13 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
             return nil
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
-        var configuration = cell.defaultContentConfiguration()
-        configuration.text = album.name
-        cell.contentConfiguration = configuration
+        cell.configurationUpdateHandler = { cell, state in
+            cell.contentConfiguration = AlbumsCellContentConfiguration(
+                title: album.name,
+                artist: album.artist ?? " ",
+                tracks: album.songCount
+            )
+        }
         return cell
     }
 

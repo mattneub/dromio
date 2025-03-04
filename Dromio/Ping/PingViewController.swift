@@ -17,7 +17,6 @@ class PingViewController: UIViewController, Presenter {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Ping"
-        view.backgroundColor = .systemBackground
     }
 
     override func viewDidAppear(_ animated: Bool) {

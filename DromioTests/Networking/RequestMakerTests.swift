@@ -122,7 +122,7 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                albumList2: AlbumsResponse(album: [SubsonicAlbum(id: "1", name: "title", songCount: 10, song: nil)]),
+                albumList2: AlbumsResponse(album: [SubsonicAlbum(id: "1", name: "title", artist: "Artist", songCount: 10, song: nil)]),
                 error: nil
             )
         )
@@ -136,7 +136,7 @@ struct RequestMakerTests {
         #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
-        #expect(list == [SubsonicAlbum(id: "1", name: "title", songCount: 10, song: nil)])
+        #expect(list == [SubsonicAlbum(id: "1", name: "title", artist: "Artist", songCount: 10, song: nil)])
     }
 
     @Test("getAlbumList: paginates with chunk 500")
@@ -148,7 +148,7 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", songCount: 10, song: nil), count: 500)),
+                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", artist: "Artist", songCount: 10, song: nil), count: 500)),
                 error: nil
             )
         )
@@ -159,7 +159,7 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", songCount: 10, song: nil), count: 2)),
+                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", artist: "Artist", songCount: 10, song: nil), count: 2)),
                 error: nil
             )
         )
@@ -207,7 +207,7 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                albumList2: AlbumsResponse(album: [SubsonicAlbum(id: "1", name: "title", songCount: 10, song: nil)]),
+                albumList2: AlbumsResponse(album: [SubsonicAlbum(id: "1", name: "title", artist: "Artist", songCount: 10, song: nil)]),
                 error: nil
             )
         )
@@ -232,6 +232,7 @@ struct RequestMakerTests {
                 album: SubsonicAlbum(
                     id: "1",
                     name: "title",
+                    artist: "Artist",
                     songCount: 10,
                     song: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1", suffix: nil, duration: nil)]
                 ),
@@ -295,6 +296,7 @@ struct RequestMakerTests {
                 album: SubsonicAlbum(
                     id: "1",
                     name: "title",
+                    artist: "Artist",
                     songCount: 10,
                     song: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1", suffix: nil, duration: nil)]
                 ),

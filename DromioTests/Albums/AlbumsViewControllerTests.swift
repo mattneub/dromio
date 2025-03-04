@@ -20,6 +20,7 @@ struct AlbumsViewControllerTests {
         #expect(subject.title == "Albums")
         #expect(subject.dataSourceDelegate != nil)
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
+        #expect(subject.tableView.estimatedRowHeight == 78)
     }
 
     @Test("Initialize: creates right bar button item")
@@ -47,7 +48,7 @@ struct AlbumsViewControllerTests {
 
     @Test("present: presents to the data source")
     func present() {
-        let state = AlbumsState(albums: [.init(id: "1", name: "name", songCount: 10, song: nil)])
+        let state = AlbumsState(albums: [.init(id: "1", name: "name", artist: "Artist", songCount: 10, song: nil)])
         subject.present(state)
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
