@@ -14,16 +14,31 @@ struct PersistenceTests {
 
     @Test("saveSongList: encodes songs as strings, saves array to defaults")
     func saveSongList() throws {
-        let song = SubsonicSong(id: "1", title: "Title", artist: "Artist", track: 1, albumId: nil, suffix: nil, duration: 100)
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: 100
+        )
         try subject.save(songList: [song], key: .currentPlaylist)
         #expect(defaults.key == "currentPlaylist")
         let expected = """
         {
+          "album" : "Album",
+          "albumId" : "2",
           "artist" : "Artist",
+          "displayComposer" : "Me",
           "duration" : 100,
           "id" : "1",
           "title" : "Title",
-          "track" : 1
+          "track" : 1,
+          "year" : 1970
         }
         """
         let result = try #require(defaults.value as? [String])
@@ -34,15 +49,30 @@ struct PersistenceTests {
     func loadLongList() throws {
         let song = """
         {
+          "album" : "Album",
+          "albumId" : "2",
           "artist" : "Artist",
+          "displayComposer" : "Me",
           "duration" : 100,
           "id" : "1",
           "title" : "Title",
-          "track" : 1
+          "track" : 1,
+          "year" : 1970
         }
         """
         defaults.stringArrayToReturn = [song]
-        let expected = SubsonicSong(id: "1", title: "Title", artist: "Artist", track: 1, albumId: nil, suffix: nil, duration: 100)
+        let expected = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: 100
+        )
         let result = try subject.loadSongList(key: .currentPlaylist)
         #expect(defaults.key == "currentPlaylist")
         #expect(result == [expected])

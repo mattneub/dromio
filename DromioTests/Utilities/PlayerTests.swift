@@ -24,7 +24,18 @@ struct PlayerTests {
 
     @Test("adjustNowPlayingItemToCurrentItem: configured now playing info to match song")
     func adjust() {
-        subject.knownSongs["4"] = SubsonicSong(id: "4", title: "Title", artist: "Artist", track: 1, albumId: nil, suffix: nil, duration: 100)
+        subject.knownSongs["4"] = SubsonicSong(
+            id: "4",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: 100
+        )
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         subject.adjustNowPlayingItemToCurrentItem()
         #expect(nowPlayingInfo.info[.title] as? String == "Title")
@@ -34,7 +45,18 @@ struct PlayerTests {
 
     @Test("play(url:song:) calls removeAllItems, calls insertAfter nil, sets category active, calls play, sets action to advance, adds to known songs")
     func play() {
-        let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: nil, duration: nil)
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        )
         let url = URL(string: "http://example.com")!
         subject.play(url: url, song: song)
         #expect(audioPlayer.methodsCalled == ["removeAllItems()", "insert(_:after:)", "play()"])
@@ -48,11 +70,22 @@ struct PlayerTests {
 
     @Test("play(url:song:) configures now playing info")
     func playNowPlayingInfo() {
-        let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: nil, duration: 100)
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: 100
+        )
         let url = URL(string: "http://example.com")!
         subject.play(url: url, song: song)
-        #expect(nowPlayingInfo.info[.title] as? String == "title")
-        #expect(nowPlayingInfo.info[.artist] as? String == "artist")
+        #expect(nowPlayingInfo.info[.title] as? String == "Title")
+        #expect(nowPlayingInfo.info[.artist] as? String == "Artist")
         #expect(nowPlayingInfo.info[.time] as? Double == 0)
         #expect(nowPlayingInfo.info[.rate] as? Double == 1)
         #expect(nowPlayingInfo.info[.duration] as? Int == 100)
@@ -60,7 +93,18 @@ struct PlayerTests {
 
     @Test("playNext(url:song:) calls insertAfter nil, adds to known songs")
     func playNext() {
-        let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: nil, duration: nil)
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        )
         let url = URL(string: "http://example.com")!
         subject.playNext(url: url, song: song)
         #expect(audioPlayer.methodsCalled == ["insert(_:after:)"])
@@ -91,7 +135,18 @@ struct PlayerTests {
 
     @Test("clear: call pause and removeAllItems, empties the known list")
     func clear() {
-        let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: nil, duration: nil)
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        )
         subject.knownSongs["1"] = song
         subject.clear()
         #expect(audioPlayer.methodsCalled == ["pause()", "removeAllItems()"])

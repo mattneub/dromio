@@ -29,7 +29,15 @@ protocol RootCoordinatorType: AnyObject {
     func showAlbums()
 
     /// Create the Album module and show the view controller.
-    func showAlbum(albumId: String)
+    /// - Parameters:
+    ///   - albumId: The id of the album whose songs we are to display.
+    ///   - songCount: The total number of songs in the album.
+    ///   - title: The album's title, to be displayed as the view controller title.
+    ///
+    /// We pass this info from the caller because we want the view controller to know the
+    /// title regardless of when the processor fetches the songs.
+    func showAlbum(albumId: String, songCount: Int, title: String)
+    // TODO: But I am not convinced we need the song count; we don't need to know that until we have the songs...?
 
     /// Create the Playlist module and show the view controller.
     func showPlaylist()
@@ -93,10 +101,10 @@ final class RootCoordinator: RootCoordinatorType {
         rootViewController?.present(navigationController, animated: unlessTesting(true))
     }
 
-    func showAlbum(albumId: String) {
+    func showAlbum(albumId: String, songCount: Int, title: String) {
         let albumController = AlbumViewController(nibName: nil, bundle: nil)
         let albumProcessor = AlbumProcessor()
-        albumProcessor.state.albumId = albumId
+        albumProcessor.state = AlbumState(albumId: albumId, albumTitle: title, totalCount: songCount, songs: [])
         self.albumProcessor = albumProcessor
         albumProcessor.presenter = albumController
         albumController.processor = albumProcessor

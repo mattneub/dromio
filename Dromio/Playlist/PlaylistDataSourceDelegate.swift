@@ -69,9 +69,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, UITableVie
             return nil
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
-        var configuration = cell.defaultContentConfiguration()
-        configuration.text = song.title
-        cell.contentConfiguration = configuration
+        cell.contentConfiguration = PlaylistCellContentConfiguration(song: song)
         return cell
     }
 

@@ -48,7 +48,20 @@ struct PlaylistViewControllerTests {
 
     @Test("present: presents to the data source")
     func present() {
-        let state = PlaylistState(songs: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2", suffix: nil, duration: nil)])
+        let state = PlaylistState(
+            songs: [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil
+            )]
+        )
         subject.present(state)
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)

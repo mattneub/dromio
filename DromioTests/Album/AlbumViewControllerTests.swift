@@ -14,11 +14,12 @@ struct AlbumViewControllerTests {
         subject.processor = processor
     }
 
-    @Test("Initialize: creates data source delegate")
+    @Test("Initialize: creates data source delegate, sets table view estimated row height")
     func initialize() throws {
         let subject = AlbumViewController(nibName: nil, bundle: nil)
         #expect(subject.dataSourceDelegate != nil)
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
+        #expect(subject.tableView.estimatedRowHeight == 140)
     }
 
     @Test("Initialize: creates right bar button item")
@@ -44,10 +45,25 @@ struct AlbumViewControllerTests {
         #expect(processor.thingsReceived.first == .initialData)
     }
 
-    @Test("present: presents to the data source")
+    @Test("present: presents to the data source, sets the title")
     func present() {
-        let state = AlbumState(songs: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2", suffix: nil, duration: nil)])
+        let state = AlbumState(
+            albumTitle: "Album",
+            songs: [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil
+            )]
+        )
         subject.present(state)
+        #expect(subject.navigationItem.title == "Album")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }

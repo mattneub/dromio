@@ -26,6 +26,7 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
     }
 
     func present(_ state: AlbumState) {
+        totalCount = state.totalCount
         if data != state.songs {
             data = state.songs
             Task {
@@ -39,6 +40,8 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
 
     /// Data to be displayed by the table view.
     var data = [SubsonicSong]()
+
+    var totalCount: Int = 0
 
     /// Type of the diffable data source.
     typealias Datasource = UITableViewDiffableDataSource<String, String>
@@ -69,9 +72,7 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
             return nil
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
-        var configuration = cell.defaultContentConfiguration()
-        configuration.text = song.title
-        cell.contentConfiguration = configuration
+        cell.contentConfiguration = AlbumCellContentConfiguration(song: song, totalCount: totalCount)
         return cell
     }
 

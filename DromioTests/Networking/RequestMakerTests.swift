@@ -234,7 +234,18 @@ struct RequestMakerTests {
                     name: "title",
                     artist: "Artist",
                     songCount: 10,
-                    song: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1", suffix: nil, duration: nil)]
+                    song: [.init(
+                        id: "1",
+                        title: "Title",
+                        album: "Album",
+                        artist: "Artist",
+                        displayComposer: "Me",
+                        track: 1,
+                        year: 1970,
+                        albumId: "2",
+                        suffix: nil,
+                        duration: nil
+                    )]
                 ),
                 error: nil
             )
@@ -249,9 +260,22 @@ struct RequestMakerTests {
         #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
-        #expect(list == [
-            .init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1", suffix: nil, duration: nil),
-        ])
+        #expect(
+            list == [
+                .init(
+                    id: "1",
+                    title: "Title",
+                    album: "Album",
+                    artist: "Artist",
+                    displayComposer: "Me",
+                    track: 1,
+                    year: 1970,
+                    albumId: "2",
+                    suffix: nil,
+                    duration: nil
+                ),
+            ]
+        )
     }
 
     @Test("getSongsFor: rethrows urlMaker throw")
@@ -298,7 +322,18 @@ struct RequestMakerTests {
                     name: "title",
                     artist: "Artist",
                     songCount: 10,
-                    song: [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "1", suffix: nil, duration: nil)]
+                    song: [.init(
+                        id: "1",
+                        title: "Title",
+                        album: "Album",
+                        artist: "Artist",
+                        displayComposer: "Me",
+                        track: 1,
+                        year: 1970,
+                        albumId: "2",
+                        suffix: nil,
+                        duration: nil
+                    )]
                 ),
                 error: nil
             )

@@ -41,7 +41,18 @@ final class DownloadTests { // class, because we have cleanup to perform after e
 
     @Test("download: song without a suffix throws")
     func downloadNoSuffix() async throws {
-        let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: nil, duration: nil)
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        )
         let subject = Download()
         await #expect {
             try await subject.download(song: song)
@@ -53,7 +64,18 @@ final class DownloadTests { // class, because we have cleanup to perform after e
     @Test("download: song already in cache, by id and suffix, returns its url")
     func downloadSongExists() async throws {
         let subject = Download()
-        let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: "mp3", duration: nil)
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: "mp3",
+            duration: nil
+        )
         let url = subject.downloadsDirectory()
         let file = url.appendingPathComponent("1.mp3")
         try "howdy".write(to: file, atomically: true, encoding: .utf8)
@@ -66,7 +88,18 @@ final class DownloadTests { // class, because we have cleanup to perform after e
     @Test("download: song not already in cache, downloads, names by id and suffix, returns its url")
     func downloadSongNotExists() async throws {
         let subject = Download()
-        let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: "mp3", duration: nil)
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: "mp3",
+            duration: nil
+        )
         let file = URL.temporaryDirectory.appendingPathComponent("howdy")
         try "howdy".write(to: file, atomically: true, encoding: .utf8)
         requestMaker.url = file
@@ -83,7 +116,18 @@ final class DownloadTests { // class, because we have cleanup to perform after e
     @Test("download: if requestMaker throws on download, rethrows")
     func downloadSongRequestMakerError() async throws {
         let subject = Download()
-        let song = SubsonicSong(id: "1", title: "title", artist: "artist", track: 1, albumId: nil, suffix: "mp3", duration: nil)
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: "mp3",
+            duration: nil
+        )
         let file = URL.temporaryDirectory.appendingPathComponent("howdy")
         try "howdy".write(to: file, atomically: true, encoding: .utf8)
         requestMaker.url = file

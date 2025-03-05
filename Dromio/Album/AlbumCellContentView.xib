@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23719.2"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="AlbumCellContentView" customModule="Dromio" customModuleProvider="target">
+            <connections>
+                <outlet property="artist" destination="y86-M1-jBL" id="xvg-Tz-Apd"/>
+                <outlet property="composer" destination="zKj-gq-H4u" id="KoU-bk-b1K"/>
+                <outlet property="count" destination="gCT-iE-XbD" id="Dqr-jY-Ajm"/>
+                <outlet property="duration" destination="bFs-wc-LmU" id="7IG-az-WeA"/>
+                <outlet property="title" destination="STu-iZ-oTp" id="ap1-Kd-iLT"/>
+                <outlet property="year" destination="Ksf-YE-lDd" id="Lym-AR-f2F"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="393" height="250"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="STu-iZ-oTp">
+                    <rect key="frame" x="16" y="14.000000000000002" width="312.66666666666669" height="19.666666666666671"/>
+                    <fontDescription key="fontDescription" name="Verdana-Bold" family="Verdana" pointSize="16"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Artist" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y86-M1-jBL">
+                    <rect key="frame" x="16" y="45.666666666666664" width="312.66666666666669" height="16"/>
+                    <fontDescription key="fontDescription" name="Verdana" family="Verdana" pointSize="13"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Composer" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zKj-gq-H4u">
+                    <rect key="frame" x="15.999999999999996" y="222.66666666666666" width="59.666666666666657" height="13.333333333333343"/>
+                    <fontDescription key="fontDescription" name="Palatino-Roman" family="Palatino" pointSize="13"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Year" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ksf-YE-lDd">
+                    <rect key="frame" x="183.66666666666666" y="222.66666666666666" width="25.666666666666657" height="13.333333333333343"/>
+                    <fontDescription key="fontDescription" name="Palatino-Roman" family="Palatino" pointSize="13"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Count" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gCT-iE-XbD">
+                    <rect key="frame" x="349" y="222.66666666666666" width="36" height="13.333333333333343"/>
+                    <fontDescription key="fontDescription" name="Palatino-Roman" family="Palatino" pointSize="13"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="1000" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="Duration" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bFs-wc-LmU">
+                    <rect key="frame" x="332.66666666666669" y="118" width="52.333333333333314" height="14.333333333333343"/>
+                    <fontDescription key="fontDescription" name="Palatino-Roman" family="Palatino" pointSize="13"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+            <constraints>
+                <constraint firstAttribute="trailing" secondItem="bFs-wc-LmU" secondAttribute="trailing" constant="8" id="0M8-b9-4DF"/>
+                <constraint firstItem="bFs-wc-LmU" firstAttribute="leading" secondItem="y86-M1-jBL" secondAttribute="trailing" constant="4" id="2ZC-9H-Nza"/>
+                <constraint firstItem="bFs-wc-LmU" firstAttribute="leading" secondItem="STu-iZ-oTp" secondAttribute="trailing" constant="4" id="BvB-D5-8kv"/>
+                <constraint firstItem="STu-iZ-oTp" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="14" id="Hoj-2u-z1Y"/>
+                <constraint firstItem="bFs-wc-LmU" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="Irx-Up-NWB"/>
+                <constraint firstItem="gCT-iE-XbD" firstAttribute="centerY" secondItem="Ksf-YE-lDd" secondAttribute="centerY" id="NxX-J2-kbj"/>
+                <constraint firstItem="Ksf-YE-lDd" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="Opg-XU-DZS"/>
+                <constraint firstItem="y86-M1-jBL" firstAttribute="top" secondItem="STu-iZ-oTp" secondAttribute="bottom" constant="12" id="X4X-5d-Nvb"/>
+                <constraint firstItem="Ksf-YE-lDd" firstAttribute="centerY" secondItem="zKj-gq-H4u" secondAttribute="centerY" id="d4J-ph-h2i"/>
+                <constraint firstAttribute="bottom" secondItem="zKj-gq-H4u" secondAttribute="bottom" constant="14" id="djq-pb-Ziy"/>
+                <constraint firstItem="STu-iZ-oTp" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="f1A-DA-3vU"/>
+                <constraint firstAttribute="trailing" secondItem="gCT-iE-XbD" secondAttribute="trailing" constant="8" id="fGE-Bb-Spq"/>
+                <constraint firstItem="y86-M1-jBL" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="gmA-Fg-ERw"/>
+                <constraint firstItem="zKj-gq-H4u" firstAttribute="top" secondItem="y86-M1-jBL" secondAttribute="bottom" priority="999" constant="12" id="iJx-oH-ez4"/>
+                <constraint firstItem="zKj-gq-H4u" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="iL8-eM-ly0"/>
+            </constraints>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <point key="canvasLocation" x="220.61068702290075" y="-30.985915492957748"/>
+        </view>
+    </objects>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
+</document>

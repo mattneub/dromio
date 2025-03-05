@@ -1,9 +1,11 @@
 import UIKit
 
-final class AlbumsCellContentView: UIView, UIContentView {
+final class PlaylistCellContentView: UIView, UIContentView {
     @IBOutlet var title: UILabel!
     @IBOutlet var artist: UILabel!
-    @IBOutlet var tracks: UILabel!
+    @IBOutlet var album: UILabel!
+    @IBOutlet var composer: UILabel!
+    @IBOutlet var duration: UILabel!
 
     /// Boilerplate.
     var configuration: any UIContentConfiguration {
@@ -16,7 +18,7 @@ final class AlbumsCellContentView: UIView, UIContentView {
         self.configuration = configuration
         super.init(frame: .zero)
 
-        let topLevelObjects = UINib(nibName: "AlbumsCellContentView", bundle: nil).instantiate(withOwner: self)
+        let topLevelObjects = UINib(nibName: "PlaylistCellContentView", bundle: nil).instantiate(withOwner: self)
         guard let loadedView = topLevelObjects.first as? UIView else { return }
         loadedView.backgroundColor = nil
         self.addSubview(loadedView)
@@ -36,36 +38,46 @@ final class AlbumsCellContentView: UIView, UIContentView {
     }
 
     func configureView(fromConfiguration configuration: any UIContentConfiguration) {
-        guard let configuration = configuration as? AlbumsCellContentConfiguration else { return }
+        guard let configuration = configuration as? PlaylistCellContentConfiguration else { return }
         title.text = configuration.title
         artist.text = configuration.artist
-        tracks.text = configuration.tracks
+        album.text = configuration.album
+        duration.text = configuration.duration
+        composer.text = configuration.composer
     }
 }
 
 /// UIContentConfiguration for the item cell.
-struct AlbumsCellContentConfiguration: UIContentConfiguration, Equatable {
+struct PlaylistCellContentConfiguration: UIContentConfiguration, Equatable {
     let title: String
     let artist: String
-    let tracks: String
-
-    /// The configuration must be created directly from an album.
-    /// - Parameter album: The album.
-    init(album: SubsonicAlbum) {
-        self.title = album.name
-        self.artist = album.artist.ensureNoBreakSpace
-        self.tracks = String(
-            AttributedString(
-                localized: "^[\(album.songCount)\n\("track")](inflect: true)"
-            ).characters
-        )
+    let album: String
+    let duration: String
+    let composer: String
+    
+    /// The configuration must be created directly from a song. We also need the total count of
+    /// songs in the album, which is not part of the song.
+    /// - Parameters:
+    ///   - song: The song.
+    ///   - totalCount: The total count of songs in the album.
+    init(song: SubsonicSong, totalCount: Int = 0) {
+        self.title = song.title
+        self.artist = song.artist
+        self.album = song.album.ensureNoBreakSpace
+        self.duration = song.duration.map {
+            Duration.seconds($0).formatted(
+                .time(pattern: $0 >= 3600 ? .hourMinuteSecond : .minuteSecond)
+            )
+        } ?? ""
+        self.composer = song.displayComposer.ensureNoBreakSpace
     }
 
     func makeContentView() -> any UIView & UIContentView {
-        return AlbumsCellContentView(self)
+        return PlaylistCellContentView(self)
     }
 
     func updated(for state: any UIConfigurationState) -> Self {
         return self
     }
 }
+

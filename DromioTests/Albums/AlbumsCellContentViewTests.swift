@@ -6,11 +6,13 @@ import UIKit
 struct AlbumsCellContentConfigurationTests {
     @Test("Setting the content view's configuration configures the view correctly")
     func contentView() throws {
-        let configuration = AlbumsCellContentConfiguration(
-            title: "Title",
+        let configuration = AlbumsCellContentConfiguration(album: SubsonicAlbum(
+            id: "1",
+            name: "Title",
             artist: "Artist",
-            tracks: 100
-        )
+            songCount: 100,
+            song: []
+        ))
         let subject = AlbumsCellContentView(configuration)
         #expect(subject.subviews.count == 1)
         let loadedView = try #require(subject.subviews.first)
@@ -21,20 +23,26 @@ struct AlbumsCellContentConfigurationTests {
 
     @Test("Applying configuration to content view configures the displayed content correctly")
     func applyConfiguration() throws {
-        var configuration = AlbumsCellContentConfiguration(
-            title: "Title",
+        let configuration = AlbumsCellContentConfiguration(album: SubsonicAlbum(
+            id: "1",
+            name: "Title",
             artist: "Artist",
-            tracks: 100
-        )
+            songCount: 100,
+            song: []
+        ))
         let subject = AlbumsCellContentView(configuration)
         let loadedView = try #require(subject.subviews.first)
         var labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
         #expect(Set(labelTexts) == Set(["Title", "Artist", "100\ntracks"]))
-        configuration.title = "Howdy"
-        configuration.artist = "Rembrandt"
-        configuration.tracks = 1 // test singular/plural
-        subject.configuration = configuration
+        let configuration2 = AlbumsCellContentConfiguration(album: SubsonicAlbum(
+            id: "2",
+            name: "Howdy",
+            artist: nil, // test nil artist
+            songCount: 1, // test singular/plural
+            song: []
+        ))
+        subject.configuration = configuration2
         labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
-        #expect(Set(labelTexts) == Set(["Howdy", "Rembrandt", "1\ntrack"]))
+        #expect(Set(labelTexts) == Set(["Howdy", " ", "1\ntrack"]))
     }
 }

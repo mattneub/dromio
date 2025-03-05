@@ -42,9 +42,8 @@ struct AlbumsDataSourceDelegateTests {
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
         let configuration = try #require(cell?.contentConfiguration as? AlbumsCellContentConfiguration)
-        #expect(configuration.title == "Yoho")
-        #expect(configuration.artist == "Artist")
-        #expect(configuration.tracks == 30)
+        let expected = AlbumsCellContentConfiguration(album: .init(id: "1", name: "Yoho", artist: "Artist", songCount: 30, song: nil))
+        #expect(configuration == expected)
     }
 
 }

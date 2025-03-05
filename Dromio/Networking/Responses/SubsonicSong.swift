@@ -5,8 +5,11 @@ import Foundation
 struct SubsonicSong: Codable, Equatable {
     let id: String
     let title: String
+    let album: String?
     let artist: String
+    let displayComposer: String?
     let track: Int
+    let year: Int?
     let albumId: String?
     let suffix: String?
     let duration: Int?

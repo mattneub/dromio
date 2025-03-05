@@ -26,7 +26,18 @@ struct AlbumDataSourceDelegateTests {
     @Test("present: datasource reflects `songs`")
     func presentWithDataDatasourceItems() async {
         var state = AlbumState()
-        state.songs = [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2", suffix: nil, duration: nil)]
+        state.songs = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        )]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
@@ -38,18 +49,53 @@ struct AlbumDataSourceDelegateTests {
     func presentWithDataCell() async throws {
         makeWindow(view: tableView)
         var state = AlbumState()
-        state.songs = [.init(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2", suffix: nil, duration: nil)]
+        state.songs = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        )]
+        state.totalCount = 10
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
-        let configuration = try #require(cell?.contentConfiguration as? UIListContentConfiguration)
-        #expect(configuration.text == "Title")
+        let configuration = try #require(cell?.contentConfiguration as? AlbumCellContentConfiguration)
+        let expected = AlbumCellContentConfiguration(song: SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        ), totalCount: 10)
+        #expect(configuration == expected)
     }
 
     @Test("didSelect: sends tapped to processor")
     func didSelect() async {
-        let song = SubsonicSong(id: "1", title: "Title", artist: "Artist", track: 1, albumId: "2", suffix: nil, duration: nil)
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        )
         makeWindow(view: tableView)
         var state = AlbumState()
         state.songs = [song]

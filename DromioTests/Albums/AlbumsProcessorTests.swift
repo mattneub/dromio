@@ -28,11 +28,14 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", artist: "Artist", songCount: 30, song: nil)])
     }
 
-    @Test("showAlbum: sends `showAlbum` to coordinator")
+    @Test("showAlbum: sends `showAlbum` to coordinator, with info from specified album")
     func showAlbum() async {
+        subject.state.albums = [.init(id: "1", name: "Yoho", artist: "Artist", songCount: 30, song: nil)]
         await subject.receive(.showAlbum(albumId: "1"))
-        #expect(coordinator.methodsCalled == ["showAlbum(albumId:)"])
+        #expect(coordinator.methodsCalled == ["showAlbum(albumId:songCount:title:)"])
         #expect(coordinator.albumId == "1")
+        #expect(coordinator.songCount == 30)
+        #expect(coordinator.title == "Yoho")
     }
 
     @Test("receive showPlaylist: tells coordinator to showPlaylist")
