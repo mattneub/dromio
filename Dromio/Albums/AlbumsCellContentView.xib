@@ -20,13 +20,13 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YW7-7k-Jv6">
-                    <rect key="frame" x="16" y="14.000000000000002" width="324" height="20.666666666666671"/>
+                    <rect key="frame" x="16" y="8.0000000000000018" width="324" height="20.666666666666671"/>
                     <fontDescription key="fontDescription" name="Verdana-Bold" family="Verdana" pointSize="17"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jF7-tx-NHW">
-                    <rect key="frame" x="16" y="46.666666666666664" width="324" height="72.333333333333343"/>
+                    <rect key="frame" x="16" y="40.666666666666664" width="324" height="84.333333333333343"/>
                     <fontDescription key="fontDescription" name="Verdana" family="Verdana" pointSize="14"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
@@ -50,10 +50,10 @@ tracks</string>
                 <constraint firstItem="jF7-tx-NHW" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="43F-iQ-RNa"/>
                 <constraint firstItem="6Z5-gm-sGw" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="8Cs-hb-XW8"/>
                 <constraint firstAttribute="trailing" secondItem="6Z5-gm-sGw" secondAttribute="trailing" id="M68-Ic-WDE"/>
-                <constraint firstItem="YW7-7k-Jv6" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="14" id="Ocz-Ht-SLd"/>
+                <constraint firstItem="YW7-7k-Jv6" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="Ocz-Ht-SLd"/>
                 <constraint firstItem="jF7-tx-NHW" firstAttribute="top" secondItem="YW7-7k-Jv6" secondAttribute="bottom" constant="12" id="QsI-mT-YR8"/>
                 <constraint firstItem="YW7-7k-Jv6" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="Swi-yn-TtX"/>
-                <constraint firstAttribute="bottom" secondItem="jF7-tx-NHW" secondAttribute="bottom" priority="999" constant="14" id="cSP-Yd-uCv"/>
+                <constraint firstAttribute="bottom" secondItem="jF7-tx-NHW" secondAttribute="bottom" priority="999" constant="8" id="cSP-Yd-uCv"/>
                 <constraint firstItem="6Z5-gm-sGw" firstAttribute="leading" secondItem="jF7-tx-NHW" secondAttribute="trailing" constant="8" id="z3A-2d-ey5"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
