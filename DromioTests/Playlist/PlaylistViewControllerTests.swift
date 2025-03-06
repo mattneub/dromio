@@ -14,12 +14,13 @@ struct PlaylistViewControllerTests {
         subject.processor = processor
     }
 
-    @Test("Initialize: creates data source delegate")
+    @Test("Initialize: creates data source delegate, configures table view, sets title")
     func initialize() throws {
         let subject = PlaylistViewController(nibName: nil, bundle: nil)
         #expect(subject.dataSourceDelegate != nil)
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
         #expect(subject.tableView.estimatedRowHeight == 90)
+        #expect(subject.title == "Playlist")
     }
 
     @Test("Setting the processor sets the data source's processor")

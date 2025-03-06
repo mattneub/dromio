@@ -45,7 +45,7 @@ struct AlbumViewControllerTests {
         #expect(processor.thingsReceived.first == .initialData)
     }
 
-    @Test("present: presents to the data source, sets the title")
+    @Test("present: presents to the data source")
     func present() {
         let state = AlbumState(
             albumTitle: "Album",
@@ -63,7 +63,6 @@ struct AlbumViewControllerTests {
             )]
         )
         subject.present(state)
-        #expect(subject.navigationItem.title == "Album")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }

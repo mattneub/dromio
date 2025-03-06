@@ -41,6 +41,9 @@ protocol RootCoordinatorType: AnyObject {
 
     /// Create the Playlist module and show the view controller.
     func showPlaylist()
+
+    /// Pop the Playlist view controller.
+    func popPlaylist()
 }
 
 /// Class of single instance responsible for all view controller manipulation.
@@ -126,6 +129,10 @@ final class RootCoordinator: RootCoordinatorType {
             return
         }
         navigationController.pushViewController(playlistController, animated: unlessTesting(true))
+    }
+
+    func popPlaylist() {
+        (playlistProcessor?.presenter as? UIViewController)?.navigationController?.popViewController(animated: unlessTesting(true))
     }
 }
 

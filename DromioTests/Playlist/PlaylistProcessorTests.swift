@@ -179,7 +179,7 @@ struct PlaylistProcessorTests {
         #expect(player.methodsCalled.isEmpty)
     }
 
-    @Test("receive clear: tells the current playlist, player, and download to clear, and sets the state")
+    @Test("receive clear: tells the current playlist, player, and download to clear, sets the state, call popPlaylist")
     func clear() async {
         let songs = [SubsonicSong(
             id: "1",
@@ -199,5 +199,7 @@ struct PlaylistProcessorTests {
         #expect(player.methodsCalled == ["clear()"])
         await #expect(download.methodsCalled == ["clear()"])
         #expect(subject.state.songs.isEmpty)
+        await #while(coordinator.methodsCalled.isEmpty)
+        #expect(coordinator.methodsCalled == ["popPlaylist()"])
     }
 }

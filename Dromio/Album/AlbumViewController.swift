@@ -34,7 +34,6 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
     }
 
     func present(_ state: AlbumState) {
-        navigationItem.title = state.albumTitle
         dataSourceDelegate?.present(state)
     }
 

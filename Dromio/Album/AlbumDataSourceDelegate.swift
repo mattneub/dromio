@@ -27,11 +27,8 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
 
     func present(_ state: AlbumState) {
         totalCount = state.totalCount
-        if data != state.songs {
-            data = state.songs
-            Task {
-                await updateTableView()
-            }
+        Task {
+            await updateTableView(state)
         }
     }
 
@@ -40,6 +37,8 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
 
     /// Data to be displayed by the table view.
     var data = [SubsonicSong]()
+
+    let albumTitleDummy = "albumTitleDummy"
 
     var totalCount: Int = 0
 
@@ -58,7 +57,7 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
             return cellProvider(tableView, indexPath, identifier)
         }
         var snapshot = NSDiffableDataSourceSnapshot<String, String>()
-        snapshot.appendSections(["Dummy"])
+        snapshot.appendSections([albumTitleDummy])
         snapshot.appendItems([])
         await datasource.apply(snapshot, animatingDifferences: false)
         return datasource
@@ -77,11 +76,12 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
     }
 
     /// Method called by `present` to bring the table into line with the data.
-    func updateTableView() async {
+    func updateTableView(_ state: AlbumState) async {
+        self.data = state.songs
         var snapshot = datasource.snapshot()
         snapshot.deleteAllItems() // despite the name, this deletes the section too
-        snapshot.appendSections(["Dummy"])
-        snapshot.appendItems(data.map {$0.id})
+        snapshot.appendSections([state.albumTitle ?? albumTitleDummy])
+        snapshot.appendItems(state.songs.map { $0.id })
         await datasource.apply(snapshot, animatingDifferences: false)
     }
 
@@ -95,5 +95,25 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
         Task {
             await processor?.receive(.tapped(song))
         }
+    }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        guard section == 0 else {
+            return nil // shouldn't happen
+        }
+        guard let font =  UIFont(name: "Verdana-Bold", size: 17) else {
+            return nil // shouldn't happen
+        }
+        let albumTitle = datasource.snapshot().sectionIdentifiers[0]
+        guard albumTitle != albumTitleDummy else {
+            return nil // shouldn't happen
+        }
+        let headerView = UITableViewHeaderFooterView()
+        var configuration = headerView.defaultContentConfiguration()
+        configuration.text = albumTitle
+        configuration.textProperties.font = font
+        configuration.textProperties.alignment = .center
+        headerView.contentConfiguration = configuration
+        return headerView
     }
 }

@@ -42,4 +42,8 @@ final class MockRootCoordinator: RootCoordinatorType {
     func showPlaylist() {
         methodsCalled.append(#function)
     }
+
+    func popPlaylist() {
+        methodsCalled.append(#function)
+    }
 }

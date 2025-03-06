@@ -123,4 +123,25 @@ struct RootCoordinatorTests {
         #expect(playlistProcessor.coordinator === subject)
     }
 
+    @Test("popPlaylist: pops the playlist view controller")
+    func popPlaylist() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        let presentedViewController = UINavigationController(rootViewController: UIViewController())
+        rootViewController.present(presentedViewController, animated: false)
+        await #while(rootViewController.presentedViewController == nil)
+        // still preparing
+        subject.showPlaylist()
+        await #while(presentedViewController.children.count < 2)
+        let playlistViewController = try #require(presentedViewController.children[1] as? PlaylistViewController)
+        #expect(playlistViewController.navigationController != nil)
+        // ok, this is it!
+        subject.popPlaylist()
+        await #while(presentedViewController.children.count > 1)
+        #expect(playlistViewController.navigationController == nil)
+    }
+
 }

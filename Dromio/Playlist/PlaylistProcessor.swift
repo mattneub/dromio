@@ -23,6 +23,8 @@ final class PlaylistProcessor: Processor {
             services.player.clear()
             await services.download.clear()
             state.songs = services.currentPlaylist.list
+            try? await Task.sleep(for: .seconds(0.6))
+            coordinator?.popPlaylist()
         case .initialData:
             state.songs = services.currentPlaylist.list
         case .tapped(let song):
