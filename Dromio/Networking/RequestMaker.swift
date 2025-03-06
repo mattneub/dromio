@@ -2,7 +2,7 @@ import Foundation
 
 /// Protocol defining the public face of our RequestMaker.
 @MainActor
-protocol RequestMakerType {
+protocol RequestMakerType: Sendable {
     func ping() async throws
     func getAlbumList() async throws -> [SubsonicAlbum]
     func getSongsFor(albumId: String) async throws -> [SubsonicSong]

@@ -21,7 +21,7 @@ final class PlaylistProcessor: Processor {
         case .clear:
             services.currentPlaylist.clear()
             services.player.clear()
-            services.download.clear()
+            await services.download.clear()
             state.songs = services.currentPlaylist.list
         case .initialData:
             state.songs = services.currentPlaylist.list

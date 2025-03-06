@@ -1,8 +1,7 @@
 @testable import Dromio
 import Foundation
 
-@MainActor
-final class MockDownload: DownloadType {
+actor MockDownload: DownloadType {
     var urlToReturn: URL = URL(string: "http://example.com")!
     var song: SubsonicSong?
     var methodsCalled = [String]()

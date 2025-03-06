@@ -151,7 +151,7 @@ struct PlaylistProcessorTests {
         await subject.receive(.tapped(song))
         #expect(requestMaker.methodsCalled == ["stream(songId:)"])
         #expect(requestMaker.songId == "1")
-        #expect(download.methodsCalled == ["download(song:)", "download(song:)", "download(song:)"])
+        await #expect(download.methodsCalled == ["download(song:)", "download(song:)", "download(song:)"])
         #expect(player.methodsCalled == ["play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
     }
 
@@ -175,7 +175,7 @@ struct PlaylistProcessorTests {
         #expect(haptic.methodsCalled.isEmpty)
         #expect(audioSession.methodsCalled.isEmpty)
         #expect(requestMaker.methodsCalled.isEmpty)
-        #expect(download.methodsCalled.isEmpty)
+        await #expect(download.methodsCalled.isEmpty)
         #expect(player.methodsCalled.isEmpty)
     }
 
@@ -197,7 +197,7 @@ struct PlaylistProcessorTests {
         await subject.receive(.clear)
         #expect(playlist.methodsCalled == ["clear()"])
         #expect(player.methodsCalled == ["clear()"])
-        #expect(download.methodsCalled == ["clear()"])
+        await #expect(download.methodsCalled == ["clear()"])
         #expect(subject.state.songs.isEmpty)
     }
 }
