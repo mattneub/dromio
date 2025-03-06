@@ -5,6 +5,7 @@ import Foundation
 struct SubsonicAlbum: Codable, Equatable {
     let id: String
     let name: String
+    var sortName: String?
     let artist: String?
     let songCount: Int
     let song: [SubsonicSong]? // absent for `getAlbumsList2`, but present for `getAlbum`

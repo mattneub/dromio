@@ -14,13 +14,14 @@ struct AlbumsViewControllerTests {
         subject.processor = processor
     }
 
-    @Test("Initialize: sets title to Albums, creates data source delegate")
+    @Test("Initialize: sets title to Albums, creates data source delegate, configures table view")
     func initialize() throws {
         let subject = AlbumsViewController(nibName: nil, bundle: nil)
         #expect(subject.title == "Albums")
         #expect(subject.dataSourceDelegate != nil)
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
-        #expect(subject.tableView.estimatedRowHeight == 78)
+        #expect(subject.tableView.estimatedRowHeight == 68)
+        #expect(subject.tableView.sectionIndexColor == .systemRed)
     }
 
     @Test("Initialize: creates right bar button item")
@@ -48,7 +49,7 @@ struct AlbumsViewControllerTests {
 
     @Test("present: presents to the data source")
     func present() {
-        let state = AlbumsState(albums: [.init(id: "1", name: "name", artist: "Artist", songCount: 10, song: nil)])
+        let state = AlbumsState(albums: [.init(id: "1", name: "name", sortName: nil, artist: "Artist", songCount: 10, song: nil)])
         subject.present(state)
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)

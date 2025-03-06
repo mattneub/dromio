@@ -15,6 +15,7 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         dataSourceDelegate = PlaylistDataSourceDelegate(tableView: tableView)
+        tableView.estimatedRowHeight = 90
     }
 
     required init?(coder: NSCoder) {

@@ -19,7 +19,7 @@ struct AlbumViewControllerTests {
         let subject = AlbumViewController(nibName: nil, bundle: nil)
         #expect(subject.dataSourceDelegate != nil)
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
-        #expect(subject.tableView.estimatedRowHeight == 140)
+        #expect(subject.tableView.estimatedRowHeight == 90)
     }
 
     @Test("Initialize: creates right bar button item")

@@ -19,6 +19,7 @@ struct PlaylistViewControllerTests {
         let subject = PlaylistViewController(nibName: nil, bundle: nil)
         #expect(subject.dataSourceDelegate != nil)
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
+        #expect(subject.tableView.estimatedRowHeight == 90)
     }
 
     @Test("Setting the processor sets the data source's processor")

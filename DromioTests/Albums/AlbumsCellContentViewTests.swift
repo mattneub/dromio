@@ -9,6 +9,7 @@ struct AlbumsCellContentConfigurationTests {
         let configuration = AlbumsCellContentConfiguration(album: SubsonicAlbum(
             id: "1",
             name: "Title",
+            sortName: nil,
             artist: "Artist",
             songCount: 100,
             song: []
@@ -26,6 +27,7 @@ struct AlbumsCellContentConfigurationTests {
         let configuration = AlbumsCellContentConfiguration(album: SubsonicAlbum(
             id: "1",
             name: "Title",
+            sortName: nil,
             artist: "Artist",
             songCount: 100,
             song: []
@@ -37,6 +39,7 @@ struct AlbumsCellContentConfigurationTests {
         let configuration2 = AlbumsCellContentConfiguration(album: SubsonicAlbum(
             id: "2",
             name: "Howdy",
+            sortName: nil,
             artist: nil, // test nil artist
             songCount: 1, // test singular/plural
             song: []

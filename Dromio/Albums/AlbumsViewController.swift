@@ -18,7 +18,8 @@ final class AlbumsViewController: UITableViewController, Presenter {
         title = "Albums"
         let item = UIBarButtonItem(title: nil, image: UIImage(systemName: "list.bullet"), target: self, action: #selector(showPlaylist))
         navigationItem.rightBarButtonItem = item
-        tableView.estimatedRowHeight = 78
+        tableView.estimatedRowHeight = 68
+        tableView.sectionIndexColor = .systemRed
     }
 
     required init?(coder: NSCoder) {

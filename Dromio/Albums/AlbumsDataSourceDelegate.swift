@@ -26,11 +26,8 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
     }
 
     func present(_ state: AlbumsState) {
-        if data != state.albums {
-            data = state.albums
-            Task {
-                await updateTableView()
-            }
+        Task {
+            await updateTableView(data: state.albums)
         }
     }
 
@@ -41,7 +38,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
     var data = [SubsonicAlbum]()
 
     /// Type of the diffable data source.
-    typealias Datasource = UITableViewDiffableDataSource<String, String>
+    typealias Datasource = MyTableViewDiffableDataSource
 
     /// Retain the diffable data source.
     var datasource: Datasource!
@@ -74,11 +71,28 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
     }
 
     /// Method called by `present` to bring the table into line with the data.
-    func updateTableView() async {
+    func updateTableView(data: [SubsonicAlbum]) async {
+        let data = data.sorted
+        self.data = data
+        // clump the data into sections so we know how to apply sections to the datasource
+        let dictionary = Dictionary(grouping: data) {
+            var firstLetter = String($0.sortName!.prefix(1)) // sortName guaranteed after `sorted`
+            if !("a"..."z").contains(firstLetter) {
+                firstLetter = "#" // clump all non-letter names at the front under "#"
+            }
+            return firstLetter
+        }
+        let sections = Array(dictionary).sorted { $0.key < $1.key }.map {
+            Section(name: $0.key, rows: $0.value)
+        }
+        // all set, now just deal those sections and their items right into the snapshot, in order;
+        // we do not actually need another copy of the list of sections, so just throw it away afterwards
         var snapshot = datasource.snapshot()
-        snapshot.deleteAllItems() // despite the name, this deletes the section too
-        snapshot.appendSections(["Dummy"])
-        snapshot.appendItems(data.map {$0.id})
+        snapshot.deleteAllItems() // despite the name, this deletes the section(s) too
+        for section in sections {
+            snapshot.appendSections([section.name])
+            snapshot.appendItems(section.rows.map {$0.id})
+        }
         await datasource.apply(snapshot, animatingDifferences: false)
     }
 
@@ -89,4 +103,10 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
         }
     }
 
+}
+
+final class MyTableViewDiffableDataSource: UITableViewDiffableDataSource<String, String> {
+    override func sectionIndexTitles(for _: UITableView) -> [String]? {
+        return snapshot().sectionIdentifiers.map { $0.uppercased() }
+    }
 }

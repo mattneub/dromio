@@ -17,7 +17,7 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
         dataSourceDelegate = AlbumDataSourceDelegate(tableView: tableView)
         let item = UIBarButtonItem(title: nil, image: UIImage(systemName: "list.bullet"), target: self, action: #selector(showPlaylist))
         navigationItem.rightBarButtonItem = item
-        tableView.estimatedRowHeight = 140
+        tableView.estimatedRowHeight = 90
     }
 
     required init?(coder: NSCoder) {
