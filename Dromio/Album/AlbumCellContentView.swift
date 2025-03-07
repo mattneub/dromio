@@ -6,7 +6,6 @@ final class AlbumCellContentView: UIView, UIContentView {
     @IBOutlet var count: UILabel!
     @IBOutlet var composer: UILabel!
     @IBOutlet var duration: UILabel!
-    @IBOutlet var year: UILabel!
 
     /// Boilerplate.
     var configuration: any UIContentConfiguration {
@@ -45,7 +44,6 @@ final class AlbumCellContentView: UIView, UIContentView {
         count.text = String(configuration.number) + " of " + String(configuration.totalCount)
         duration.text = configuration.duration
         composer.text = configuration.composer
-        year.text = configuration.year
     }
 }
 
@@ -57,7 +55,6 @@ struct AlbumCellContentConfiguration: UIContentConfiguration, Equatable {
     let totalCount: Int
     let duration: String
     let composer: String
-    let year: String
 
     /// The configuration must be created directly from a song. We also need the total count for
     /// the album, which is not part of the song.
@@ -74,8 +71,9 @@ struct AlbumCellContentConfiguration: UIContentConfiguration, Equatable {
                 .time(pattern: $0 >= 3600 ? .hourMinuteSecond : .minuteSecond)
             )
         } ?? ""
-        self.composer = song.displayComposer.ensureNoBreakSpace
-        self.year = song.year.ensureNoBreakSpace
+        let composer = song.displayComposer ?? ""
+        let year = song.year.ensureNoBreakSpace
+        self.composer = (composer.isEmpty ? "" : composer + " ") + year
     }
 
     func makeContentView() -> any UIView & UIContentView {

@@ -22,31 +22,33 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="STu-iZ-oTp">
-                    <rect key="frame" x="16" y="8.0000000000000018" width="312.66666666666669" height="19.666666666666671"/>
+                    <rect key="frame" x="16" y="8.0000000000000018" width="361" height="19.666666666666671"/>
                     <fontDescription key="fontDescription" name="Verdana-Bold" family="Verdana" pointSize="16"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
+                    <lineBreakStrategy key="lineBreakStrategy"/>
                 </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Artist" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y86-M1-jBL">
                     <rect key="frame" x="16" y="39.666666666666664" width="361" height="16"/>
                     <fontDescription key="fontDescription" name="Verdana" family="Verdana" pointSize="13"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
+                    <lineBreakStrategy key="lineBreakStrategy"/>
                 </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Composer" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zKj-gq-H4u">
-                    <rect key="frame" x="15.999999999999996" y="228.66666666666666" width="59.666666666666657" height="13.333333333333343"/>
+                    <rect key="frame" x="16" y="228.66666666666666" width="144.33333333333334" height="13.333333333333343"/>
                     <fontDescription key="fontDescription" name="Palatino-Roman" family="Palatino" pointSize="13"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Album" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gCT-iE-XbD">
-                    <rect key="frame" x="344.33333333333331" y="222.66666666666666" width="40.666666666666686" height="13.333333333333343"/>
+                    <rect key="frame" x="232.66666666666663" y="228.66666666666666" width="152.33333333333337" height="13.333333333333343"/>
                     <fontDescription key="fontDescription" name="Palatino-Roman" family="Palatino" pointSize="13"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="1000" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" text="Duration" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bFs-wc-LmU">
-                    <rect key="frame" x="332.66666666666669" y="13.333333333333332" width="52.333333333333314" height="14.333333333333332"/>
+                    <rect key="frame" x="170.33333333333334" y="228.33333333333334" width="52.333333333333343" height="14.333333333333343"/>
                     <fontDescription key="fontDescription" name="Palatino-Roman" family="Palatino" pointSize="13"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
@@ -54,12 +56,11 @@
             </subviews>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="bFs-wc-LmU" secondAttribute="trailing" constant="8" id="0M8-b9-4DF"/>
                 <constraint firstAttribute="trailing" secondItem="y86-M1-jBL" secondAttribute="trailing" constant="16" id="2ZC-9H-Nza"/>
-                <constraint firstItem="bFs-wc-LmU" firstAttribute="leading" secondItem="STu-iZ-oTp" secondAttribute="trailing" constant="4" id="BvB-D5-8kv"/>
-                <constraint firstItem="bFs-wc-LmU" firstAttribute="firstBaseline" secondItem="STu-iZ-oTp" secondAttribute="firstBaseline" id="Eyz-7w-OTx"/>
+                <constraint firstItem="bFs-wc-LmU" firstAttribute="centerY" secondItem="zKj-gq-H4u" secondAttribute="centerY" id="AyU-1D-liK"/>
+                <constraint firstItem="gCT-iE-XbD" firstAttribute="centerY" secondItem="zKj-gq-H4u" secondAttribute="centerY" id="B5c-DA-mwz"/>
                 <constraint firstItem="STu-iZ-oTp" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="Hoj-2u-z1Y"/>
-                <constraint firstAttribute="bottom" secondItem="gCT-iE-XbD" secondAttribute="bottom" constant="14.000000000000028" id="MNo-cL-6jz"/>
+                <constraint firstItem="bFs-wc-LmU" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="Lvh-Jc-PeC"/>
                 <constraint firstItem="zKj-gq-H4u" firstAttribute="top" secondItem="y86-M1-jBL" secondAttribute="bottom" priority="999" constant="12" id="ST1-n9-kfk"/>
                 <constraint firstItem="y86-M1-jBL" firstAttribute="top" secondItem="STu-iZ-oTp" secondAttribute="bottom" constant="12" id="X4X-5d-Nvb"/>
                 <constraint firstAttribute="bottom" secondItem="zKj-gq-H4u" secondAttribute="bottom" constant="8" id="djq-pb-Ziy"/>
@@ -67,6 +68,9 @@
                 <constraint firstAttribute="trailing" secondItem="gCT-iE-XbD" secondAttribute="trailing" constant="8" id="fGE-Bb-Spq"/>
                 <constraint firstItem="y86-M1-jBL" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="gmA-Fg-ERw"/>
                 <constraint firstItem="zKj-gq-H4u" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="iL8-eM-ly0"/>
+                <constraint firstAttribute="trailing" secondItem="STu-iZ-oTp" secondAttribute="trailing" constant="16" id="q7Q-K6-kfL"/>
+                <constraint firstItem="bFs-wc-LmU" firstAttribute="leading" secondItem="zKj-gq-H4u" secondAttribute="trailing" constant="10" id="tn6-LJ-QjC"/>
+                <constraint firstItem="gCT-iE-XbD" firstAttribute="leading" secondItem="bFs-wc-LmU" secondAttribute="trailing" constant="10" id="u56-5v-BX3"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>
