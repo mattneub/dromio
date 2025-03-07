@@ -62,8 +62,18 @@ struct AlbumDataSourceDelegateTests {
             albumId: "2",
             suffix: nil,
             duration: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
         )]
-        state.totalCount = 10
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
@@ -80,7 +90,7 @@ struct AlbumDataSourceDelegateTests {
             albumId: "2",
             suffix: nil,
             duration: nil
-        ), totalCount: 10)
+        ), totalCount: 2)
         #expect(configuration == expected)
     }
 

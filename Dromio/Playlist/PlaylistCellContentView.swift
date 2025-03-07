@@ -55,12 +55,10 @@ struct PlaylistCellContentConfiguration: UIContentConfiguration, Equatable {
     let duration: String
     let composer: String
     
-    /// The configuration must be created directly from a song. We also need the total count of
-    /// songs in the album, which is not part of the song.
+    /// The configuration must be created directly from a song.
     /// - Parameters:
     ///   - song: The song.
-    ///   - totalCount: The total count of songs in the album.
-    init(song: SubsonicSong, totalCount: Int = 0) {
+    init(song: SubsonicSong) {
         self.title = song.title
         self.artist = song.artist
         self.album = song.album.ensureNoBreakSpace

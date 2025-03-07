@@ -93,11 +93,11 @@ struct RootCoordinatorTests {
         rootViewController.present(presentedViewController, animated: false)
         await #while(rootViewController.presentedViewController == nil)
         // ok, here we go!
-        subject.showAlbum(albumId: "1", songCount: 3, title: "Album")
+        subject.showAlbum(albumId: "1", title: "Album")
         await #while(presentedViewController.children.count < 2)
         let albumViewController = try #require(presentedViewController.children[1] as? AlbumViewController)
         let albumProcessor = try #require(subject.albumProcessor as? AlbumProcessor)
-        #expect(albumProcessor.state == .init(albumId: "1", albumTitle: "Album", totalCount: 3))
+        #expect(albumProcessor.state == .init(albumId: "1", albumTitle: "Album"))
         #expect(albumViewController.processor === albumProcessor)
         #expect(albumProcessor.presenter === albumViewController)
         #expect(albumProcessor.coordinator === subject)

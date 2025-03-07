@@ -26,7 +26,7 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
     }
 
     func present(_ state: AlbumState) {
-        totalCount = state.totalCount
+        totalCount = state.songs.count
         Task {
             await updateTableView(state)
         }

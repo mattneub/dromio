@@ -32,9 +32,8 @@ struct AlbumsProcessorTests {
     func showAlbum() async {
         subject.state.albums = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
         await subject.receive(.showAlbum(albumId: "1"))
-        #expect(coordinator.methodsCalled == ["showAlbum(albumId:songCount:title:)"])
+        #expect(coordinator.methodsCalled == ["showAlbum(albumId:title:)"])
         #expect(coordinator.albumId == "1")
-        #expect(coordinator.songCount == 30)
         #expect(coordinator.title == "Yoho")
     }
 

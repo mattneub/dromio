@@ -13,7 +13,6 @@ final class MockRootCoordinator: RootCoordinatorType {
     var rootViewController: UIViewController?
     var methodsCalled = [String]()
     var albumId: String?
-    var songCount: Int?
     var title: String?
 
     func createInitialInterface(window: UIWindow) {
@@ -32,9 +31,8 @@ final class MockRootCoordinator: RootCoordinatorType {
         methodsCalled.append(#function)
     }
 
-    func showAlbum(albumId: String, songCount: Int, title: String) {
+    func showAlbum(albumId: String, title: String) {
         self.albumId = albumId
-        self.songCount = songCount
         self.title = title
         methodsCalled.append(#function)
     }
