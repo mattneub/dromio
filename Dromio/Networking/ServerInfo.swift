@@ -1,5 +1,8 @@
 import Foundation
 
+/* Note: the demo server is at demo.navidrome.org, port 80, demo, demo */
+/* However, I can't work with it as it apparently does not permit downloads */
+
 /// Struct describing a Navidrome server.
 struct ServerInfo: Codable, Equatable {
     let scheme: String

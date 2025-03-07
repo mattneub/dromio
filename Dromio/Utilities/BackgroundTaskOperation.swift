@@ -45,10 +45,17 @@ final class BackgroundTaskOperation<T: Sendable> {
             }
             UIApplication.shared.endBackgroundTask(self.bti)
         }
-        guard bti != .invalid else { throw NSError(domain: "what", code: 0) }
-        let result = try await whatToDo()
-        UIApplication.shared.endBackgroundTask(bti)
-        return result
+        do {
+            guard bti != .invalid else { throw NSError(domain: "what", code: 0) }
+            let result = try await whatToDo()
+            UIApplication.shared.endBackgroundTask(bti)
+            return result
+        } catch {
+            Task { @MainActor in
+                try await self.cleanup?()
+            }
+            UIApplication.shared.endBackgroundTask(self.bti)
+            throw error
+        }
     }
 }
-
