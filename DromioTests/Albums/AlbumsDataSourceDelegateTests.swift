@@ -83,6 +83,16 @@ struct AlbumsDataSourceDelegateTests {
         #expect(result == ["T", "Y"])
     }
 
+    @Test("sectionIndexTitles: with allAlbums, but no actual albums, returns nil")
+    func sectionIndexTitlesAllButNoData() async throws {
+        await #while(subject.datasource == nil)
+        var state = AlbumsState(listType: .allAlbums)
+        state.albums = []
+        subject.present(state)
+        await #while(subject.datasource.sectionIdentifier(for: 0) == "Dummy") // it will become nil
+        #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
+    }
+
     @Test("sectionIndexTitles: with randomAlbums, returns nil")
     func sectionIndexTitlesRandom() async throws {
         await #while(subject.datasource == nil)

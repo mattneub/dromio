@@ -120,6 +120,9 @@ final class MyTableViewDiffableDataSource: UITableViewDiffableDataSource<String,
     var listType: AlbumsState.ListType = .allAlbums
 
     override func sectionIndexTitles(for _: UITableView) -> [String]? {
+        if snapshot().itemIdentifiers.isEmpty {
+            return nil
+        }
         switch listType {
         case .allAlbums:
             return snapshot().sectionIdentifiers.map { $0.uppercased() }
