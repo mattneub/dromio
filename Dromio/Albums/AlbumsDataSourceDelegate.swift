@@ -26,6 +26,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
     }
 
     func present(_ state: AlbumsState) {
+        datasource?.listType = state.listType
         Task {
             await updateTableView(data: state.albums)
         }
@@ -72,21 +73,31 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
 
     /// Method called by `present` to bring the table into line with the data.
     func updateTableView(data: [SubsonicAlbum]) async {
-        let data = data.sorted
+        var sections = [Section(name: "dummy", rows: [SubsonicAlbum]())]
         self.data = data
-        // clump the data into sections so we know how to apply sections to the datasource
-        let dictionary = Dictionary(grouping: data) {
-            var firstLetter = String($0.sortName!.prefix(1)) // sortName guaranteed after `sorted`
-            if !("a"..."z").contains(firstLetter) {
-                firstLetter = "#" // clump all non-letter names at the front under "#"
+        switch datasource?.listType {
+        case .allAlbums:
+            // sort the data
+            let data = data.sorted
+            self.data = data
+            // clump the data into sections by first letter
+            let dictionary = Dictionary(grouping: data) {
+                var firstLetter = String($0.sortName!.prefix(1)) // sortName guaranteed after `sorted`
+                if !("a"..."z").contains(firstLetter) {
+                    firstLetter = "#" // clump all non-letter names at the front under "#"
+                }
+                return firstLetter
             }
-            return firstLetter
+            sections = Array(dictionary).sorted { $0.key < $1.key }.map {
+                Section(name: $0.key, rows: $0.value)
+            }
+        case .randomAlbums:
+            // just one section in the order we're given
+            sections[0].rows = data
+        default: break
         }
-        let sections = Array(dictionary).sorted { $0.key < $1.key }.map {
-            Section(name: $0.key, rows: $0.value)
-        }
-        // all set, now just deal those sections and their items right into the snapshot, in order;
-        // we do not actually need another copy of the list of sections, so just throw it away afterwards
+        // "deal" the sections and their items right into the snapshot, in order;
+        // we do not actually need to retain the section info independently so just throw it away
         var snapshot = datasource.snapshot()
         snapshot.deleteAllItems() // despite the name, this deletes the section(s) too
         for section in sections {
@@ -106,7 +117,14 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
 }
 
 final class MyTableViewDiffableDataSource: UITableViewDiffableDataSource<String, String> {
+    var listType: AlbumsState.ListType = .allAlbums
+
     override func sectionIndexTitles(for _: UITableView) -> [String]? {
-        return snapshot().sectionIdentifiers.map { $0.uppercased() }
+        switch listType {
+        case .allAlbums:
+            return snapshot().sectionIdentifiers.map { $0.uppercased() }
+        case .randomAlbums:
+            return nil
+        }
     }
 }

@@ -26,6 +26,14 @@ final class MockRequestMaker: RequestMakerType {
         return albumList
     }
 
+    func getAlbumsRandom() async throws -> [Dromio.SubsonicAlbum] {
+        methodsCalled.append(#function)
+        if let pingError {
+            throw pingError
+        }
+        return albumList
+    }
+
     func getSongsFor(albumId: String) async throws -> [SubsonicSong] {
         methodsCalled.append(#function)
         self.albumId = albumId

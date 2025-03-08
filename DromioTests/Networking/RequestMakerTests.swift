@@ -220,6 +220,85 @@ struct RequestMakerTests {
         }
     }
 
+    @Test("getAlbumsRandom: calls url maker with action getAlbumList2 add additional, calls networker, calls validator, returns list")
+    func getAlbumsRandom() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: AlbumList2Response(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                albumList2: AlbumsResponse(album: [SubsonicAlbum(id: "1", name: "title", sortName: nil, artist: "Artist", songCount: 10, song: nil)]),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        let list = try await subject.getAlbumsRandom()
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "getAlbumList2")
+        let expectedAdditional: KeyValuePairs = ["type": "random", "size": "20"]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+        #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
+        #expect(list == [SubsonicAlbum(id: "1", name: "title", sortName: nil, artist: "Artist", songCount: 10, song: nil)])
+    }
+
+    @Test("getAlbumsRandom: rethrows urlMaker throw")
+    func getAlbumsRandomUrlMakerThrow() async throws {
+        urlMaker.errorToThrow = NetworkerError.message("oops")
+        await #expect {
+            try await subject.getAlbumsRandom()
+        } throws: { error in
+            error as! NetworkerError == .message("oops")
+        }
+    }
+
+    @Test("getAlbumsRandom: rethrows networker throw")
+    func getAlbumsRandomNetworkerThrow() async throws {
+        networker.errorToThrow = NetworkerError.message("darn")
+        await #expect {
+            try await subject.getAlbumsRandom()
+        } throws: { error in
+            error as! NetworkerError == .message("darn")
+        }
+    }
+
+    @Test("getAlbumsRandom: rethrows decode error")
+    func getAlbumsRandomDecoderThrow() async throws {
+        networker.dataToReturn = [try! JSONEncoder().encode(#"{"howdy": "hey"}"#)]
+        await #expect {
+            try await subject.getAlbumsRandom()
+        } throws: { error in
+            error is DecodingError
+        }
+    }
+
+    @Test("getAlbumsRandom: rethrows validator error")
+    func getAlbumsRandomValidatorThrow() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: AlbumList2Response(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                albumList2: AlbumsResponse(album: [SubsonicAlbum(id: "1", name: "title", sortName: nil, artist: "Artist", songCount: 10, song: nil)]),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        responseValidator.errorToThrow = NetworkerError.message("yipes")
+        await #expect {
+            try await subject.getAlbumList()
+        } throws: { error in
+            error as! NetworkerError == .message("yipes")
+        }
+    }
+
+
     @Test("getSongsFor: calls url maker with action getAlbum and additional id, calls networker, calls validator, returns list")
     func getSongFor() async throws {
         let payload = SubsonicResponse(

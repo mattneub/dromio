@@ -20,12 +20,22 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented?.albums.first == .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil))
     }
 
-    @Test("receive initialData: sends `getAlbumList` to request maker, sets state `albums`")
-    func receiveInitialData() async {
+    @Test("receive allAlbums: sends `getAlbumList` to request maker, sets state")
+    func receiveAllAlbums() async {
         requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
-        await subject.receive(.initialData)
+        await subject.receive(.allAlbums)
         #expect(requestMaker.methodsCalled == ["getAlbumList()"])
-        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(subject.state.listType == .allAlbums)
+        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+    }
+
+    @Test("receive randomAlbums: sends `getAlbumList` to request maker, sets state")
+    func receiveRandomAlbums() async {
+        requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        await subject.receive(.randomAlbums)
+        #expect(requestMaker.methodsCalled == ["getAlbumsRandom()"])
+        #expect(subject.state.listType == .randomAlbums)
+        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
     }
 
     @Test("showAlbum: sends `showAlbum` to coordinator, with info from specified album")

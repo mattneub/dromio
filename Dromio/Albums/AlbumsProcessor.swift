@@ -18,9 +18,18 @@ final class AlbumsProcessor: Processor {
 
     func receive(_ action: AlbumsAction) async {
         switch action {
-        case .initialData:
+        case .allAlbums:
             do {
                 let albums = try await services.requestMaker.getAlbumList()
+                state.listType = .allAlbums
+                state.albums = albums
+            } catch {
+                print(error)
+            }
+        case .randomAlbums:
+            do {
+                let albums = try await services.requestMaker.getAlbumsRandom()
+                state.listType = .randomAlbums
                 state.albums = albums
             } catch {
                 print(error)

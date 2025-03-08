@@ -15,9 +15,18 @@ final class AlbumsViewController: UITableViewController, Presenter {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         dataSourceDelegate = AlbumsDataSourceDelegate(tableView: tableView)
-        title = "Albums"
-        let item = UIBarButtonItem(title: nil, image: UIImage(systemName: "list.bullet"), target: self, action: #selector(showPlaylist))
-        navigationItem.rightBarButtonItem = item
+        title = "All Albums"
+        do {
+            let item = UIBarButtonItem(
+                title: nil, image: UIImage(systemName: "list.bullet"), target: self, action: #selector(showPlaylist)
+            )
+            navigationItem.rightBarButtonItem = item
+        }
+        do {
+            let menu = UIMenu() // real menu will be provided by `present`
+            let item = UIBarButtonItem(image: UIImage(systemName: "arrow.trianglehead.turn.up.right.circle"), menu: menu)
+            navigationItem.leftBarButtonItem = item
+        }
         tableView.estimatedRowHeight = 68
         tableView.sectionIndexColor = .systemRed
     }
@@ -31,12 +40,38 @@ final class AlbumsViewController: UITableViewController, Presenter {
         dataSourceDelegate?.processor = processor
         view.backgroundColor = .systemBackground
         Task {
-            await processor?.receive(.initialData)
+            await processor?.receive(.allAlbums)
         }
     }
 
     func present(_ state: AlbumsState) {
+        title = switch state.listType {
+        case .allAlbums: "All Albums"
+        case .randomAlbums: "Random Albums"
+        }
+        navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
         dataSourceDelegate?.present(state)
+    }
+
+    private func menu(for listType: AlbumsState.ListType) -> UIMenu {
+        switch listType {
+        case .allAlbums:
+            UIMenu(title: "", options: [], children: [
+                UIAction(title: "Random Albums", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.randomAlbums)
+                    }
+                })
+            ])
+        case .randomAlbums:
+            UIMenu(title: "", options: [], children: [
+                UIAction(title: "All Albums", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.allAlbums)
+                    }
+                })
+            ])
+        }
     }
 
     @objc func showPlaylist() {

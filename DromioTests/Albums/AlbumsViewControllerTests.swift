@@ -17,7 +17,7 @@ struct AlbumsViewControllerTests {
     @Test("Initialize: sets title to Albums, creates data source delegate, configures table view")
     func initialize() throws {
         let subject = AlbumsViewController(nibName: nil, bundle: nil)
-        #expect(subject.title == "Albums")
+        #expect(subject.title == "All Albums")
         #expect(subject.dataSourceDelegate != nil)
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
         #expect(subject.tableView.estimatedRowHeight == 68)
@@ -27,8 +27,18 @@ struct AlbumsViewControllerTests {
     @Test("Initialize: creates right bar button item")
     func initializeRight() throws {
         let item = try #require(subject.navigationItem.rightBarButtonItem)
+        #expect(item.title == nil)
+        #expect(item.image == UIImage(systemName: "list.bullet"))
         #expect(item.target === subject)
         #expect(item.action == #selector(subject.showPlaylist))
+    }
+
+    @Test("Initialize: creates left bar button item")
+    func initializeLeft() throws {
+        let item = try #require(subject.navigationItem.leftBarButtonItem)
+        #expect(item.title == nil)
+        #expect(item.image == UIImage(systemName: "arrow.trianglehead.turn.up.right.circle"))
+        #expect(item.menu != nil)
     }
 
     @Test("Setting the processor sets the data source's processor")
@@ -38,13 +48,13 @@ struct AlbumsViewControllerTests {
         #expect(mockDataSourceDelegate.processor === processor2)
     }
 
-    @Test("viewDidLoad: sets the data source's processor, sets background color, sends .initialData action")
+    @Test("viewDidLoad: sets the data source's processor, sets background color, sends .allAlbums action")
     func viewDidLoad() async {
         subject.loadViewIfNeeded()
         #expect(mockDataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .systemBackground)
         await #while(processor.thingsReceived.isEmpty)
-        #expect(processor.thingsReceived.first == .initialData)
+        #expect(processor.thingsReceived.first == .allAlbums)
     }
 
     @Test("present: presents to the data source")
@@ -53,6 +63,34 @@ struct AlbumsViewControllerTests {
         subject.present(state)
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
+    }
+
+    @Test("present: sets the title and left bar button menu item according to the state")
+    func presentAll() async throws {
+        let state = AlbumsState(listType: .allAlbums)
+        subject.present(state)
+        #expect(subject.title == "All Albums")
+        let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
+        #expect(menu.children.count == 1)
+        let action = menu.children[0]
+        #expect(action.title == "Random Albums")
+        (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+        await #while(processor.thingsReceived.isEmpty)
+        #expect(processor.thingsReceived.last == .randomAlbums)
+    }
+
+    @Test("present: sets the title and left bar button menu item according to the state")
+    func presentRandom() async throws {
+        let state = AlbumsState(listType: .randomAlbums)
+        subject.present(state)
+        #expect(subject.title == "Random Albums")
+        let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
+        #expect(menu.children.count == 1)
+        let action = menu.children[0]
+        #expect(action.title == "All Albums")
+        (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+        await #while(processor.thingsReceived.isEmpty)
+        #expect(processor.thingsReceived.last == .allAlbums)
     }
 
     @Test("showPlaylist: sends showPlaylist to processor")

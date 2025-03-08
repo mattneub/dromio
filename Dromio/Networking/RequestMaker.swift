@@ -5,6 +5,7 @@ import Foundation
 protocol RequestMakerType: Sendable {
     func ping() async throws
     func getAlbumList() async throws -> [SubsonicAlbum]
+    func getAlbumsRandom() async throws -> [SubsonicAlbum]
     func getSongsFor(albumId: String) async throws -> [SubsonicSong]
     func download(songId: String) async throws -> URL
     func stream(songId: String) async throws -> URL
@@ -80,6 +81,20 @@ final class RequestMaker: RequestMakerType {
                 "type": "alphabeticalByName",
                 "size": String(chunk),
                 "offset": String(offset),
+            ]
+        )
+        let data = try await services.networker.performRequest(url: url)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<AlbumList2Response>.self, from: data)
+        try await services.responseValidator.validateResponse(jsonResponse)
+        return jsonResponse.subsonicResponse.albumList2.album
+    }
+
+    func getAlbumsRandom() async throws -> [SubsonicAlbum] {
+        let url = try services.urlMaker.urlFor(
+            action: "getAlbumList2",
+            additional: [
+                "type": "random",
+                "size": "20",
             ]
         )
         let data = try await services.networker.performRequest(url: url)
