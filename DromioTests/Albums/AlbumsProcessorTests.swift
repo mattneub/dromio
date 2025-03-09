@@ -47,6 +47,12 @@ struct AlbumsProcessorTests {
         #expect(coordinator.title == "Yoho")
     }
 
+    @Test("receive artists: tell coordinator to showArtists")
+    func showArtists() async {
+        await subject.receive(.artists)
+        #expect(coordinator.methodsCalled.last == "showArtists()")
+    }
+
     @Test("receive showPlaylist: tells coordinator to showPlaylist")
     func showPlaylist() async {
         await subject.receive(.showPlaylist)

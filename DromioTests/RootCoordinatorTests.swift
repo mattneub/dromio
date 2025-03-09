@@ -103,6 +103,50 @@ struct RootCoordinatorTests {
         #expect(albumProcessor.coordinator === subject)
     }
 
+    @Test("showArtists: presents artists view controller, configures module")
+    func showArtists() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        let presentedViewController = UINavigationController(rootViewController: UIViewController())
+        rootViewController.present(presentedViewController, animated: false)
+        await #while(rootViewController.presentedViewController == nil)
+        // ok, here we go!
+        subject.showArtists()
+        await #while(subject.rootViewController?.presentedViewController?.presentedViewController == nil)
+        let navigationController = try #require(subject.rootViewController?.presentedViewController?.presentedViewController as? UINavigationController)
+        #expect(navigationController.modalPresentationStyle == .fullScreen)
+        #expect(navigationController.modalTransitionStyle == .flipHorizontal)
+        let artistsViewController = try #require(navigationController.children.first as? ArtistsViewController)
+        let artistsProcessor = try #require(subject.artistsProcessor as? ArtistsProcessor)
+        #expect(artistsViewController.processor === artistsProcessor)
+        #expect(artistsProcessor.presenter === artistsViewController)
+        #expect(artistsProcessor.coordinator === subject)
+    }
+
+    @Test("dismissArtists: dismisses artists view controller")
+    func dismissArtists() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        let presentedViewController = UINavigationController(rootViewController: UIViewController())
+        rootViewController.present(presentedViewController, animated: false)
+        await #while(rootViewController.presentedViewController == nil)
+        subject.showArtists()
+        await #while(subject.rootViewController?.presentedViewController?.presentedViewController == nil)
+        let navigationController = try #require(subject.rootViewController?.presentedViewController?.presentedViewController as? UINavigationController)
+        let artistsViewController = try #require(navigationController.children.first as? ArtistsViewController)
+        // ok, that was preparation, here we go
+        subject.dismissArtists()
+        await #while(subject.rootViewController?.presentedViewController?.presentedViewController != nil)
+        #expect(navigationController.presentingViewController == nil)
+        #expect(artistsViewController.view?.window == nil)
+    }
+
     @Test("showPlaylist: pushes playlist view controller, configures module")
     func showPlaylist() async throws {
         // fake minimal initial interface
@@ -117,6 +161,30 @@ struct RootCoordinatorTests {
         subject.showPlaylist()
         await #while(presentedViewController.children.count < 2)
         let playlistViewController = try #require(presentedViewController.children[1] as? PlaylistViewController)
+        let playlistProcessor = try #require(subject.playlistProcessor as? PlaylistProcessor)
+        #expect(playlistViewController.processor === playlistProcessor)
+        #expect(playlistProcessor.presenter === playlistViewController)
+        #expect(playlistProcessor.coordinator === subject)
+    }
+
+    @Test("showPlaylist: pushes playlist view controller onto second level presented view controller, configures module")
+    func showPlaylistTwoLevels() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        let presentedViewController = UINavigationController(rootViewController: UIViewController())
+        rootViewController.present(presentedViewController, animated: false)
+        await #while(rootViewController.presentedViewController == nil)
+        subject.showArtists()
+        await #while(subject.rootViewController?.presentedViewController?.presentedViewController == nil)
+        let navigationController = try #require(subject.rootViewController?.presentedViewController?.presentedViewController as? UINavigationController)
+        let _ = try #require(navigationController.children.first as? ArtistsViewController)
+        // ok, here we go!
+        subject.showPlaylist()
+        await #while(navigationController.children.count < 2)
+        let playlistViewController = try #require(navigationController.children[1] as? PlaylistViewController)
         let playlistProcessor = try #require(subject.playlistProcessor as? PlaylistProcessor)
         #expect(playlistViewController.processor === playlistProcessor)
         #expect(playlistProcessor.presenter === playlistViewController)

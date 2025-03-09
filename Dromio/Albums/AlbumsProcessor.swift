@@ -39,6 +39,8 @@ final class AlbumsProcessor: Processor {
                 return
             }
             coordinator?.showAlbum(albumId: id, title: album.name)
+        case .artists:
+            coordinator?.showArtists()
         case .showPlaylist:
             coordinator?.showPlaylist()
         }

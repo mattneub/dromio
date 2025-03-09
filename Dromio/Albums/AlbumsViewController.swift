@@ -6,7 +6,7 @@ final class AlbumsViewController: UITableViewController, Presenter {
     var dataSourceDelegate: (any DataSourceDelegate<AlbumsAction, AlbumsState>)?
 
     /// Reference to the processor, set by coordinator on creation; setting it passes the same processor to the data source.
-    var processor: (any Receiver<AlbumsAction>)? {
+    weak var processor: (any Receiver<AlbumsAction>)? {
         didSet {
             dataSourceDelegate?.processor = processor
         }
@@ -61,7 +61,12 @@ final class AlbumsViewController: UITableViewController, Presenter {
                     Task {
                         await self?.processor?.receive(.randomAlbums)
                     }
-                })
+                }),
+                UIAction(title: "Artists", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.artists)
+                    }
+                }),
             ])
         case .randomAlbums:
             UIMenu(title: "", options: [], children: [
@@ -69,7 +74,12 @@ final class AlbumsViewController: UITableViewController, Presenter {
                     Task {
                         await self?.processor?.receive(.allAlbums)
                     }
-                })
+                }),
+                UIAction(title: "Artists", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.artists)
+                    }
+                }),
             ])
         }
     }

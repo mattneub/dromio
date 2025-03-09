@@ -8,6 +8,8 @@ enum ArtistsAction: Equatable {
     case composers
     /// The user wants to see the album list for the given artist.
     case showAlbums(artistId: String)
+    /// The user wants to see the albums.
+    case albums
     /// The user would like to view the playlist.
     case showPlaylist
 }

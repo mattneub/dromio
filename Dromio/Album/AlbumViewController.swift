@@ -6,7 +6,7 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
     var dataSourceDelegate: (any DataSourceDelegate<AlbumAction, AlbumState>)?
 
     /// Reference to the processor, set by coordinator on creation; setting it passes the same processor to the data source.
-    var processor: (any Receiver<AlbumAction>)? {
+    weak var processor: (any Receiver<AlbumAction>)? {
         didSet {
             dataSourceDelegate?.processor = processor
         }

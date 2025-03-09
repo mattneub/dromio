@@ -28,7 +28,9 @@ final class PingProcessor: Processor {
                 }
                 try await services.requestMaker.ping()
                 state.success = .success
-                try await Task.sleep(for: .seconds(unlessTesting(0.6)))
+                try? await unlessTesting {
+                    try? await Task.sleep(for: .seconds(0.6))
+                }
                 coordinator?.showAlbums()
             } catch NetworkerError.message(let message) {
                 state.success = .failure(message: message)

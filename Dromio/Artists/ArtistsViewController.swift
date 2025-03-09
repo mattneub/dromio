@@ -6,7 +6,7 @@ final class ArtistsViewController: UITableViewController, Presenter {
     var dataSourceDelegate: (any DataSourceDelegate<ArtistsAction, ArtistsState>)?
 
     /// Reference to the processor, set by coordinator on creation; setting it passes the same processor to the data source.
-    var processor: (any Receiver<ArtistsAction>)? {
+    weak var processor: (any Receiver<ArtistsAction>)? {
         didSet {
             dataSourceDelegate?.processor = processor
         }
@@ -27,7 +27,7 @@ final class ArtistsViewController: UITableViewController, Presenter {
             let item = UIBarButtonItem(image: UIImage(systemName: "arrow.trianglehead.turn.up.right.circle"), menu: menu)
             navigationItem.leftBarButtonItem = item
         }
-        tableView.estimatedRowHeight = 68
+        tableView.estimatedRowHeight = 40
         tableView.sectionIndexColor = .systemRed
     }
 
@@ -49,30 +49,40 @@ final class ArtistsViewController: UITableViewController, Presenter {
         case .allArtists: "All Artists"
         case .composers: "Composers"
         }
-        // navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
+        navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
         dataSourceDelegate?.present(state)
     }
 
-//    private func menu(for listType: AlbumsState.ListType) -> UIMenu {
-//        switch listType {
-//        case .allAlbums:
-//            UIMenu(title: "", options: [], children: [
-//                UIAction(title: "Random Albums", handler: { [weak self] _ in
-//                    Task {
-//                        await self?.processor?.receive(.randomAlbums)
-//                    }
-//                })
-//            ])
-//        case .randomAlbums:
-//            UIMenu(title: "", options: [], children: [
-//                UIAction(title: "All Albums", handler: { [weak self] _ in
-//                    Task {
-//                        await self?.processor?.receive(.allAlbums)
-//                    }
-//                })
-//            ])
-//        }
-//    }
+    private func menu(for listType: ArtistsState.ListType) -> UIMenu {
+        switch listType {
+        case .allArtists:
+            UIMenu(title: "", options: [], children: [
+                UIAction(title: "Composers", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.composers)
+                    }
+                }),
+                UIAction(title: "Albums", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.albums)
+                    }
+                }),
+            ])
+        case .composers:
+            UIMenu(title: "", options: [], children: [
+                UIAction(title: "All Artists", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.allArtists)
+                    }
+                }),
+                UIAction(title: "Albums", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.albums)
+                    }
+                }),
+            ])
+        }
+    }
 
     @objc func showPlaylist() {
         Task {

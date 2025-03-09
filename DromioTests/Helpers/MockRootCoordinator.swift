@@ -7,6 +7,7 @@ final class MockRootCoordinator: RootCoordinatorType {
 
     var albumProcessor: (any Processor<AlbumAction, AlbumState>)?
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
+    var artistsProcessor: (any Processor<ArtistsAction, ArtistsState>)?
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)?
 
     var pingProcessor: (any Processor<PingAction, PingState>)?
@@ -34,6 +35,14 @@ final class MockRootCoordinator: RootCoordinatorType {
     func showAlbum(albumId: String, title: String) {
         self.albumId = albumId
         self.title = title
+        methodsCalled.append(#function)
+    }
+
+    func showArtists() {
+        methodsCalled.append(#function)
+    }
+
+    func dismissArtists() {
         methodsCalled.append(#function)
     }
 

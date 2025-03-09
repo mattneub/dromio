@@ -8,6 +8,7 @@ protocol RootCoordinatorType: AnyObject {
     var pingProcessor: (any Processor<PingAction, PingState>)? { get }
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)? { get }
     var albumProcessor: (any Processor<AlbumAction, AlbumState>)? { get }
+    var artistsProcessor: (any Processor<ArtistsAction, ArtistsState>)? { get }
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)? { get }
     var serverProcessor: (any Processor<ServerAction, ServerState>)? { get }
 
@@ -37,6 +38,12 @@ protocol RootCoordinatorType: AnyObject {
     /// title regardless of when the processor fetches the songs.
     func showAlbum(albumId: String, title: String)
 
+    /// Create the Artists module and show the view controller.
+    func showArtists()
+
+    /// Dismiss the Artists view controller.
+    func dismissArtists()
+
     /// Create the Playlist module and show the view controller.
     func showPlaylist()
 
@@ -51,6 +58,7 @@ final class RootCoordinator: RootCoordinatorType {
     var pingProcessor: (any Processor<PingAction, PingState>)?
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
     var albumProcessor: (any Processor<AlbumAction, AlbumState>)?
+    var artistsProcessor: (any Processor<ArtistsAction, ArtistsState>)?
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)?
     var serverProcessor: (any Processor<ServerAction, ServerState>)?
 
@@ -116,6 +124,23 @@ final class RootCoordinator: RootCoordinatorType {
         navigationController.pushViewController(albumController, animated: unlessTesting(true))
     }
 
+    func showArtists() {
+        let artistsController = ArtistsViewController(nibName: nil, bundle: nil)
+        let navigationController = UINavigationController(rootViewController: artistsController)
+        let artistsProcessor = ArtistsProcessor()
+        self.artistsProcessor = artistsProcessor
+        artistsProcessor.presenter = artistsController
+        artistsController.processor = artistsProcessor
+        artistsProcessor.coordinator = self
+        navigationController.modalPresentationStyle = .fullScreen
+        navigationController.modalTransitionStyle = .flipHorizontal
+        rootViewController?.presentedViewController?.present(navigationController, animated: unlessTesting(true))
+    }
+
+    func dismissArtists() {
+        (artistsProcessor?.presenter as? UIViewController)?.dismiss(animated: unlessTesting(true))
+    }
+
     func showPlaylist() {
         let playlistController = PlaylistViewController(nibName: nil, bundle: nil)
         let playlistProcessor = PlaylistProcessor()
@@ -123,10 +148,12 @@ final class RootCoordinator: RootCoordinatorType {
         playlistProcessor.presenter = playlistController
         playlistController.processor = playlistProcessor
         playlistProcessor.coordinator = self
-        guard let navigationController = rootViewController?.presentedViewController as? UINavigationController else {
-            return
+        // look for topmost presented navigation controller and push onto it
+        var navigationController = rootViewController?.presentedViewController as? UINavigationController
+        if let presented = navigationController?.presentedViewController as? UINavigationController {
+            navigationController = presented
         }
-        navigationController.pushViewController(playlistController, animated: unlessTesting(true))
+        navigationController?.pushViewController(playlistController, animated: unlessTesting(true))
     }
 
     func popPlaylist() {

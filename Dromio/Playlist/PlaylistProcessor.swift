@@ -23,7 +23,9 @@ final class PlaylistProcessor: Processor {
             services.player.clear()
             await services.download.clear()
             state.songs = services.currentPlaylist.list
-            try? await Task.sleep(for: .seconds(0.6))
+            try? await unlessTesting {
+                try? await Task.sleep(for: .seconds(0.3))
+            }
             coordinator?.popPlaylist()
         case .initialData:
             state.songs = services.currentPlaylist.list

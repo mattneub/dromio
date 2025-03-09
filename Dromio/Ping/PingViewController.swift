@@ -3,7 +3,7 @@ import UIKit
 /// View controller for when we ping the server.
 class PingViewController: UIViewController, Presenter {
     /// A reference to the PingProcessor, set by the coordinator on creation.
-    var processor: (any Processor<PingAction, PingState>)?
+    weak var processor: (any Processor<PingAction, PingState>)?
 
     /// Label to be displayed when the ping succeeds.
     @IBOutlet var successLabel: UILabel!

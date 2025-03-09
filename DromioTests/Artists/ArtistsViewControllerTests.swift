@@ -20,7 +20,7 @@ struct ArtistsViewControllerTests {
         #expect(subject.title == "All Artists")
         #expect(subject.dataSourceDelegate != nil)
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
-        #expect(subject.tableView.estimatedRowHeight == 68)
+        #expect(subject.tableView.estimatedRowHeight == 40)
         #expect(subject.tableView.sectionIndexColor == .systemRed)
     }
 
@@ -65,19 +65,28 @@ struct ArtistsViewControllerTests {
         #expect(mockDataSourceDelegate.state == state)
     }
 
-    /*
     @Test("present: sets the title and left bar button menu item according to the state")
     func presentAll() async throws {
         let state = ArtistsState(listType: .allArtists)
         subject.present(state)
         #expect(subject.title == "All Artists")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
-        #expect(menu.children.count == 1)
-        let action = menu.children[0]
-        #expect(action.title == "Composers")
-        (action as! UIMenuLeaf).performWithSender(nil, target: nil)
-        await #while(processor.thingsReceived.isEmpty)
-        #expect(processor.thingsReceived.last == .composers)
+        #expect(menu.children.count == 2)
+        do {
+            let action = menu.children[0]
+            #expect(action.title == "Composers")
+            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            await #while(processor.thingsReceived.isEmpty)
+            #expect(processor.thingsReceived.last == .composers)
+        }
+        processor.thingsReceived.removeAll()
+        do {
+            let action = menu.children[1]
+            #expect(action.title == "Albums")
+            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            await #while(processor.thingsReceived.isEmpty)
+            #expect(processor.thingsReceived.last == .albums)
+        }
     }
 
     @Test("present: sets the title and left bar button menu item according to the state")
@@ -86,14 +95,23 @@ struct ArtistsViewControllerTests {
         subject.present(state)
         #expect(subject.title == "Composers")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
-        #expect(menu.children.count == 1)
-        let action = menu.children[0]
-        #expect(action.title == "All Artists")
-        (action as! UIMenuLeaf).performWithSender(nil, target: nil)
-        await #while(processor.thingsReceived.isEmpty)
-        #expect(processor.thingsReceived.last == .allArtists)
+        #expect(menu.children.count == 2)
+        do {
+            let action = menu.children[0]
+            #expect(action.title == "All Artists")
+            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            await #while(processor.thingsReceived.isEmpty)
+            #expect(processor.thingsReceived.last == .allArtists)
+        }
+        processor.thingsReceived.removeAll()
+        do {
+            let action = menu.children[1]
+            #expect(action.title == "Albums")
+            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            await #while(processor.thingsReceived.isEmpty)
+            #expect(processor.thingsReceived.last == .albums)
+        }
     }
-     */
 
     @Test("showPlaylist: sends showPlaylist to processor")
     func showPlaylist() async {

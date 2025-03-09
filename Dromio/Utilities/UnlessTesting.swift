@@ -25,3 +25,11 @@ func unlessTesting(_ handler: () -> ()) {
     }
     handler()
 }
+
+@MainActor
+func unlessTesting(_ handler: () async throws -> ()) async throws {
+    if NSClassFromString("XCTest") != nil {
+        return
+    }
+    try await handler()
+}

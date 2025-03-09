@@ -8,6 +8,8 @@ enum AlbumsAction: Equatable {
     case randomAlbums
     /// The user wants to see the song list for the given album.
     case showAlbum(albumId: String)
+    /// The user wants to see the artists.
+    case artists
     /// The user would like to view the playlist.
     case showPlaylist
 }

@@ -6,7 +6,7 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     var dataSourceDelegate: (any DataSourceDelegate<PlaylistAction, PlaylistState>)?
 
     /// Reference to the processor, set by coordinator on creation; setting it passes the same processor to the data source.
-    var processor: (any Receiver<PlaylistAction>)? {
+    weak var processor: (any Receiver<PlaylistAction>)? {
         didSet {
             dataSourceDelegate?.processor = processor
         }

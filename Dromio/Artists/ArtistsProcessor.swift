@@ -41,6 +41,8 @@ final class ArtistsProcessor: Processor {
 //                return
 //            }
 //            coordinator?.showAlbum(albumId: id, title: album.name)
+        case .albums:
+            coordinator?.dismissArtists()
         case .showPlaylist:
             coordinator?.showPlaylist()
         }
