@@ -6,6 +6,8 @@ protocol RequestMakerType: Sendable {
     func ping() async throws
     func getAlbumList() async throws -> [SubsonicAlbum]
     func getAlbumsRandom() async throws -> [SubsonicAlbum]
+    // func getArtists() async throws -> [SubsonicArtist] // probably won't be using this
+    func getArtistsBySearch() async throws -> [SubsonicArtist]
     func getSongsFor(albumId: String) async throws -> [SubsonicSong]
     func download(songId: String) async throws -> URL
     func stream(songId: String) async throws -> URL
@@ -101,6 +103,45 @@ final class RequestMaker: RequestMakerType {
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<AlbumList2Response>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)
         return jsonResponse.subsonicResponse.albumList2.album
+    }
+
+    func getArtists() async throws -> [SubsonicArtist] {
+        let url = try services.urlMaker.urlFor(
+            action: "getArtists"
+        )
+        let data = try await services.networker.performRequest(url: url)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<ArtistsResponse>.self, from: data)
+        try await services.responseValidator.validateResponse(jsonResponse)
+        let indexList = jsonResponse.subsonicResponse.artists.index
+        let arrayOfArrayOfArtist = indexList.map { $0.artist }
+        let arrayOfArtist = arrayOfArrayOfArtist.flatMap { $0 }
+        return arrayOfArtist
+    }
+
+    func getArtistsBySearch() async throws -> [SubsonicArtist] {
+        try await paginate(chunk: 500) { chunk, offset in
+            return try await getArtistsBySearch(chunk: chunk, offset: offset)
+        }
+        // And then either here or in the caller, you filter down to the artists that are artists:
+//        let artists = try await services.requestMaker.getArtistsBySearch()
+//        let artistsWhoAreArtists = artists.filter { ($0.roles ?? []).contains("artist") }
+    }
+
+    func getArtistsBySearch(chunk: Int, offset: Int) async throws -> [SubsonicArtist] {
+        let url = try services.urlMaker.urlFor(
+            action: "search3",
+            additional: [
+                "query": "",
+                "songCount": "0",
+                "albumCount": "0",
+                "artistCount": String(chunk),
+                "artistOffset": String(offset),
+            ]
+        )
+        let data = try await services.networker.performRequest(url: url)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<SearchResult3Response>.self, from: data)
+        try await services.responseValidator.validateResponse(jsonResponse)
+        return jsonResponse.subsonicResponse.searchResult3.artist ?? []
     }
 
     /// Get an album along with its songs, and return the songs, throwing if anything goes wrong.

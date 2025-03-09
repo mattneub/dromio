@@ -1,0 +1,49 @@
+{
+  "subsonic-response": {
+    "status": "ok",
+    "version": "1.16.1",
+    "type": "navidrome",
+    "serverVersion": "0.54.4-SNAPSHOT (pr-2709/b4fd8d52)",
+    "openSubsonic": true,
+    "searchResult3": {
+      "artist": [
+        {
+          "id": "6zUkmDeLiIIH9Wg526b19Q",
+          "name": "Morricone",
+          "coverArt": "ar-6zUkmDeLiIIH9Wg526b19Q_0",
+          "albumCount": 3,
+          "artistImageUrl": "http://mattneub.ddns.net:4533/share/img/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFyLTZ6VWttRGVMaUlJSDlXZzUyNmIxOVFfMCIsImlzcyI6Ik5EIn0.ygbctgGKXeyZzpqA_MZ37eSb7JefEjvkmLtxl39ch1Q?size=600",
+          "musicBrainzId": "",
+          "sortName": "morricone",
+          "roles": [
+            "composer"
+          ]
+        },
+        {
+          "id": "3bkT9YM3qSrHwWhFXboFeK",
+          "name": "Ennio Morricone",
+          "coverArt": "ar-3bkT9YM3qSrHwWhFXboFeK_0",
+          "albumCount": 3,
+          "artistImageUrl": "http://mattneub.ddns.net:4533/share/img/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFyLTNia1Q5WU0zcVNySHdXaEZYYm9GZUtfMCIsImlzcyI6Ik5EIn0.OswvAKBPBtuKlFnBe_oMNAYGktUP8TWTYzIK0qabjGU?size=600",
+          "musicBrainzId": "a16e47f5-aa54-47fe-87e4-bb8af91a9fdd",
+          "sortName": "ennio morricone",
+          "roles": [
+            "artist"
+          ]
+        },
+        {
+          "id": "3FibANWm7BwMTnP1zuywaj",
+          "name": "Andrea Morricone, Ennio Morricone",
+          "coverArt": "ar-3FibANWm7BwMTnP1zuywaj_0",
+          "albumCount": 1,
+          "artistImageUrl": "http://mattneub.ddns.net:4533/share/img/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFyLTNGaWJBTldtN0J3TVRuUDF6dXl3YWpfMCIsImlzcyI6Ik5EIn0.rBnFHV-LlvoZ3IsNlSCu0jyxHoMou2Aa3f-JreonYwo?size=600",
+          "musicBrainzId": "",
+          "sortName": "andrea morricone, ennio morricone",
+          "roles": [
+            "artist"
+          ]
+        }
+      ]
+    }
+  }
+}

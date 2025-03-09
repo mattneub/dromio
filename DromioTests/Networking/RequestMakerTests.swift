@@ -298,6 +298,118 @@ struct RequestMakerTests {
         }
     }
 
+    @Test("getArtistsBySearch: calls url maker with action getAlbumList2 add additional, calls networker, calls validator, returns list")
+    func getArtistsBySearch() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: SearchResult3Response(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                searchResult3: SearchResult(artist: [.init(id: "1", name: "Prince", albumCount: 3, roles: ["artist"], sortName: "prince")], album: nil, song: nil),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        let list = try await subject.getArtistsBySearch()
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "search3")
+        let expectedAdditional: KeyValuePairs = [
+            "query": "",
+            "songCount": "0",
+            "albumCount": "0",
+            "artistCount": "500",
+            "artistOffset": "0",
+        ]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+        #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
+        #expect(list == [SubsonicArtist(id: "1", name: "Prince", albumCount: 3, roles: ["artist"], sortName: "prince")])
+    }
+
+    @Test("getArtistsBySearch: paginates with chunk 500")
+    func getArtistsBySearchPaginate() async throws {
+        let payload1 = SubsonicResponse(
+            subsonicResponse: SearchResult3Response(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                searchResult3: SearchResult(artist: Array(repeating: SubsonicArtist(id: "1", name: "Prince", albumCount: 3, roles: ["artist"], sortName: "prince"), count: 500), album: nil, song: nil),
+                error: nil
+            )
+        )
+        let payload2 = SubsonicResponse(
+            subsonicResponse: SearchResult3Response(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                searchResult3: SearchResult(artist: Array(repeating: SubsonicArtist(id: "1", name: "Prince", albumCount: 3, roles: ["artist"], sortName: "prince"), count: 2), album: nil, song: nil),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload1), try! JSONEncoder().encode(payload2)]
+        let list = try await subject.getArtistsBySearch()
+        #expect(list.count == 502)
+    }
+
+    @Test("getArtistsBySearch: rethrows urlMaker throw")
+    func getArtistsBySearchUrlMakerThrow() async throws {
+        urlMaker.errorToThrow = NetworkerError.message("oops")
+        await #expect {
+            try await subject.getArtistsBySearch()
+        } throws: { error in
+            error as! NetworkerError == .message("oops")
+        }
+    }
+
+    @Test("getArtistsBySearch: rethrows networker throw")
+    func getArtistsBySearchNetworkerThrow() async throws {
+        networker.errorToThrow = NetworkerError.message("darn")
+        await #expect {
+            try await subject.getArtistsBySearch()
+        } throws: { error in
+            error as! NetworkerError == .message("darn")
+        }
+    }
+
+    @Test("getArtistsBySearch: rethrows decode error")
+    func getArtistsBySearchDecoderThrow() async throws {
+        networker.dataToReturn = [try! JSONEncoder().encode(#"{"howdy": "hey"}"#)]
+        await #expect {
+            try await subject.getArtistsBySearch()
+        } throws: { error in
+            error is DecodingError
+        }
+    }
+
+    @Test("getArtistsBySearch: rethrows validator error")
+    func getArtistsBySearchValidatorThrow() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: SearchResult3Response(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                searchResult3: SearchResult(artist: [.init(id: "1", name: "Prince", albumCount: 3, roles: ["artist"], sortName: "prince")], album: nil, song: nil),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        responseValidator.errorToThrow = NetworkerError.message("yipes")
+        await #expect {
+            try await subject.getArtistsBySearch()
+        } throws: { error in
+            error as! NetworkerError == .message("yipes")
+        }
+    }
 
     @Test("getSongsFor: calls url maker with action getAlbum and additional id, calls networker, calls validator, returns list")
     func getSongFor() async throws {

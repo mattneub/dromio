@@ -3,13 +3,13 @@ import UIKit
 
 @MainActor
 final class MockRootCoordinator: RootCoordinatorType {
-    var serverProcessor: (any Dromio.Processor<Dromio.ServerAction, Dromio.ServerState>)?
+    var serverProcessor: (any Processor<ServerAction, ServerState>)?
 
-    var albumProcessor: (any Dromio.Processor<Dromio.AlbumAction, Dromio.AlbumState>)?
-    var albumsProcessor: (any Dromio.Processor<Dromio.AlbumsAction, Dromio.AlbumsState>)?
-    var playlistProcessor: (any Dromio.Processor<Dromio.PlaylistAction, Dromio.PlaylistState>)?
+    var albumProcessor: (any Processor<AlbumAction, AlbumState>)?
+    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
+    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)?
 
-    var pingProcessor: (any Dromio.Processor<Dromio.PingAction, Dromio.PingState>)?
+    var pingProcessor: (any Processor<PingAction, PingState>)?
     var rootViewController: UIViewController?
     var methodsCalled = [String]()
     var albumId: String?

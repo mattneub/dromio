@@ -8,7 +8,7 @@ final class MockPlaylist: PlaylistType {
     var errorToThrow: (any Error)?
     var sequenceToReturn = [SubsonicSong]()
 
-    func append(_ song: Dromio.SubsonicSong) throws {
+    func append(_ song: SubsonicSong) throws {
         methodsCalled.append(#function)
         if let error = errorToThrow {
             throw error
@@ -16,7 +16,7 @@ final class MockPlaylist: PlaylistType {
         list.append(song)
     }
 
-    func buildSequence(startingWith song: Dromio.SubsonicSong) -> [Dromio.SubsonicSong] {
+    func buildSequence(startingWith song: SubsonicSong) -> [SubsonicSong] {
         methodsCalled.append(#function)
         return sequenceToReturn
     }

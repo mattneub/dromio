@@ -4,6 +4,7 @@ import Foundation
 @MainActor
 final class MockRequestMaker: RequestMakerType {
     var albumList = [SubsonicAlbum]()
+    var artistList = [SubsonicArtist]()
     var songList = [SubsonicSong]()
     var albumId: String?
     var songId: String?
@@ -26,12 +27,28 @@ final class MockRequestMaker: RequestMakerType {
         return albumList
     }
 
-    func getAlbumsRandom() async throws -> [Dromio.SubsonicAlbum] {
+    func getAlbumsRandom() async throws -> [SubsonicAlbum] {
         methodsCalled.append(#function)
         if let pingError {
             throw pingError
         }
         return albumList
+    }
+
+    func getArtists() async throws -> [SubsonicArtist] {
+        methodsCalled.append(#function)
+        if let pingError {
+            throw pingError
+        }
+        return artistList
+    }
+
+    func getArtistsBySearch() async throws -> [SubsonicArtist] {
+        methodsCalled.append(#function)
+        if let pingError {
+            throw pingError
+        }
+        return artistList
     }
 
     func getSongsFor(albumId: String) async throws -> [SubsonicSong] {
