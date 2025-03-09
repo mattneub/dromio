@@ -8,6 +8,7 @@ protocol RequestMakerType: Sendable {
     func getAlbumsRandom() async throws -> [SubsonicAlbum]
     // func getArtists() async throws -> [SubsonicArtist] // probably won't be using this
     func getArtistsBySearch() async throws -> [SubsonicArtist]
+    func getAlbumsFor(artistId: String) async throws -> [SubsonicAlbum]
     func getSongsFor(albumId: String) async throws -> [SubsonicSong]
     func download(songId: String) async throws -> URL
     func stream(songId: String) async throws -> URL
@@ -122,9 +123,6 @@ final class RequestMaker: RequestMakerType {
         try await paginate(chunk: 500) { chunk, offset in
             return try await getArtistsBySearch(chunk: chunk, offset: offset)
         }
-        // And then either here or in the caller, you filter down to the artists that are artists:
-//        let artists = try await services.requestMaker.getArtistsBySearch()
-//        let artistsWhoAreArtists = artists.filter { ($0.roles ?? []).contains("artist") }
     }
 
     func getArtistsBySearch(chunk: Int, offset: Int) async throws -> [SubsonicArtist] {
@@ -142,6 +140,19 @@ final class RequestMaker: RequestMakerType {
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<SearchResult3Response>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)
         return jsonResponse.subsonicResponse.searchResult3.artist ?? []
+    }
+
+    func getAlbumsFor(artistId: String) async throws -> [SubsonicAlbum] {
+        let url = try services.urlMaker.urlFor(
+            action: "getArtist",
+            additional: [
+                "id": artistId,
+            ]
+        )
+        let data = try await services.networker.performRequest(url: url)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<ArtistResponse>.self, from: data)
+        try await services.responseValidator.validateResponse(jsonResponse)
+        return jsonResponse.subsonicResponse.artist.album ?? []
     }
 
     /// Get an album along with its songs, and return the songs, throwing if anything goes wrong.
