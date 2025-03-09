@@ -1,11 +1,11 @@
 import UIKit
 
-/// Class that functions as data source and delegate for AlbumsViewController table view.
+/// Class that functions as data source and delegate for ArtistsViewController table view.
 @MainActor
-final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDelegate {
+final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDelegate {
 
     /// Processor to whom we can send action messages.
-    weak var processor: (any Receiver<AlbumsAction>)?
+    weak var processor: (any Receiver<ArtistsAction>)?
 
     weak var tableView: UITableView?
 
@@ -25,10 +25,10 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
         }
     }
 
-    func present(_ state: AlbumsState) {
+    func present(_ state: ArtistsState) {
         datasource?.listType = state.listType
         Task {
-            await updateTableView(data: state.albums)
+            await updateTableView(data: state.artists)
         }
     }
 
@@ -36,10 +36,10 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
     // MARK: - Table view contents
 
     /// Data to be displayed by the table view.
-    var data = [SubsonicAlbum]()
+    var data = [SubsonicArtist]()
 
     /// Type of the diffable data source.
-    typealias Datasource = MyAlbumsTableViewDiffableDataSource
+    typealias Datasource = MyArtistsTableViewDiffableDataSource
 
     /// Retain the diffable data source.
     var datasource: Datasource!
@@ -63,20 +63,20 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
     /// - Returns: A populated cell.
     ///
     func cellProvider(_ tableView: UITableView, _ indexPath: IndexPath, _ identifier: String) -> UITableViewCell? {
-        guard let album = data.first(where: { $0.id == identifier }) else {
+        guard let artist = data.first(where: { $0.id == identifier }) else {
             return nil
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
-        cell.contentConfiguration = AlbumsCellContentConfiguration(album: album)
+        cell.contentConfiguration = ArtistsCellContentConfiguration(artist: artist)
         return cell
     }
 
     /// Method called by `present` to bring the table into line with the data.
-    func updateTableView(data: [SubsonicAlbum]) async {
-        var sections = [Section(name: "dummy", rows: [SubsonicAlbum]())]
+    func updateTableView(data: [SubsonicArtist]) async {
+        var sections = [Section(name: "dummy", rows: [SubsonicArtist]())]
         self.data = data
         switch datasource?.listType {
-        case .allAlbums:
+        case .allArtists, .composers:
             // sort the data
             let data = data.sorted
             self.data = data
@@ -91,9 +91,6 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
             sections = Array(dictionary).sorted { $0.key < $1.key }.map {
                 Section(name: $0.key, rows: $0.value)
             }
-        case .randomAlbums:
-            // just one section in the order we're given
-            sections[0].rows = data
         case .none: break
         }
         // "deal" the sections and their items right into the snapshot, in order;
@@ -110,24 +107,22 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         Task {
             guard let id = datasource.itemIdentifier(for: indexPath) else { return }
-            await processor?.receive(.showAlbum(albumId: id))
+            await processor?.receive(.showAlbums(artistId: id))
         }
     }
 
 }
 
-final class MyAlbumsTableViewDiffableDataSource: UITableViewDiffableDataSource<String, String> {
-    var listType: AlbumsState.ListType = .allAlbums
+final class MyArtistsTableViewDiffableDataSource: UITableViewDiffableDataSource<String, String> {
+    var listType: ArtistsState.ListType = .allArtists
 
     override func sectionIndexTitles(for _: UITableView) -> [String]? {
         if snapshot().itemIdentifiers.isEmpty {
             return nil
         }
         switch listType {
-        case .allAlbums:
+        case .allArtists, .composers:
             return snapshot().sectionIdentifiers.map { $0.uppercased() }
-        case .randomAlbums:
-            return nil
         }
     }
 }

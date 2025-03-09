@@ -5,5 +5,5 @@ struct SubsonicArtist: Codable, Equatable {
     let name: String
     let albumCount: Int?
     let roles: [String]?
-    let sortName: String?
+    var sortName: String?
 }

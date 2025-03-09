@@ -30,3 +30,25 @@ extension Array where Element == SubsonicAlbum {
         .sorted { $0.sortName!.localizedStandardCompare($1.sortName!) == .orderedAscending }
     }
 }
+
+extension Array where Element == SubsonicArtist {
+    var sorted: [SubsonicArtist] {
+        self.map { artist in
+            var artist = artist
+            // lowercase the sortName from the name and strip out diacritics
+            artist.sortName = artist.name.lowercased().folding(options: .diacriticInsensitive, locale: .current)
+            // strip "little" initial words from the sortName
+            for word in ["a ", "an ", "the ", "de ", "d'", "d’"] {
+                if artist.sortName!.hasPrefix(word) {
+                    artist.sortName = String(artist.sortName!.dropFirst(word.count))
+                    break
+                }
+            }
+            return artist
+        }
+        // That's it: in a single pass, we've set the sortName of every album.
+        // Now sort the albums by that sortName, "as the Finder would do it".
+        .sorted { $0.sortName!.localizedStandardCompare($1.sortName!) == .orderedAscending }
+    }
+}
+
