@@ -177,19 +177,6 @@ final class RequestMaker: RequestMakerType {
         return jsonResponse.subsonicResponse.artist.album ?? []
     }
 
-    func getAlbumsFor(artistId: String) async throws -> [SubsonicAlbum] {
-        let url = try services.urlMaker.urlFor(
-            action: "getArtist",
-            additional: [
-                "id": artistId,
-            ]
-        )
-        let data = try await services.networker.performRequest(url: url)
-        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<ArtistResponse>.self, from: data)
-        try await services.responseValidator.validateResponse(jsonResponse)
-        return jsonResponse.subsonicResponse.artist.album ?? []
-    }
-
     /// Get an album along with its songs, and return the songs, throwing if anything goes wrong.
     /// - Parameter albumId: The id of the album.
     /// - Returns: An array of the songs of the specified albums.
