@@ -62,11 +62,11 @@ final class AlbumsViewController: UITableViewController, Presenter {
                         await self?.processor?.receive(.randomAlbums)
                     }
                 }),
-                UIAction(title: "Artists", handler: { [weak self] _ in
-                    Task {
-                        await self?.processor?.receive(.artists)
-                    }
-                }),
+//                UIAction(title: "Artists", handler: { [weak self] _ in
+//                    Task {
+//                        await self?.processor?.receive(.artists)
+//                    }
+//                }),
             ])
         case .randomAlbums:
             UIMenu(title: "", options: [], children: [
@@ -75,11 +75,11 @@ final class AlbumsViewController: UITableViewController, Presenter {
                         await self?.processor?.receive(.allAlbums)
                     }
                 }),
-                UIAction(title: "Artists", handler: { [weak self] _ in
-                    Task {
-                        await self?.processor?.receive(.artists)
-                    }
-                }),
+//                UIAction(title: "Artists", handler: { [weak self] _ in
+//                    Task {
+//                        await self?.processor?.receive(.artists)
+//                    }
+//                }),
             ])
         }
     }

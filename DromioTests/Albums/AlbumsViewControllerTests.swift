@@ -71,7 +71,7 @@ struct AlbumsViewControllerTests {
         subject.present(state)
         #expect(subject.title == "All Albums")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
-        #expect(menu.children.count == 2)
+        #expect(menu.children.count == 1)
         do {
             let action = menu.children[0]
             #expect(action.title == "Random Albums")
@@ -79,14 +79,14 @@ struct AlbumsViewControllerTests {
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .randomAlbums)
         }
-        processor.thingsReceived.removeAll()
-        do {
-            let action = menu.children[1]
-            #expect(action.title == "Artists")
-            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
-            #expect(processor.thingsReceived.last == .artists)
-        }
+//        processor.thingsReceived.removeAll()
+//        do {
+//            let action = menu.children[1]
+//            #expect(action.title == "Artists")
+//            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+//            await #while(processor.thingsReceived.isEmpty)
+//            #expect(processor.thingsReceived.last == .artists)
+//        }
     }
 
     @Test("present: sets the title and left bar button menu item according to the state")
@@ -95,7 +95,7 @@ struct AlbumsViewControllerTests {
         subject.present(state)
         #expect(subject.title == "Random Albums")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
-        #expect(menu.children.count == 2)
+        #expect(menu.children.count == 1)
         do {
             let action = menu.children[0]
             #expect(action.title == "All Albums")
@@ -103,14 +103,14 @@ struct AlbumsViewControllerTests {
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .allAlbums)
         }
-        processor.thingsReceived.removeAll()
-        do {
-            let action = menu.children[1]
-            #expect(action.title == "Artists")
-            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
-            #expect(processor.thingsReceived.last == .artists)
-        }
+//        processor.thingsReceived.removeAll()
+//        do {
+//            let action = menu.children[1]
+//            #expect(action.title == "Artists")
+//            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+//            await #while(processor.thingsReceived.isEmpty)
+//            #expect(processor.thingsReceived.last == .artists)
+//        }
     }
 
     @Test("showPlaylist: sends showPlaylist to processor")
