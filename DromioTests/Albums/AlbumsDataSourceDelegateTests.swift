@@ -38,6 +38,23 @@ struct AlbumsDataSourceDelegateTests {
         #expect(snapshot.itemIdentifiers(inSection: "y") == ["1"])
     }
 
+    @Test("present: datasource reflects `albums`, if `albumsForArtist` then sorted and sectionalized")
+    func presentWithDataDatasourceItemsAlbumsForArtist() async {
+        await #while(subject.datasource == nil)
+        var state = AlbumsState(listType: .albumsForArtist(id: "1"))
+        state.albums = [
+            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+        ]
+        subject.present(state)
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        #expect(subject.datasource.listType == .albumsForArtist(id: "1"))
+        let snapshot = subject.datasource.snapshot()
+        #expect(snapshot.sectionIdentifiers == ["t", "y"])
+        #expect(snapshot.itemIdentifiers(inSection: "t") == ["2"])
+        #expect(snapshot.itemIdentifiers(inSection: "y") == ["1"])
+    }
+
     @Test("present: datasource reflects `albums`, if `randomAlbums` then single section, order unchanged")
     func presentWithDataDatasourceItemsRandom() async {
         await #while(subject.datasource == nil)
@@ -97,6 +114,19 @@ struct AlbumsDataSourceDelegateTests {
     func sectionIndexTitlesRandom() async throws {
         await #while(subject.datasource == nil)
         var state = AlbumsState(listType: .randomAlbums)
+        state.albums = [
+            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+        ]
+        subject.present(state)
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
+    }
+
+    @Test("sectionIndexTitles: with albums for artist, returns nil")
+    func sectionIndexTitlesAlbumsForArtist() async throws {
+        await #while(subject.datasource == nil)
+        var state = AlbumsState(listType: .albumsForArtist(id: "1"))
         state.albums = [
             .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
             .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),

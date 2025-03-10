@@ -91,7 +91,9 @@ final class RequestMaker: RequestMakerType {
         try await services.responseValidator.validateResponse(jsonResponse)
         return jsonResponse.subsonicResponse.albumList2.album
     }
-
+    
+    /// Get a list of 20 random albums.
+    /// - Returns: The list of albums.
     func getAlbumsRandom() async throws -> [SubsonicAlbum] {
         let url = try services.urlMaker.urlFor(
             action: "getAlbumList2",
@@ -105,7 +107,13 @@ final class RequestMaker: RequestMakerType {
         try await services.responseValidator.validateResponse(jsonResponse)
         return jsonResponse.subsonicResponse.albumList2.album
     }
-
+    
+    /// Get a list of all artists.
+    /// - Returns: The list of artists.
+    ///
+    /// We are not currently using this. The reason is that its idea of an "artist" is defined at
+    /// the level of the album.
+    ///
     func getArtists() async throws -> [SubsonicArtist] {
         let url = try services.urlMaker.urlFor(
             action: "getArtists"
@@ -118,13 +126,22 @@ final class RequestMaker: RequestMakerType {
         let arrayOfArtist = arrayOfArrayOfArtist.flatMap { $0 }
         return arrayOfArtist
     }
-
+    
+    /// Get a list of all artists, meaning _really_ a list of _all_ artists in the full sense that
+    /// Navidrome understands it, i.e. having the "artist" or "composer" role.
+    /// - Returns: The list of artists.
+    ///
+    /// To obtain this list, we have to resort to a `search3` that asks for all artists.
+    /// This will include composers, so filtering to those whose `roles` include `"artists"`
+    /// or those whose `roles` include `"composer"` is up to the caller.
+    ///
     func getArtistsBySearch() async throws -> [SubsonicArtist] {
         try await paginate(chunk: 500) { chunk, offset in
             return try await getArtistsBySearch(chunk: chunk, offset: offset)
         }
     }
 
+    /// Pagination helper of the preceding.
     func getArtistsBySearch(chunk: Int, offset: Int) async throws -> [SubsonicArtist] {
         let url = try services.urlMaker.urlFor(
             action: "search3",
@@ -140,6 +157,24 @@ final class RequestMaker: RequestMakerType {
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<SearchResult3Response>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)
         return jsonResponse.subsonicResponse.searchResult3.artist ?? []
+    }
+    
+    /// Given an artist id, fetch that artist's participatory albums. This
+    /// works in coordination with the `"artist"` role only if Navidrome's Subsonic.ArtistParticipations
+    /// is turned on.
+    /// - Parameter artistId: The artist id.
+    /// - Returns: The list of albums.
+    func getAlbumsFor(artistId: String) async throws -> [SubsonicAlbum] {
+        let url = try services.urlMaker.urlFor(
+            action: "getArtist",
+            additional: [
+                "id": artistId,
+            ]
+        )
+        let data = try await services.networker.performRequest(url: url)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<ArtistResponse>.self, from: data)
+        try await services.responseValidator.validateResponse(jsonResponse)
+        return jsonResponse.subsonicResponse.artist.album ?? []
     }
 
     func getAlbumsFor(artistId: String) async throws -> [SubsonicAlbum] {

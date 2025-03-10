@@ -36,11 +36,8 @@ final class ArtistsProcessor: Processor {
             } catch {
                 print(error)
             }
-        case .showAlbums(let id): break
-//            guard let album = state.albums.first(where: { $0.id == id }) else {
-//                return
-//            }
-//            coordinator?.showAlbum(albumId: id, title: album.name)
+        case .showAlbums(let id):
+            coordinator?.showAlbumsForArtist(state: AlbumsState(listType: .albumsForArtist(id: id)))
         case .albums:
             coordinator?.dismissArtists()
         case .showPlaylist:

@@ -6,9 +6,12 @@ struct AlbumsState: Equatable {
     var listType: ListType = .allAlbums
     var albums = [SubsonicAlbum]()
 
-    enum ListType {
+    /// The albums view controller comes in three "flavors" or "modes". This enum specifies
+    /// which one we're in.
+    enum ListType: Equatable {
         case allAlbums
         case randomAlbums
+        case albumsForArtist(id: String) // the `id` is the id of the artist whose albums we're showing.
     }
 }
 
