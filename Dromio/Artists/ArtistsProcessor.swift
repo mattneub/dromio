@@ -20,7 +20,9 @@ final class ArtistsProcessor: Processor {
         switch action {
         case .allArtists:
             do {
-                let artists = try await services.requestMaker.getArtistsBySearch()
+                let artists = try await caches.fetch(\.allArtists) {
+                    try await services.requestMaker.getArtistsBySearch()
+                }
                 let artistsWhoAreArtists = artists.filter { ($0.roles ?? []).contains("artist") }
                 state.listType = .allArtists
                 state.artists = artistsWhoAreArtists
@@ -29,7 +31,9 @@ final class ArtistsProcessor: Processor {
             }
         case .composers:
             do {
-                let artists = try await services.requestMaker.getArtistsBySearch()
+                let artists = try await caches.fetch(\.allArtists) {
+                    try await services.requestMaker.getArtistsBySearch()
+                }
                 let artistsWhoAreComposers = artists.filter { ($0.roles ?? []).contains("composer") }
                 state.listType = .composers
                 state.artists = artistsWhoAreComposers

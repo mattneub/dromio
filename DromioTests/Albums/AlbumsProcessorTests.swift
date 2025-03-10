@@ -12,6 +12,7 @@ struct AlbumsProcessorTests {
         subject.presenter = presenter
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
+        caches.albumsList = nil
     }
 
     @Test("mutating the state presents the state")

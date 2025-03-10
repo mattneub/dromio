@@ -5,6 +5,10 @@ import os.log
 @MainActor
 var services: Services = Services()
 
+/// The sole global instance of the caches.
+@MainActor
+var caches: Caches = Caches()
+
 let logger = Logger(subsystem: "dromio", category: "debugging")
 
 @main

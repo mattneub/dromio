@@ -34,7 +34,9 @@ final class AlbumsProcessor: Processor {
             }
         case .allAlbums:
             do {
-                let albums = try await services.requestMaker.getAlbumList()
+                let albums = try await caches.fetch(\.albumsList) {
+                    try await services.requestMaker.getAlbumList()
+                }
                 state.listType = .allAlbums
                 state.albums = albums
             } catch {

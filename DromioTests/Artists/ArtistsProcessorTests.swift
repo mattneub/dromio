@@ -12,6 +12,7 @@ struct ArtistsProcessorTests {
         subject.presenter = presenter
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
+        caches.allArtists = nil
     }
 
     @Test("mutating the state presents the state")
@@ -32,6 +33,19 @@ struct ArtistsProcessorTests {
         #expect(subject.state.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
     }
 
+    @Test("receive allArtists: gets list from cache if it exists, filters, sets state")
+    func receiveAllArtistsCached() async {
+        caches.allArtists = [
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
+            .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
+        ]
+        requestMaker.artistList = []
+        await subject.receive(.allArtists)
+        #expect(requestMaker.methodsCalled.isEmpty)
+        #expect(subject.state.listType == .allArtists)
+        #expect(subject.state.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
+    }
+
     @Test("receive composers: sends `getArtists` to request maker, filters, sets state")
     func receiveComposers() async {
         requestMaker.artistList = [
@@ -40,6 +54,19 @@ struct ArtistsProcessorTests {
         ]
         await subject.receive(.composers)
         #expect(requestMaker.methodsCalled == ["getArtistsBySearch()"])
+        #expect(subject.state.listType == .composers)
+        #expect(subject.state.artists == [.init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil)])
+    }
+
+    @Test("receive composers: gets list from cache if it exists, filters, sets state")
+    func receiveComposersCached() async {
+        caches.allArtists = [
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
+            .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
+        ]
+        requestMaker.artistList = []
+        await subject.receive(.composers)
+        #expect(requestMaker.methodsCalled.isEmpty)
         #expect(subject.state.listType == .composers)
         #expect(subject.state.artists == [.init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil)])
     }
