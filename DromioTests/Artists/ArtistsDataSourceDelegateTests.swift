@@ -26,8 +26,8 @@ struct ArtistsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .allArtists)
         state.artists = [
-            .init(id: "1", name: "Yoho", albumCount: nil, roles: nil, sortName: nil),
-            .init(id: "2", name: "Teehee", albumCount: nil, roles: nil, sortName: nil),
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
         ]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
@@ -43,8 +43,8 @@ struct ArtistsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .composers)
         state.artists = [
-            .init(id: "1", name: "Yoho", albumCount: nil, roles: nil, sortName: nil),
-            .init(id: "2", name: "Teehee", albumCount: nil, roles: nil, sortName: nil),
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
         ]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
@@ -60,13 +60,13 @@ struct ArtistsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         makeWindow(view: tableView)
         var state = ArtistsState()
-        state.artists = [.init(id: "1", name: "Yoho", albumCount: nil, roles: nil, sortName: nil)]
+        state.artists = [.init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil)]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
         let configuration = try #require(cell?.contentConfiguration as? ArtistsCellContentConfiguration)
-        let expected = ArtistsCellContentConfiguration(artist: .init(id: "1", name: "Yoho", albumCount: nil, roles: nil, sortName: nil))
+        let expected = ArtistsCellContentConfiguration(artist: .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil))
         #expect(configuration == expected)
     }
 
@@ -75,8 +75,8 @@ struct ArtistsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .allArtists)
         state.artists = [
-            .init(id: "1", name: "Yoho", albumCount: nil, roles: nil, sortName: nil),
-            .init(id: "2", name: "Teehee", albumCount: nil, roles: nil, sortName: nil),
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
         ]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
@@ -99,8 +99,8 @@ struct ArtistsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .composers)
         state.artists = [
-            .init(id: "1", name: "Yoho", albumCount: nil, roles: nil, sortName: nil),
-            .init(id: "2", name: "Teehee", albumCount: nil, roles: nil, sortName: nil),
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
         ]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)

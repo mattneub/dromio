@@ -20,6 +20,27 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented?.albums.first == .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil))
     }
 
+    @Test("receive initialData: if listType is .albumsForArtist, sends getAlbumsFor with id to request maker, sets state")
+    func receiveInitialDataForArtist() async {
+        subject.state.listType = .albumsForArtist(id: "1")
+        requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        await subject.receive(.initialData)
+        #expect(requestMaker.methodsCalled == ["getAlbumsFor(artistId:)"])
+        #expect(requestMaker.artistId == "1")
+        #expect(subject.state.listType == .albumsForArtist(id: "1"))
+        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+    }
+
+    @Test("receive initialData: if listType is .allAlbums behaves exactly as receiving .allAlbums")
+    func receiveInitialDataAllAlbums() async {
+        subject.state.listType = .allAlbums
+        requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        await subject.receive(.initialData)
+        #expect(requestMaker.methodsCalled == ["getAlbumList()"])
+        #expect(subject.state.listType == .allAlbums)
+        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+    }
+
     @Test("receive allAlbums: sends `getAlbumList` to request maker, sets state")
     func receiveAllAlbums() async {
         requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]

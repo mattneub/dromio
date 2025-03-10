@@ -3,18 +3,21 @@ import UIKit
 
 @MainActor
 final class MockRootCoordinator: RootCoordinatorType {
+
     var serverProcessor: (any Processor<ServerAction, ServerState>)?
 
     var albumProcessor: (any Processor<AlbumAction, AlbumState>)?
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
     var artistsProcessor: (any Processor<ArtistsAction, ArtistsState>)?
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)?
+    var artistAlbumsProcessor: (any Dromio.Processor<Dromio.AlbumsAction, Dromio.AlbumsState>)?
 
     var pingProcessor: (any Processor<PingAction, PingState>)?
     var rootViewController: UIViewController?
     var methodsCalled = [String]()
     var albumId: String?
     var title: String?
+    var albumsState: AlbumsState?
 
     func createInitialInterface(window: UIWindow) {
         methodsCalled.append(#function)
@@ -44,6 +47,11 @@ final class MockRootCoordinator: RootCoordinatorType {
 
     func dismissArtists() {
         methodsCalled.append(#function)
+    }
+
+    func showAlbumsForArtist(state: AlbumsState) {
+        methodsCalled.append(#function)
+        albumsState = state
     }
 
     func showPlaylist() {

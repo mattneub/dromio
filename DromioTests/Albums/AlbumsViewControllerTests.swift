@@ -33,14 +33,6 @@ struct AlbumsViewControllerTests {
         #expect(item.action == #selector(subject.showPlaylist))
     }
 
-    @Test("Initialize: creates left bar button item")
-    func initializeLeft() throws {
-        let item = try #require(subject.navigationItem.leftBarButtonItem)
-        #expect(item.title == nil)
-        #expect(item.image == UIImage(systemName: "arrow.trianglehead.turn.up.right.circle"))
-        #expect(item.menu != nil)
-    }
-
     @Test("Setting the processor sets the data source's processor")
     func setProcessor() {
         let processor2 = MockReceiver<AlbumsAction>()
@@ -48,13 +40,13 @@ struct AlbumsViewControllerTests {
         #expect(mockDataSourceDelegate.processor === processor2)
     }
 
-    @Test("viewDidLoad: sets the data source's processor, sets background color, sends .allAlbums action")
+    @Test("viewDidLoad: sets the data source's processor, sets background color, sends .initialData action")
     func viewDidLoad() async {
         subject.loadViewIfNeeded()
         #expect(mockDataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .systemBackground)
         await #while(processor.thingsReceived.isEmpty)
-        #expect(processor.thingsReceived.first == .allAlbums)
+        #expect(processor.thingsReceived.first == .initialData)
     }
 
     @Test("present: presents to the data source")
@@ -65,7 +57,7 @@ struct AlbumsViewControllerTests {
         #expect(mockDataSourceDelegate.state == state)
     }
 
-    @Test("present: sets the title and left bar button menu item according to the state")
+    @Test("present: sets the title and left bar button menu item according to the state, all albums")
     func presentAll() async throws {
         let state = AlbumsState(listType: .allAlbums)
         subject.present(state)
@@ -89,7 +81,7 @@ struct AlbumsViewControllerTests {
         }
     }
 
-    @Test("present: sets the title and left bar button menu item according to the state")
+    @Test("present: sets the title and left bar button menu item according to the state, random albums")
     func presentRandom() async throws {
         let state = AlbumsState(listType: .randomAlbums)
         subject.present(state)
@@ -111,6 +103,14 @@ struct AlbumsViewControllerTests {
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .artists)
         }
+    }
+
+    @Test("present: sets the title and no left bar button item, albums for artist")
+    func presentAlbumsForArtist() async throws {
+        let state = AlbumsState(listType: .albumsForArtist(id: "1"))
+        subject.present(state)
+        #expect(subject.title == nil)
+        #expect(subject.navigationItem.leftBarButtonItem == nil)
     }
 
     @Test("showPlaylist: sends showPlaylist to processor")

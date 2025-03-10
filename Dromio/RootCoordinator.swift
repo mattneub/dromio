@@ -9,6 +9,7 @@ protocol RootCoordinatorType: AnyObject {
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)? { get }
     var albumProcessor: (any Processor<AlbumAction, AlbumState>)? { get }
     var artistsProcessor: (any Processor<ArtistsAction, ArtistsState>)? { get }
+    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState>)? { get }
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)? { get }
     var serverProcessor: (any Processor<ServerAction, ServerState>)? { get }
 
@@ -28,6 +29,9 @@ protocol RootCoordinatorType: AnyObject {
 
     /// Create the Albums module and show the view controller.
     func showAlbums()
+
+    /// Create the Albums module and push the view controller, passing the processor the given state.
+    func showAlbumsForArtist(state: AlbumsState)
 
     /// Create the Album module and show the view controller.
     /// - Parameters:
@@ -59,6 +63,9 @@ final class RootCoordinator: RootCoordinatorType {
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
     var albumProcessor: (any Processor<AlbumAction, AlbumState>)?
     var artistsProcessor: (any Processor<ArtistsAction, ArtistsState>)?
+    // The albums module can appear in two places simultaneously, so we need a place to root
+    // a second instance of the albums processor.
+    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)?
     var serverProcessor: (any Processor<ServerAction, ServerState>)?
 
@@ -110,6 +117,20 @@ final class RootCoordinator: RootCoordinatorType {
         rootViewController?.present(navigationController, animated: unlessTesting(true))
     }
 
+    func showAlbumsForArtist(state: AlbumsState) {
+        let albumsController = AlbumsViewController(nibName: nil, bundle: nil)
+        let albumsProcessor = AlbumsProcessor()
+        self.artistAlbumsProcessor = albumsProcessor // different from self.albumsProcessor
+        albumsProcessor.state = state
+        albumsProcessor.presenter = albumsController
+        albumsController.processor = albumsProcessor
+        albumsProcessor.coordinator = self
+        guard let navigationController = rootViewController?.ultimatePresented as? UINavigationController else {
+            return
+        }
+        navigationController.pushViewController(albumsController, animated: unlessTesting(true))
+    }
+
     func showAlbum(albumId: String, title: String) {
         let albumController = AlbumViewController(nibName: nil, bundle: nil)
         let albumProcessor = AlbumProcessor()
@@ -118,7 +139,7 @@ final class RootCoordinator: RootCoordinatorType {
         albumProcessor.presenter = albumController
         albumController.processor = albumProcessor
         albumProcessor.coordinator = self
-        guard let navigationController = rootViewController?.presentedViewController as? UINavigationController else {
+        guard let navigationController = rootViewController?.ultimatePresented as? UINavigationController else {
             return
         }
         navigationController.pushViewController(albumController, animated: unlessTesting(true))
@@ -148,16 +169,17 @@ final class RootCoordinator: RootCoordinatorType {
         playlistProcessor.presenter = playlistController
         playlistController.processor = playlistProcessor
         playlistProcessor.coordinator = self
-        // look for topmost presented navigation controller and push onto it
-        var navigationController = rootViewController?.presentedViewController as? UINavigationController
-        if let presented = navigationController?.presentedViewController as? UINavigationController {
-            navigationController = presented
+        guard let navigationController = rootViewController?.ultimatePresented as? UINavigationController else {
+            return
         }
-        navigationController?.pushViewController(playlistController, animated: unlessTesting(true))
+        navigationController.pushViewController(playlistController, animated: unlessTesting(true))
     }
 
     func popPlaylist() {
-        (playlistProcessor?.presenter as? UIViewController)?.navigationController?.popViewController(animated: unlessTesting(true))
+        guard let navigationController = rootViewController?.ultimatePresented as? UINavigationController else {
+            return
+        }
+        navigationController.popViewController(animated: unlessTesting(true))
     }
 }
 

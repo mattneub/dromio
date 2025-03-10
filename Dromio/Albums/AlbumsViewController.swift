@@ -22,11 +22,6 @@ final class AlbumsViewController: UITableViewController, Presenter {
             )
             navigationItem.rightBarButtonItem = item
         }
-        do {
-            let menu = UIMenu() // real menu will be provided by `present`
-            let item = UIBarButtonItem(image: UIImage(systemName: "arrow.trianglehead.turn.up.right.circle"), menu: menu)
-            navigationItem.leftBarButtonItem = item
-        }
         tableView.estimatedRowHeight = 68
         tableView.sectionIndexColor = .systemRed
     }
@@ -40,19 +35,33 @@ final class AlbumsViewController: UITableViewController, Presenter {
         dataSourceDelegate?.processor = processor
         view.backgroundColor = .systemBackground
         Task {
-            await processor?.receive(.allAlbums)
+            await processor?.receive(.initialData)
         }
     }
 
     func present(_ state: AlbumsState) {
         title = switch state.listType {
-        case .allAlbums: "All Albums"
-        case .randomAlbums: "Random Albums"
+        case .allAlbums: 
+            "All Albums"
+        case .randomAlbums: 
+            "Random Albums"
+        case .albumsForArtist:
+            nil
+        }
+        navigationItem.leftBarButtonItem = switch state.listType {
+        case .allAlbums, .randomAlbums:
+            UIBarButtonItem(image: UIImage(systemName: "arrow.trianglehead.turn.up.right.circle"), menu: UIMenu())
+        case .albumsForArtist:
+            nil
         }
         navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
         dataSourceDelegate?.present(state)
     }
-
+    
+    /// Private subroutine of `present` that generates the left bar button item menu, depending
+    /// on the presented state's list type.
+    /// - Parameter listType: The list type.
+    /// - Returns: The menu.
     private func menu(for listType: AlbumsState.ListType) -> UIMenu {
         switch listType {
         case .allAlbums:
@@ -81,6 +90,8 @@ final class AlbumsViewController: UITableViewController, Presenter {
                     }
                 }),
             ])
+        case .albumsForArtist:
+            UIMenu()
         }
     }
 

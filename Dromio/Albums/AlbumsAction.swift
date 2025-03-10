@@ -2,7 +2,9 @@ import Foundation
 
 /// Actions sent by AlbumsViewController to AlbumsProcessor.
 enum AlbumsAction: Equatable {
-    /// The user wants to see all albums; also called initially when the view controller is ready for its data.
+    /// Called by the view controller as soon as it's ready to receive data.
+    case initialData
+    /// The user wants to see all albums.
     case allAlbums
     /// The user wants to see random albums.
     case randomAlbums

@@ -18,6 +18,20 @@ final class AlbumsProcessor: Processor {
 
     func receive(_ action: AlbumsAction) async {
         switch action {
+        case .initialData:
+            // how we fetch the initial data depends on what "mode" of albums this is
+            switch state.listType {
+            case .allAlbums:
+                await receive(.allAlbums)
+            case .albumsForArtist(let id):
+                do {
+                    let albums = try await services.requestMaker.getAlbumsFor(artistId: id)
+                    state.albums = albums
+                } catch {
+                    print(error)
+                }
+            default: break
+            }
         case .allAlbums:
             do {
                 let albums = try await services.requestMaker.getAlbumList()

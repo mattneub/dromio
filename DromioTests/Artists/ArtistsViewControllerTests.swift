@@ -59,7 +59,7 @@ struct ArtistsViewControllerTests {
 
     @Test("present: presents to the data source")
     func present() {
-        let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, roles: ["artist"], sortName: nil)])
+        let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
         subject.present(state)
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)

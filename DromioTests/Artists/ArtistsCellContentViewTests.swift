@@ -10,6 +10,7 @@ struct ArtistsCellContentConfigurationTests {
             id: "1",
             name: "Name",
             albumCount: 100,
+            album: nil,
             roles: [],
             sortName: nil
         ))
@@ -27,6 +28,7 @@ struct ArtistsCellContentConfigurationTests {
             id: "1",
             name: "Name",
             albumCount: 100,
+            album: nil,
             roles: [],
             sortName: nil
         ))
@@ -38,6 +40,7 @@ struct ArtistsCellContentConfigurationTests {
             id: "1",
             name: "Name",
             albumCount: nil,
+            album: nil,
             roles: [],
             sortName: nil
         ))

@@ -15,14 +15,12 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegate, UITableView
     init(tableView: UITableView) {
         self.tableView = tableView
         super.init()
-        Task {
-            // We're going to use a diffable data source. Register the cell type, make the
-            // diffable data source, and set the table view's dataSource and delegate.
-            tableView.register(UITableViewCell.self, forCellReuseIdentifier: reuseIdentifier)
-            datasource = await createDataSource(tableView: tableView)
-            tableView.dataSource = datasource
-            tableView.delegate = self
-        }
+        // We're going to use a diffable data source. Register the cell type, make the
+        // diffable data source, and set the table view's dataSource and delegate.
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: reuseIdentifier)
+        datasource = createDataSource(tableView: tableView)
+        tableView.dataSource = datasource
+        tableView.delegate = self
     }
 
     func present(_ state: ArtistsState) {
@@ -48,14 +46,14 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegate, UITableView
     /// - Parameter tableView: The table view.
     /// - Returns: The data source.
     /// 
-    func createDataSource(tableView: UITableView) async -> Datasource {
+    func createDataSource(tableView: UITableView) -> Datasource {
         let datasource = Datasource(tableView: tableView) { [unowned self] tableView, indexPath, identifier in
             return cellProvider(tableView, indexPath, identifier)
         }
         var snapshot = NSDiffableDataSourceSnapshot<String, String>()
         snapshot.appendSections(["Dummy"])
         snapshot.appendItems([])
-        await datasource.apply(snapshot, animatingDifferences: false)
+        datasource.apply(snapshot, animatingDifferences: false)
         return datasource
     }
 
