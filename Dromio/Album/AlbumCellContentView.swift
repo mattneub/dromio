@@ -63,8 +63,8 @@ struct AlbumCellContentConfiguration: UIContentConfiguration, Equatable {
     ///   - totalCount: The total count of songs in the album.
     init(song: SubsonicSong, totalCount: Int) {
         self.title = song.title
-        self.artist = song.artist
-        self.number = song.track
+        self.artist = song.artist.ensureNoBreakSpace
+        self.number = song.track ?? 0
         self.totalCount = totalCount
         self.duration = song.duration.map {
             Duration.seconds($0).formatted(

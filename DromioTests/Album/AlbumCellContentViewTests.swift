@@ -78,9 +78,9 @@ struct AlbumCellContentConfigurationTests {
             id: "4",
             title: "Howdy",
             album: "Hey",
-            artist: "Rembrandt",
+            artist: nil, // test empty artist
             displayComposer: "", // test empty composer and year
-            track: 1,
+            track: nil, // test empty track
             year: nil,
             albumId: "2",
             suffix: nil,
@@ -88,6 +88,6 @@ struct AlbumCellContentConfigurationTests {
         ), totalCount: 10)
         subject.configuration = configuration4
         labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
-        #expect(Set(labelTexts) == Set(["Howdy", "Rembrandt", "1 of 10", " ", "2:00"]))
+        #expect(Set(labelTexts) == Set(["Howdy", " ", "0 of 10", " ", "2:00"]))
     }
 }

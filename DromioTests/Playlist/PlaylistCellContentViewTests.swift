@@ -48,9 +48,9 @@ struct PlaylistCellContentConfigurationTests {
             id: "2",
             title: "Title",
             album: "Album",
-            artist: "Artist",
+            artist: nil, // test empty artist
             displayComposer: "", // test empty composer
-            track: 1,
+            track: nil, // test empty track
             year: 1970,
             albumId: "2",
             suffix: nil,
@@ -58,6 +58,6 @@ struct PlaylistCellContentConfigurationTests {
         ))
         subject.configuration = configuration2
         labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
-        #expect(Set(labelTexts) == Set(["Title", "3:20:00", "Album", "Artist", " "]))
+        #expect(Set(labelTexts) == Set(["Title", "3:20:00", "Album", " ", " "]))
     }
 }

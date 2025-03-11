@@ -60,7 +60,7 @@ struct PlaylistCellContentConfiguration: UIContentConfiguration, Equatable {
     ///   - song: The song.
     init(song: SubsonicSong) {
         self.title = song.title
-        self.artist = song.artist
+        self.artist = song.artist.ensureNoBreakSpace
         self.album = song.album.ensureNoBreakSpace
         self.duration = song.duration.map {
             Duration.seconds($0).formatted(
