@@ -6,7 +6,7 @@ import WaitWhile
 @MainActor
 struct ArtistsDataSourceDelegateTests {
     var subject: ArtistsDataSourceDelegate!
-    let tableView = UITableView()
+    let tableView = MockTableView()
 
     init() async {
         subject = .init(tableView: tableView)
@@ -84,6 +84,20 @@ struct ArtistsDataSourceDelegateTests {
         #expect(result == ["T", "Y"])
     }
 
+    @Test("sectionIndexTitles: if searching, returns nil")
+    func sectionIndexTitlesSearching() async throws {
+        await #while(subject.datasource == nil)
+        var state = ArtistsState(listType: .allArtists)
+        state.artists = [
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
+        ]
+        subject.datasource.searching = true
+        subject.present(state)
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
+    }
+
     @Test("sectionIndexTitles: with allArtists, but no actual albums, returns nil")
     func sectionIndexTitlesAllButNoData() async throws {
         await #while(subject.datasource == nil)
@@ -118,5 +132,84 @@ struct ArtistsDataSourceDelegateTests {
         #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
     }
 
+    @Test("updateSearchResults: if there is search bar text, filters data on it, updates datasource")
+    func updateSearchResults() async {
+        subject.originalData = [
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
+        ]
+        let search = UISearchController()
+        search.searchBar.text = "y"
+        subject.updateSearchResults(for: search)
+        #expect(subject.data == [
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+        ])
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        let snapshot = subject.datasource.snapshot()
+        #expect(snapshot.sectionIdentifiers == ["y"])
+        #expect(snapshot.itemIdentifiers(inSection: "y") == ["1"])
+    }
+
+    @Test("updateSearchResults: if there is no search bar text, restores data, updates datasource")
+    func updateSearchResultsNoText() async {
+        subject.originalData = [
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
+        ]
+        let search = UISearchController()
+        search.searchBar.text = ""
+        subject.updateSearchResults(for: search)
+        #expect(subject.data == [
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
+        ])
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        let snapshot = subject.datasource.snapshot()
+        #expect(snapshot.sectionIdentifiers == ["t", "y"])
+        #expect(snapshot.itemIdentifiers(inSection: "y") == ["1"])
+        #expect(snapshot.itemIdentifiers(inSection: "t") == ["2"])
+    }
+
+    @Test("updateSearchResults: if there is no search bar text and no originalData, just updates datasource")
+    func updateSearchResultsNoTextNoOriginalData() async {
+        subject.data = [
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
+        ]
+        subject.originalData = []
+        let search = UISearchController()
+        search.searchBar.text = ""
+        subject.updateSearchResults(for: search)
+        #expect(subject.data == [
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
+        ])
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        let snapshot = subject.datasource.snapshot()
+        #expect(snapshot.sectionIdentifiers == ["t", "y"])
+        #expect(snapshot.itemIdentifiers(inSection: "y") == ["1"])
+        #expect(snapshot.itemIdentifiers(inSection: "t") == ["2"])
+    }
+
+    @Test("willPresentSearchController: sets originalData, sets searching flag")
+    func willPresent() {
+        subject.originalData = []
+        subject.data = [
+            .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil),
+            .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: nil),
+        ]
+        #expect(subject.datasource.searching == false)
+        subject.willPresentSearchController(UISearchController())
+        #expect(subject.datasource.searching == true)
+        #expect(subject.originalData == subject.data)
+    }
+
+    @Test("didDismissSearchController: resets searching flag, calls table view reload section titles")
+    func didDismiss() {
+        subject.datasource.searching = true
+        subject.didDismissSearchController(UISearchController())
+        #expect(subject.datasource.searching == false)
+        #expect(tableView.methodsCalled == ["reloadSectionIndexTitles()"])
+    }
 
 }

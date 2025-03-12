@@ -20,6 +20,7 @@ final class ArtistsProcessor: Processor {
         switch action {
         case .allArtists:
             do {
+                await (presenter as? any Receiver<ArtistsEffect>)?.receive(.tearDownSearcher)
                 let artists = try await caches.fetch(\.allArtists) {
                     try await services.requestMaker.getArtistsBySearch()
                 }
@@ -31,6 +32,7 @@ final class ArtistsProcessor: Processor {
             }
         case .composers:
             do {
+                await (presenter as? any Receiver<ArtistsEffect>)?.receive(.tearDownSearcher)
                 let artists = try await caches.fetch(\.allArtists) {
                     try await services.requestMaker.getArtistsBySearch()
                 }
@@ -43,9 +45,12 @@ final class ArtistsProcessor: Processor {
         case .showAlbums(let id):
             coordinator?.showAlbumsForArtist(state: AlbumsState(listType: .albumsForArtist(id: id)))
         case .albums:
+            await (presenter as? any Receiver<ArtistsEffect>)?.receive(.tearDownSearcher)
             coordinator?.dismissArtists()
         case .showPlaylist:
             coordinator?.showPlaylist()
+        case .viewDidAppear:
+            await (presenter as? any Receiver<ArtistsEffect>)?.receive(.setUpSearcher)
         }
     }
 }

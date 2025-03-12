@@ -1,9 +1,9 @@
 import UIKit
 
 /// View controller that displays a list of all artists.
-final class ArtistsViewController: UITableViewController, Presenter {
+final class ArtistsViewController: UITableViewController, ReceiverPresenter {
     /// Data source and delegate object, created in `init`.
-    var dataSourceDelegate: (any DataSourceDelegate<ArtistsAction, ArtistsState>)?
+    var dataSourceDelegate: (any DataSourceDelegateSearcher<ArtistsAction, ArtistsState>)?
 
     /// Reference to the processor, set by coordinator on creation; setting it passes the same processor to the data source.
     weak var processor: (any Receiver<ArtistsAction>)? {
@@ -11,6 +11,9 @@ final class ArtistsViewController: UITableViewController, Presenter {
             dataSourceDelegate?.processor = processor
         }
     }
+
+    /// Object that handles and configures our search controller; it's a var for testing purposes.
+    var searcher = Searcher()
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -44,11 +47,32 @@ final class ArtistsViewController: UITableViewController, Presenter {
         }
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        Task {
+            await processor?.receive(.viewDidAppear)
+        }
+    }
+
+    func receive(_ effect: ArtistsEffect) async {
+        switch effect {
+        case .setUpSearcher:
+            await searcher.setUpSearcher(navigationItem: navigationItem, updater: dataSourceDelegate)
+        case .tearDownSearcher:
+            await searcher.tearDownSearcher(navigationItem: navigationItem, tableView: tableView)
+        }
+    }
+
     func present(_ state: ArtistsState) {
         title = switch state.listType {
         case .allArtists: "All Artists"
         case .composers: "Composers"
         }
+
+        Task {
+            await searcher.setUpSearcher(navigationItem: navigationItem, updater: dataSourceDelegate)
+        }
+
         navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
         dataSourceDelegate?.present(state)
     }

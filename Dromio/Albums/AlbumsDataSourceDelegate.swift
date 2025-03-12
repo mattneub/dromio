@@ -2,7 +2,7 @@ import UIKit
 
 /// Class that functions as data source and delegate for AlbumsViewController table view.
 @MainActor
-final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDelegate {
+final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITableViewDelegate {
 
     /// Processor to whom we can send action messages.
     weak var processor: (any Receiver<AlbumsAction>)?
@@ -35,6 +35,9 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
 
     /// Data to be displayed by the table view.
     var data = [SubsonicAlbum]()
+
+    /// A copy of the data that we can restore after a search.
+    var originalData = [SubsonicAlbum]()
 
     /// Type of the diffable data source.
     typealias Datasource = MyAlbumsTableViewDiffableDataSource
@@ -112,13 +115,47 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewD
         }
     }
 
+    // MARK: Searching
+
+    // Quite tricky, because we get calls to this method not just when the user types in the
+    // search bar but also when the user _taps_ in the search bar and when the user or the app
+    // cancels searching.
+    func updateSearchResults(for searchController: UISearchController) {
+        if let update = searchController.searchBar.text, !update.isEmpty {
+            let filteredData = originalData.filter {
+                $0.name.range(of: update, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+            }
+            data = filteredData
+        } else {
+            if !originalData.isEmpty {
+                data = originalData
+            }
+        }
+        Task {
+            await updateTableView(data: data)
+        }
+    }
+
+    func willPresentSearchController(_ searchController: UISearchController) {
+        originalData = data
+        datasource.searching = true
+    }
+
+    func didDismissSearchController(_ searchController: UISearchController) {
+        datasource.searching = false
+        tableView?.reloadSectionIndexTitles()
+    }
 }
 
 final class MyAlbumsTableViewDiffableDataSource: UITableViewDiffableDataSource<String, String> {
     var listType: AlbumsState.ListType = .allAlbums
+    var searching: Bool = false
 
     override func sectionIndexTitles(for _: UITableView) -> [String]? {
         if snapshot().itemIdentifiers.isEmpty {
+            return nil
+        }
+        if searching {
             return nil
         }
         switch listType {

@@ -1,9 +1,12 @@
 import UIKit
 
 /// View controller that displays a list of all albums.
-final class AlbumsViewController: UITableViewController, Presenter {
+final class AlbumsViewController: UITableViewController, ReceiverPresenter {
     /// Data source and delegate object, created in `init`.
-    var dataSourceDelegate: (any DataSourceDelegate<AlbumsAction, AlbumsState>)?
+    var dataSourceDelegate: (any DataSourceDelegateSearcher<AlbumsAction, AlbumsState>)?
+
+    /// Searcher that handles our search controller management. It's a var for testing purposes.
+    var searcher = Searcher()
 
     /// Reference to the processor, set by coordinator on creation; setting it passes the same processor to the data source.
     weak var processor: (any Receiver<AlbumsAction>)? {
@@ -39,6 +42,22 @@ final class AlbumsViewController: UITableViewController, Presenter {
         }
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        Task {
+            await processor?.receive(.viewDidAppear)
+        }
+    }
+
+    func receive(_ effect: AlbumsEffect) async {
+        switch effect {
+        case .setUpSearcher:
+            await searcher.setUpSearcher(navigationItem: navigationItem, updater: dataSourceDelegate)
+        case .tearDownSearcher:
+            await searcher.tearDownSearcher(navigationItem: navigationItem, tableView: tableView)
+        }
+    }
+
     func present(_ state: AlbumsState) {
         title = switch state.listType {
         case .allAlbums: 
@@ -48,12 +67,18 @@ final class AlbumsViewController: UITableViewController, Presenter {
         case .albumsForArtist:
             nil
         }
+
         navigationItem.leftBarButtonItem = switch state.listType {
         case .allAlbums, .randomAlbums:
             UIBarButtonItem(image: UIImage(systemName: "arrow.trianglehead.turn.up.right.circle"), menu: UIMenu())
         case .albumsForArtist:
             nil
         }
+
+        Task {
+            await searcher.setUpSearcher(navigationItem: navigationItem, updater: dataSourceDelegate)
+        }
+
         navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
         dataSourceDelegate?.present(state)
     }

@@ -14,4 +14,6 @@ enum AlbumsAction: Equatable {
     case artists
     /// The user would like to view the playlist.
     case showPlaylist
+    /// The view has appeared.
+    case viewDidAppear
 }

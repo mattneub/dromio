@@ -8,10 +8,12 @@ struct ArtistsViewControllerTests {
     let subject = ArtistsViewController(nibName: nil, bundle: nil)
     let mockDataSourceDelegate = MockDataSourceDelegate<ArtistsState, ArtistsAction>(tableView: UITableView())
     let processor = MockReceiver<ArtistsAction>()
+    let searcher = MockSearcher()
 
     init() {
         subject.dataSourceDelegate = mockDataSourceDelegate
         subject.processor = processor
+        subject.searcher = searcher
     }
 
     @Test("Initialize: sets title to Artists, creates data source delegate, configures table view")
@@ -57,12 +59,45 @@ struct ArtistsViewControllerTests {
         #expect(processor.thingsReceived.first == .allArtists)
     }
 
+    @Test("viewDidAppear: sends .viewDidAppear action")
+    func viewDidAppear() async {
+        subject.viewDidAppear(false)
+        await #while(processor.thingsReceived.last != .viewDidAppear)
+        #expect(processor.thingsReceived.last == .viewDidAppear)
+    }
+
+    @Test("receive setUpSearcher: calls searcher setUpSearcher")
+    func setUpSearcher() async {
+        await subject.receive(.setUpSearcher)
+        #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:updater:)"])
+        #expect(searcher.navigationItem === subject.navigationItem)
+        #expect(searcher.updater === subject.dataSourceDelegate)
+    }
+
+    @Test("receive tearDownSearcher: calls searcher tearDownSearcher")
+    func tearDownSearcher() async {
+        await subject.receive(.tearDownSearcher)
+        #expect(searcher.methodsCalled == ["tearDownSearcher(navigationItem:tableView:)"])
+        #expect(searcher.navigationItem === subject.navigationItem)
+        #expect(searcher.tableView === subject.tableView)
+    }
+
     @Test("present: presents to the data source")
     func present() {
         let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
         subject.present(state)
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
+    }
+
+    @Test("present: calls searcher setUpSearcher")
+    func presentSearcher() async {
+        let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
+        subject.present(state)
+        await #while(searcher.methodsCalled.isEmpty)
+        #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:updater:)"])
+        #expect(searcher.navigationItem === subject.navigationItem)
+        #expect(searcher.updater === subject.dataSourceDelegate)
     }
 
     @Test("present: sets the title and left bar button menu item according to the state")

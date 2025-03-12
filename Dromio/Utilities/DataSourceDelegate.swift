@@ -23,3 +23,14 @@ import UIKit
     func present(_ state: StateType)
 }
 
+@MainActor protocol SearchHandler: UISearchResultsUpdating, UISearchControllerDelegate {}
+
+/// Variety of protocol `DataSourceDelegate` that is also a search controller updater and delegate.
+///
+@MainActor protocol DataSourceDelegateSearcher<T, U>: DataSourceDelegate, SearchHandler {
+    associatedtype T where T == ActionType
+    associatedtype U where U == StateType
+
+    func updateSearchResults(for searchController: UISearchController)
+}
+

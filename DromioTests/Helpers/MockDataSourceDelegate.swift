@@ -2,7 +2,7 @@
 import UIKit
 
 @MainActor
-final class MockDataSourceDelegate<StateType, ActionType>: NSObject, DataSourceDelegate {
+final class MockDataSourceDelegate<StateType, ActionType>: NSObject, DataSourceDelegateSearcher {
     var methodsCalled = [String]()
     var processor: (any Receiver<ActionType>)?
     var state: StateType?
@@ -20,4 +20,8 @@ final class MockDataSourceDelegate<StateType, ActionType>: NSObject, DataSourceD
         self.state = state
     }
 
+    func updateSearchResults(for searchController: UISearchController) {
+        methodsCalled.append(#function)
+
+    }
 }

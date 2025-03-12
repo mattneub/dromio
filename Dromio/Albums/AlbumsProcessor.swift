@@ -34,6 +34,7 @@ final class AlbumsProcessor: Processor {
             }
         case .allAlbums:
             do {
+                await (presenter as? any Receiver<AlbumsEffect>)?.receive(.tearDownSearcher)
                 let albums = try await caches.fetch(\.albumsList) {
                     try await services.requestMaker.getAlbumList()
                 }
@@ -44,6 +45,7 @@ final class AlbumsProcessor: Processor {
             }
         case .randomAlbums:
             do {
+                await (presenter as? any Receiver<AlbumsEffect>)?.receive(.tearDownSearcher)
                 let albums = try await services.requestMaker.getAlbumsRandom()
                 state.listType = .randomAlbums
                 state.albums = albums
@@ -56,9 +58,12 @@ final class AlbumsProcessor: Processor {
             }
             coordinator?.showAlbum(albumId: id, title: album.name)
         case .artists:
+            await (presenter as? any Receiver<AlbumsEffect>)?.receive(.tearDownSearcher)
             coordinator?.showArtists()
         case .showPlaylist:
             coordinator?.showPlaylist()
+        case .viewDidAppear:
+            await (presenter as? any Receiver<AlbumsEffect>)?.receive(.setUpSearcher)
         }
     }
 }
