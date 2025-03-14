@@ -8,7 +8,7 @@ final class PlaylistProcessor: Processor {
     weak var coordinator: (any RootCoordinatorType)?
 
     /// Reference to the view controller, set by coordinator on creation.
-    weak var presenter: (any Presenter<PlaylistState>)?
+    weak var presenter: (any ReceiverPresenter<PlaylistEffect, PlaylistState>)?
 
     /// State to be presented to the presenter; mutating it presents.
     var state: PlaylistState = PlaylistState() {
@@ -39,7 +39,7 @@ final class PlaylistProcessor: Processor {
             }
             state.songs = songs
             // set up pipeline, only once
-            if pipeline == nil, let presenter = presenter as? any Receiver<PlaylistEffect> {
+            if pipeline == nil, let presenter {
                 pipeline = services.networker.progress.sink { [weak presenter] pair in
                     Task {
                         await presenter?.receive(.progress(pair.id, pair.fraction))
@@ -55,7 +55,7 @@ final class PlaylistProcessor: Processor {
             try? services.audioSession.setActive(true, options: [])
             Task { // don't let this delay also delay the start of playing
                 try? await Task.sleep(for: .seconds(unlessTesting(0.3)))
-                await (presenter as? any Receiver<PlaylistEffect>)?.receive(.deselectAll)
+                await presenter?.receive(.deselectAll)
             }
             try? await play(sequence: sequence)
         }

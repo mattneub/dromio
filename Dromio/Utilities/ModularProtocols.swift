@@ -10,29 +10,36 @@
  */
 
 /// Protocol for classes with a `receive` method; this allows us to slot a mock in place of
-/// a processor or presenter, for testing. `T` should be an action or effect enum.
+/// a processor or presenter, for testing. `Received` should be an action or effect enum.
 @MainActor
-protocol Receiver<T>: AnyObject {
-    associatedtype T
-    func receive(_: T) async
+protocol Receiver<Received>: AnyObject {
+    associatedtype Received
+    func receive(_: Received) async
+}
+
+/// Extension with injection so that if a receiver doesn't actually receive, it doesn't
+/// have to write a `receive` a method.
+extension Receiver where Received == Void {
+    func receive(_: Void) async {}
 }
 
 /// Protocol for classes with a `present` method; this allows us to slot a mock in place of
-/// a processor or presenter, for testing. `U` should be a state struct.
+/// a processor or presenter, for testing. `State` should be a state struct.
 @MainActor
-protocol Presenter<U>: AnyObject {
-    associatedtype U
-    func present(_: U)
+protocol Presenter<State>: AnyObject {
+    associatedtype State
+    func present(_: State)
 }
 
 /// Compositional protocol for types that adopt both Receiver and Presenter (it is not currently
 /// possible to do this with an actual composition operator).
 @MainActor
-protocol ReceiverPresenter<T, U>: Receiver, Presenter {}
+protocol ReceiverPresenter<Received, State>: Receiver, Presenter {}
 
 /// A Processor is a Receiver that also has a `presenter` property.
 @MainActor
-protocol Processor<T, U>: Receiver {
-    associatedtype U
-    var presenter: (any Presenter<U>)? { get set }
+protocol Processor<Received, PresenterState, Effect>: Receiver {
+    associatedtype PresenterState
+    associatedtype Effect
+    var presenter: (any ReceiverPresenter<Effect, PresenterState>)? { get set }
 }

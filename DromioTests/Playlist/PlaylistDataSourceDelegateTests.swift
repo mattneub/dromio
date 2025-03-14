@@ -7,7 +7,7 @@ import WaitWhile
 struct PlaylistDataSourceDelegateTests {
     var subject: PlaylistDataSourceDelegate!
     let tableView = UITableView()
-    let processor = MockProcessor<PlaylistAction, PlaylistState>()
+    let processor = MockProcessor<PlaylistAction, PlaylistState, PlaylistEffect>()
 
     init() {
         subject = .init(tableView: tableView)

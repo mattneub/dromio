@@ -5,7 +5,7 @@ import Foundation
 final class ServerProcessor: Processor {
     weak var coordinator: (any RootCoordinatorType)?
 
-    weak var presenter: (any Presenter<ServerState>)?
+    weak var presenter: (any ReceiverPresenter<ServerEffect, ServerState>)?
 
     /// Sometimes we want to maintain state without presenting, so this temporary toggle lets us
     /// mutate the state without presenting.
@@ -56,7 +56,7 @@ final class ServerProcessor: Processor {
                 case .usernameEmpty: "The username cannot be empty."
                 case .schemeInvalid: "The scheme must be http or https."
                 }
-                await (presenter as? any Receiver<ServerEffect>)?.receive(.alertWithMessage(issue))
+                await presenter?.receive(.alertWithMessage(issue))
             } catch {}
         }
     }

@@ -7,7 +7,7 @@ final class AlbumProcessor: Processor {
     weak var coordinator: (any RootCoordinatorType)?
 
     /// Reference to the view controller, set by coordinator on creation.
-    weak var presenter: (any Presenter<AlbumState>)?
+    weak var presenter: (any ReceiverPresenter<AlbumEffect, AlbumState>)?
 
     /// State to be presented to the presenter; mutating it presents.
     var state: AlbumState = AlbumState() {
@@ -36,7 +36,7 @@ final class AlbumProcessor: Processor {
             try? await unlessTesting {
                 try? await Task.sleep(for: .seconds(0.3))
             }
-            await (presenter as? any Receiver<AlbumEffect>)?.receive(.deselectAll)
+            await presenter?.receive(.deselectAll)
         case .showPlaylist:
             coordinator?.showPlaylist()
         }

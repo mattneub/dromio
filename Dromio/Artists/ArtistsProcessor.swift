@@ -7,7 +7,7 @@ final class ArtistsProcessor: Processor {
     weak var coordinator: (any RootCoordinatorType)?
 
     /// Reference to the view controller, set by coordinator on creation.
-    weak var presenter: (any Presenter<ArtistsState>)?
+    weak var presenter: (any ReceiverPresenter<ArtistsEffect, ArtistsState>)?
 
     /// State to be presented to the presenter; mutating it presents.
     var state: ArtistsState = ArtistsState() {
@@ -20,7 +20,7 @@ final class ArtistsProcessor: Processor {
         switch action {
         case .allArtists:
             do {
-                await (presenter as? any Receiver<ArtistsEffect>)?.receive(.tearDownSearcher)
+                await presenter?.receive(.tearDownSearcher)
                 let artists = try await caches.fetch(\.allArtists) {
                     try await services.requestMaker.getArtistsBySearch()
                 }
@@ -32,7 +32,7 @@ final class ArtistsProcessor: Processor {
             }
         case .composers:
             do {
-                await (presenter as? any Receiver<ArtistsEffect>)?.receive(.tearDownSearcher)
+                await presenter?.receive(.tearDownSearcher)
                 let artists = try await caches.fetch(\.allArtists) {
                     try await services.requestMaker.getArtistsBySearch()
                 }
@@ -45,12 +45,12 @@ final class ArtistsProcessor: Processor {
         case .showAlbums(let id):
             coordinator?.showAlbumsForArtist(state: AlbumsState(listType: .albumsForArtist(id: id)))
         case .albums:
-            await (presenter as? any Receiver<ArtistsEffect>)?.receive(.tearDownSearcher)
+            await presenter?.receive(.tearDownSearcher)
             coordinator?.dismissArtists()
         case .showPlaylist:
             coordinator?.showPlaylist()
         case .viewDidAppear:
-            await (presenter as? any Receiver<ArtistsEffect>)?.receive(.setUpSearcher)
+            await presenter?.receive(.setUpSearcher)
         }
     }
 }

@@ -6,7 +6,7 @@ import WaitWhile
 @MainActor
 struct PingViewControllerTests {
     let subject = PingViewController(nibName: "Ping", bundle: nil)
-    let processor = MockProcessor<PingAction, PingState>()
+    let processor = MockProcessor<PingAction, PingState, Void>()
 
     init() {
         subject.processor = processor

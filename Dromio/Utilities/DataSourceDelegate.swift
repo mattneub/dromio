@@ -4,12 +4,11 @@ import UIKit
 /// How the actual type does this is an internal implementation detail; the only absolute
 /// requirement is that the initializer must set the table view's `dataSource` and `delegate`.
 ///
-@MainActor protocol DataSourceDelegate<ActionType, StateType, T>: NSObjectProtocol, Receiver {
-    associatedtype ActionType
-    associatedtype StateType
+@MainActor protocol DataSourceDelegate<ProcessorAction, State, Received>: NSObjectProtocol, ReceiverPresenter {
+    associatedtype ProcessorAction
 
     /// Processor to whom to send any action messages.
-    var processor: (any Receiver<ActionType>)? { get set }
+    var processor: (any Receiver<ProcessorAction>)? { get set }
 
     /// Weak reference, purely for testing purposes.
     var tableView: UITableView? { get }
@@ -17,21 +16,12 @@ import UIKit
     /// Initializer.
     /// - Parameter tableView: The table view whose `dataSource` and `delegate` we will set.
     init(tableView: UITableView)
-
-    /// Display the given state in the table view (by configuring the data source).
-    /// - Parameter state: The state to display.
-    func present(_ state: StateType)
-
-    func receive(_ effect: T)
 }
 
 @MainActor protocol SearchHandler: UISearchResultsUpdating, UISearchControllerDelegate {}
 
 /// Variety of protocol `DataSourceDelegate` that is also a search controller updater and delegate.
 ///
-@MainActor protocol DataSourceDelegateSearcher<ActionType, StateType, EffectType>: DataSourceDelegate, SearchHandler where ActionType == ActionType {
-    associatedtype EffectType where EffectType == T
-
+@MainActor protocol DataSourceDelegateSearcher<ProcessorAction, State, Received>: DataSourceDelegate, SearchHandler {
     func updateSearchResults(for searchController: UISearchController)
 }
-

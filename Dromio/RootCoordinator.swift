@@ -5,13 +5,13 @@ import UIKit
 protocol RootCoordinatorType: AnyObject {
     // Processors are rooted here. They are all expressed as protocols, for testability.
 
-    var pingProcessor: (any Processor<PingAction, PingState>)? { get }
-    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)? { get }
-    var albumProcessor: (any Processor<AlbumAction, AlbumState>)? { get }
-    var artistsProcessor: (any Processor<ArtistsAction, ArtistsState>)? { get }
-    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState>)? { get }
-    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)? { get }
-    var serverProcessor: (any Processor<ServerAction, ServerState>)? { get }
+    var pingProcessor: (any Processor<PingAction, PingState, Void>)? { get }
+    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
+    var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)? { get }
+    var artistsProcessor: (any Processor<ArtistsAction, ArtistsState, ArtistsEffect>)? { get }
+    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
+    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)? { get }
+    var serverProcessor: (any Processor<ServerAction, ServerState, ServerEffect>)? { get }
 
     // The root coordinator also needs a reference to the true root view controller.
 
@@ -59,15 +59,15 @@ protocol RootCoordinatorType: AnyObject {
 @MainActor
 final class RootCoordinator: RootCoordinatorType {
 
-    var pingProcessor: (any Processor<PingAction, PingState>)?
-    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
-    var albumProcessor: (any Processor<AlbumAction, AlbumState>)?
-    var artistsProcessor: (any Processor<ArtistsAction, ArtistsState>)?
+    var pingProcessor: (any Processor<PingAction, PingState, Void>)?
+    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
+    var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)?
+    var artistsProcessor: (any Processor<ArtistsAction, ArtistsState, ArtistsEffect>)?
     // The albums module can appear in two places simultaneously, so we need a place to root
     // a second instance of the albums processor.
-    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState>)?
-    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState>)?
-    var serverProcessor: (any Processor<ServerAction, ServerState>)?
+    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
+    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)?
+    var serverProcessor: (any Processor<ServerAction, ServerState, ServerEffect>)?
 
     weak var rootViewController: UIViewController?
 

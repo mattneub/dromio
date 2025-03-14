@@ -5,7 +5,7 @@ import Foundation
 @MainActor
 struct PingProcessorTests {
     let subject = PingProcessor()
-    let presenter = MockReceiverPresenter<PingAction, PingState>()
+    let presenter = MockReceiverPresenter<Void, PingState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
     let urlMaker = MockURLMaker()

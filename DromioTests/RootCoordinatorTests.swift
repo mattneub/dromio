@@ -47,7 +47,7 @@ struct RootCoordinatorTests {
     func dismissServer() async throws {
         // fake minimal initial interface
         let subject = RootCoordinator()
-        let pingProcessor = MockProcessor<PingAction, PingState>()
+        let pingProcessor = MockProcessor<PingAction, PingState, Void>()
         subject.pingProcessor = pingProcessor
         let rootViewController = UIViewController()
         makeWindow(viewController: rootViewController)

@@ -7,7 +7,7 @@ import WaitWhile
 struct AlbumDataSourceDelegateTests {
     var subject: AlbumDataSourceDelegate!
     let tableView = UITableView()
-    let processor = MockProcessor<AlbumAction, AlbumState>()
+    let processor = MockProcessor<AlbumAction, AlbumState, AlbumEffect>()
 
     init() {
         subject = .init(tableView: tableView)

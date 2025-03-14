@@ -6,7 +6,7 @@ import UIKit
 @MainActor
 struct ServerViewControllerTests {
     let subject = ServerViewController(nibName: "Server", bundle: nil)
-    let processor = MockProcessor<ServerAction, ServerState>()
+    let processor = MockProcessor<ServerAction, ServerState, ServerEffect>()
 
     init() {
         subject.processor = processor

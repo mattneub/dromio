@@ -29,9 +29,6 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
         }
     }
 
-    func receive(_ effect: Void) {}
-
-
     // MARK: - Table view contents
 
     /// Data to be displayed by the table view.

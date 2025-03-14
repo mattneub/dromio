@@ -30,8 +30,6 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
         }
     }
 
-    func receive(_ effect: Void) {}
-
     // MARK: - Table view contents
 
     /// Data to be displayed by the table view.
