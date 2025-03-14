@@ -52,3 +52,17 @@ extension Array where Element == SubsonicArtist {
     }
 }
 
+extension Array where Element == SubsonicSong {
+    /// Given a song, find it in the list and extract a sequence from that song to the
+    /// end of the playlist.
+    /// - Parameter song: The song to start with. Should be in the current playlist.
+    /// - Returns: The sequence (array) of songs.
+    ///
+    func buildSequence(startingWith song: SubsonicSong) -> [SubsonicSong] {
+        guard let start = firstIndex(where: { $0.id == song.id }) else {
+            return []
+        }
+        return Array(self[start...])
+    }
+}
+

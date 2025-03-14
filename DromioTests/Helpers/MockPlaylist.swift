@@ -6,7 +6,6 @@ final class MockPlaylist: PlaylistType {
     var list = [SubsonicSong]()
     var methodsCalled = [String]()
     var errorToThrow: (any Error)?
-    var sequenceToReturn = [SubsonicSong]()
 
     func append(_ song: SubsonicSong) throws {
         methodsCalled.append(#function)
@@ -14,11 +13,6 @@ final class MockPlaylist: PlaylistType {
             throw error
         }
         list.append(song)
-    }
-
-    func buildSequence(startingWith song: SubsonicSong) -> [SubsonicSong] {
-        methodsCalled.append(#function)
-        return sequenceToReturn
     }
 
     func clear() {

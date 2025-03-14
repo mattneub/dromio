@@ -47,7 +47,7 @@ final class PlaylistProcessor: Processor {
                 }
             }
         case .tapped(let song):
-            let sequence = services.currentPlaylist.buildSequence(startingWith: song)
+            let sequence = state.songs.buildSequence(startingWith: song)
             guard sequence.count > 0 else {
                 return
             }

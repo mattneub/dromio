@@ -139,7 +139,7 @@ struct PlaylistProcessorTests {
         )
     }
 
-    @Test("receive tapped: calls playlist buildSequence, calls haptic, sets audio session active, sends .deselectAll")
+    @Test("receive tapped: calls haptic, sets audio session active, sends .deselectAll")
     func receiveTapped() async {
         let song = SubsonicSong(
             id: "1",
@@ -165,9 +165,8 @@ struct PlaylistProcessorTests {
             suffix: nil,
             duration: nil
         )
-        playlist.sequenceToReturn = [song, song2]
+        subject.state.songs = [song, song2]
         await subject.receive(.tapped(song))
-        #expect(playlist.methodsCalled == ["buildSequence(startingWith:)"])
         #expect(haptic.methodsCalled == ["success()"])
         #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
         #expect(audioSession.active == true)
@@ -213,7 +212,6 @@ struct PlaylistProcessorTests {
             suffix: nil,
             duration: nil
         )
-        playlist.sequenceToReturn = [song, song2, song3]
         subject.state.songs = [song, song2, song3]
         await subject.receive(.tapped(song))
         #expect(requestMaker.methodsCalled == ["stream(songId:)"])
@@ -223,9 +221,8 @@ struct PlaylistProcessorTests {
         #expect(subject.state.songs.filter { $0.downloaded == true }.count == 3)
     }
 
-    @Test("receive tapped: doesn't proceed further if playlist buildSequence returned list is empty")
+    @Test("receive tapped: doesn't proceed further if song is not in state")
     func receiveTappedNoSequence() async {
-        playlist.sequenceToReturn = []
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -238,8 +235,32 @@ struct PlaylistProcessorTests {
             suffix: nil,
             duration: nil
         )
+        let song2 = SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        )
+        let song3 = SubsonicSong(
+            id: "3",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        )
+        subject.state.songs = [song2, song3]
         await subject.receive(.tapped(song))
-        #expect(playlist.methodsCalled == ["buildSequence(startingWith:)"])
         #expect(haptic.methodsCalled.isEmpty)
         #expect(audioSession.methodsCalled.isEmpty)
         #expect(requestMaker.methodsCalled.isEmpty)
