@@ -6,7 +6,7 @@ import WaitWhile
 @MainActor
 struct AlbumViewControllerTests {
     let subject = AlbumViewController(nibName: nil, bundle: nil)
-    let mockDataSourceDelegate = MockDataSourceDelegate<AlbumState, AlbumAction>(tableView: UITableView())
+    let mockDataSourceDelegate = MockDataSourceDelegate<AlbumState, AlbumAction, Void>(tableView: UITableView())
     let processor = MockReceiver<AlbumAction>()
 
     init() {

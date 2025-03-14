@@ -13,5 +13,7 @@ struct SubsonicSong: Codable, Equatable {
     let albumId: String?
     let suffix: String?
     let duration: Int?
-    // Lots of other stuff I'm ignoring for now
+    // Lots of other stuff I'm ignoring for now...
+    // This, however, is internal to the app:
+    var downloaded: Bool?
 }

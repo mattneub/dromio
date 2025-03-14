@@ -6,6 +6,7 @@ final class PlaylistCellContentView: UIView, UIContentView {
     @IBOutlet var album: UILabel!
     @IBOutlet var composer: UILabel!
     @IBOutlet var duration: UILabel!
+    @IBOutlet var thermometer: ThermometerView!
 
     /// Boilerplate.
     var configuration: any UIContentConfiguration {

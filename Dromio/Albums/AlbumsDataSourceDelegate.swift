@@ -3,7 +3,6 @@ import UIKit
 /// Class that functions as data source and delegate for AlbumsViewController table view.
 @MainActor
 final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITableViewDelegate {
-
     /// Processor to whom we can send action messages.
     weak var processor: (any Receiver<AlbumsAction>)?
 
@@ -29,6 +28,8 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
             await updateTableView(data: state.albums)
         }
     }
+
+    func receive(_ effect: Void) {}
 
 
     // MARK: - Table view contents

@@ -6,7 +6,7 @@ import WaitWhile
 @MainActor
 struct ArtistsViewControllerTests {
     let subject = ArtistsViewController(nibName: nil, bundle: nil)
-    let mockDataSourceDelegate = MockDataSourceDelegate<ArtistsState, ArtistsAction>(tableView: UITableView())
+    let mockDataSourceDelegate = MockDataSourceDelegate<ArtistsState, ArtistsAction, Void>(tableView: UITableView())
     let processor = MockReceiver<ArtistsAction>()
     let searcher = MockSearcher()
 

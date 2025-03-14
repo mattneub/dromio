@@ -23,6 +23,32 @@ struct PlaylistDataSourceDelegateTests {
         #expect(subject.tableView === tableView)
     }
 
+    @Test("receive progress: sets the `progress` of the thermometer view in the corresponding cell")
+    func receiveProgress() async throws {
+        makeWindow(view: tableView)
+        var state = PlaylistState()
+        state.songs = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        )]
+        subject.present(state)
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
+        let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
+        // that was prep, this is the test
+        subject.receive(.progress("1", 0.5))
+        let thermometerView = try #require((cell?.contentView as? PlaylistCellContentView)?.thermometer)
+        #expect(thermometerView.progress == 0.5)
+    }
+
     @Test("present: datasource reflects `songs`")
     func presentWithDataDatasourceItems() async {
         var state = PlaylistState()
@@ -79,6 +105,47 @@ struct PlaylistDataSourceDelegateTests {
             duration: nil
         ))
         #expect(configuration == expected)
+        let thermometerView = try #require((cell?.contentView as? PlaylistCellContentView)?.thermometer)
+        #expect(thermometerView.progress == 0)
+    }
+
+    @Test("present: if a song's `downloaded` is true, its cell thermometer view gets a `progress` of 1")
+    func presentWithDataDownloaded() async throws {
+        makeWindow(view: tableView)
+        var state = PlaylistState()
+        state.songs = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            downloaded: true
+        )]
+        subject.present(state)
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
+        let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
+        let configuration = try #require(cell?.contentConfiguration as? PlaylistCellContentConfiguration)
+        let expected = PlaylistCellContentConfiguration(song: .init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil
+        ))
+        #expect(configuration == expected)
+        let thermometerView = try #require((cell?.contentView as? PlaylistCellContentView)?.thermometer)
+        #expect(thermometerView.progress == 1)
     }
 
     @Test("didSelect: sends tapped to processor")

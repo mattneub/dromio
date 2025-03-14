@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import Combine
 
 /// Error enum that carries a message suitable for display to the user.
 enum NetworkerError: Error, Equatable {
@@ -7,9 +8,11 @@ enum NetworkerError: Error, Equatable {
 }
 
 /// Protocol defining the public face of our Networker.
-@MainActor protocol NetworkerType {
+@MainActor protocol NetworkerType: Sendable {
     func performRequest(url: URL) async throws -> Data
     func performDownloadRequest(url: URL) async throws -> URL
+    func progress(id: String, fraction: Double?)
+    var progress: PassthroughSubject<(id: String, fraction: Double?), Never> { get }
 }
 
 /// Class embodying all _actual_ networking activity vis-a-vis the Navidrome server. In general,
@@ -19,6 +22,9 @@ enum NetworkerError: Error, Equatable {
 final class Networker: NetworkerType {
     /// The URLSession set by `init`.
     let session: URLSession
+
+    /// Publisher of progress in our download task when calling `performDownloadRequest`.
+    var progress = PassthroughSubject<(id: String, fraction: Double?), Never>()
 
     /// Initializer.
     /// - Parameter session: Optional session, to be used by tests. The app itself should supply nothing
@@ -54,7 +60,7 @@ final class Networker: NetworkerType {
         let operation = BackgroundTaskOperation { [weak self] in
             guard let self else { fatalError("oop") }
             logger.log("download started")
-            let (url, response) = try await self.session.download(for: request)
+            let (url, response) = try await self.session.download(for: request, delegate: DownloadDelegate())
             logger.log("download finished")
             return (url, response)
         } cleanup: { [weak self] in
@@ -79,5 +85,14 @@ final class Networker: NetworkerType {
         guard statusCode == 200 else {
             throw NetworkerError.message("We got a status code \(statusCode).")
         }
+    }
+    
+    /// Method called (by DownloadDelegate) to trigger publishing of a download's progress.
+    /// - Parameters:
+    ///   - id: The `id` of the song we are downloading.
+    ///   - fraction: The percentage of progress, as a fraction of 1.
+    func progress(id: String, fraction: Double?) {
+        let pair = (id: id, fraction: fraction)
+        self.progress.send(pair)
     }
 }

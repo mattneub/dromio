@@ -4,7 +4,7 @@ import UIKit
 /// How the actual type does this is an internal implementation detail; the only absolute
 /// requirement is that the initializer must set the table view's `dataSource` and `delegate`.
 ///
-@MainActor protocol DataSourceDelegate<ActionType, StateType>: NSObjectProtocol {
+@MainActor protocol DataSourceDelegate<ActionType, StateType, T>: NSObjectProtocol, Receiver {
     associatedtype ActionType
     associatedtype StateType
 
@@ -21,15 +21,16 @@ import UIKit
     /// Display the given state in the table view (by configuring the data source).
     /// - Parameter state: The state to display.
     func present(_ state: StateType)
+
+    func receive(_ effect: T)
 }
 
 @MainActor protocol SearchHandler: UISearchResultsUpdating, UISearchControllerDelegate {}
 
 /// Variety of protocol `DataSourceDelegate` that is also a search controller updater and delegate.
 ///
-@MainActor protocol DataSourceDelegateSearcher<T, U>: DataSourceDelegate, SearchHandler {
-    associatedtype T where T == ActionType
-    associatedtype U where U == StateType
+@MainActor protocol DataSourceDelegateSearcher<ActionType, StateType, EffectType>: DataSourceDelegate, SearchHandler where ActionType == ActionType {
+    associatedtype EffectType where EffectType == T
 
     func updateSearchResults(for searchController: UISearchController)
 }

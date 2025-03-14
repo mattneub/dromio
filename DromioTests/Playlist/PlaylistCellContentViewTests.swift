@@ -21,9 +21,11 @@ struct PlaylistCellContentConfigurationTests {
         let subject = PlaylistCellContentView(configuration)
         #expect(subject.subviews.count == 1)
         let loadedView = try #require(subject.subviews.first)
-        #expect(loadedView.subviews.count == 5)
+        #expect(loadedView.subviews.count == 6)
         let labels = loadedView.subviews.filter { $0 is UILabel }
         #expect(labels.count == 5)
+        let therms = loadedView.subviews.filter { $0 is ThermometerView }
+        #expect(therms.count == 1)
     }
 
     @Test("Applying configuration to content view configures the displayed content correctly")

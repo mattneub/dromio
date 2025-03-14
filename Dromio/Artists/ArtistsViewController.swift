@@ -3,7 +3,7 @@ import UIKit
 /// View controller that displays a list of all artists.
 final class ArtistsViewController: UITableViewController, ReceiverPresenter {
     /// Data source and delegate object, created in `init`.
-    var dataSourceDelegate: (any DataSourceDelegateSearcher<ArtistsAction, ArtistsState>)?
+    var dataSourceDelegate: (any DataSourceDelegateSearcher<ArtistsAction, ArtistsState, Void>)?
 
     /// Reference to the processor, set by coordinator on creation; setting it passes the same processor to the data source.
     weak var processor: (any Receiver<ArtistsAction>)? {

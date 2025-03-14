@@ -1,6 +1,8 @@
 @testable import Dromio
 import Foundation
+import Combine
 import Testing
+import WaitWhile
 
 @MainActor
 class NetworkerTests {
@@ -115,5 +117,14 @@ class NetworkerTests {
         #expect(resultData == data)
     }
 
-}
+    var pipeline: AnyCancellable?
 
+    @Test("progress: sends value to passthru subject")
+    func progress() async throws {
+        var result: (id: String, fraction: Double?)?
+        pipeline = subject.progress.sink { result = $0 }
+        subject.progress(id: "1", fraction: 0.5)
+        #expect(result?.id == "1")
+        #expect(result?.fraction == 0.5)
+    }
+}

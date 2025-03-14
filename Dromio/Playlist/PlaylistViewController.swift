@@ -3,7 +3,7 @@ import UIKit
 /// View controller that displays a list of all songs in an album.
 final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     /// Data source and delegate object, created in `init`.
-    var dataSourceDelegate: (any DataSourceDelegate<PlaylistAction, PlaylistState>)?
+    var dataSourceDelegate: (any DataSourceDelegate<PlaylistAction, PlaylistState, PlaylistEffect>)?
 
     /// Reference to the processor, set by coordinator on creation; setting it passes the same processor to the data source.
     weak var processor: (any Receiver<PlaylistAction>)? {
@@ -38,10 +38,12 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         dataSourceDelegate?.present(state)
     }
 
-    func receive(_ effect: PlaylistEffect) {
+    func receive(_ effect: PlaylistEffect) async {
         switch effect {
         case .deselectAll:
             tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
+        case .progress(let id, let progress):
+            await dataSourceDelegate?.receive(.progress(id, progress))
         }
     }
 

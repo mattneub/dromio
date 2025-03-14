@@ -71,7 +71,8 @@ struct PersistenceTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: 100
+            duration: 100,
+            downloaded: nil
         )
         let result = try subject.loadSongList(key: .currentPlaylist)
         #expect(defaults.key == "currentPlaylist")

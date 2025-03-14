@@ -2,9 +2,11 @@
 import Foundation
 
 actor MockDownload: DownloadType {
+
     var urlToReturn: URL = URL(string: "http://example.com")!
     var song: SubsonicSong?
     var methodsCalled = [String]()
+    nonisolated(unsafe) var bools: [String: Bool] = [:]
 
     func download(song: SubsonicSong) async throws -> URL {
         methodsCalled.append(#function)
@@ -15,4 +17,12 @@ actor MockDownload: DownloadType {
     func clear() {
         methodsCalled.append(#function)
     }
+
+    func downloadedURL(for song: Dromio.SubsonicSong) throws -> URL? {
+        methodsCalled.append(#function)
+        self.song = song
+        if bools[song.id] == true { return URL(string: "file://yoho")! }
+        else { return nil }
+    }
+
 }

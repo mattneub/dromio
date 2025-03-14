@@ -41,7 +41,7 @@ final class BackgroundTaskOperation<T: Sendable> {
     func start() async throws -> T {
         bti = UIApplication.shared.beginBackgroundTask {
             Task { @MainActor in
-                try await self.cleanup?()
+                try? await self.cleanup?()
             }
             UIApplication.shared.endBackgroundTask(self.bti)
         }
@@ -59,3 +59,4 @@ final class BackgroundTaskOperation<T: Sendable> {
         }
     }
 }
+

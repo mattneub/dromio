@@ -3,7 +3,7 @@ import UIKit
 /// View controller that displays a list of all albums.
 final class AlbumsViewController: UITableViewController, ReceiverPresenter {
     /// Data source and delegate object, created in `init`.
-    var dataSourceDelegate: (any DataSourceDelegateSearcher<AlbumsAction, AlbumsState>)?
+    var dataSourceDelegate: (any DataSourceDelegateSearcher<AlbumsAction, AlbumsState, Void>)?
 
     /// Searcher that handles our search controller management. It's a var for testing purposes.
     var searcher = Searcher()

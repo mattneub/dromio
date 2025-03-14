@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3F91B01D2D83601400B096AB /* InlineSnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3F91B01C2D83601400B096AB /* InlineSnapshotTesting */; };
+		3F91B01F2D83601400B096AB /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3F91B01E2D83601400B096AB /* SnapshotTesting */; };
+		3F91B0212D83601400B096AB /* SnapshotTestingCustomDump in Frameworks */ = {isa = PBXBuildFile; productRef = 3F91B0202D83601400B096AB /* SnapshotTestingCustomDump */; };
 		3FAB3F602D64CDED007323B0 /* WaitWhile in Frameworks */ = {isa = PBXBuildFile; productRef = 3FAB3F5F2D64CDED007323B0 /* WaitWhile */; };
 /* End PBXBuildFile section */
 
@@ -57,6 +60,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3F91B0212D83601400B096AB /* SnapshotTestingCustomDump in Frameworks */,
+				3F91B01F2D83601400B096AB /* SnapshotTesting in Frameworks */,
+				3F91B01D2D83601400B096AB /* InlineSnapshotTesting in Frameworks */,
 				3FAB3F602D64CDED007323B0 /* WaitWhile in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -112,6 +118,9 @@
 			name = DromioTests;
 			packageProductDependencies = (
 				3FAB3F5F2D64CDED007323B0 /* WaitWhile */,
+				3F91B01C2D83601400B096AB /* InlineSnapshotTesting */,
+				3F91B01E2D83601400B096AB /* SnapshotTesting */,
+				3F91B0202D83601400B096AB /* SnapshotTestingCustomDump */,
 			);
 			productName = DromioTests;
 			productReference = 3F0AB6892D64C243001D5DAF /* DromioTests.xctest */;
@@ -170,6 +179,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				3FAB3F5E2D64CDED007323B0 /* XCRemoteSwiftPackageReference "WaitWhile" */,
+				3F91B01B2D83601400B096AB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3F8BE78A2D62A3BE009A9DD1 /* Products */;
@@ -470,6 +480,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		3F91B01B2D83601400B096AB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.18.1;
+			};
+		};
 		3FAB3F5E2D64CDED007323B0 /* XCRemoteSwiftPackageReference "WaitWhile" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mattneub/WaitWhile";
@@ -481,6 +499,21 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3F91B01C2D83601400B096AB /* InlineSnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3F91B01B2D83601400B096AB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = InlineSnapshotTesting;
+		};
+		3F91B01E2D83601400B096AB /* SnapshotTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3F91B01B2D83601400B096AB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTesting;
+		};
+		3F91B0202D83601400B096AB /* SnapshotTestingCustomDump */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3F91B01B2D83601400B096AB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			productName = SnapshotTestingCustomDump;
+		};
 		3FAB3F5F2D64CDED007323B0 /* WaitWhile */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 3FAB3F5E2D64CDED007323B0 /* XCRemoteSwiftPackageReference "WaitWhile" */;

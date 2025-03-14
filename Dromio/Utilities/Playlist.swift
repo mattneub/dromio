@@ -5,7 +5,7 @@ enum PlaylistError: Error {
 }
 
 @MainActor
-protocol PlaylistType {
+protocol PlaylistType: Sendable {
     var list: [SubsonicSong] { get set }
     func append(_ song: SubsonicSong) throws
     func buildSequence(startingWith song: SubsonicSong) -> [SubsonicSong]
@@ -38,7 +38,7 @@ final class Playlist: PlaylistType {
         list.append(song)
     }
 
-    /// Given a song, find it in the lst and extract a sequence from that song to the
+    /// Given a song, find it in the list and extract a sequence from that song to the
     /// end of the playlist.
     /// - Parameter song: The song to start with. Should be in the current playlist.
     /// - Returns: The sequence (array) of songs.

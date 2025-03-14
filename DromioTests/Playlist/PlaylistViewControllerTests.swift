@@ -6,7 +6,7 @@ import WaitWhile
 @MainActor
 struct PlaylistViewControllerTests {
     let subject = PlaylistViewController(nibName: nil, bundle: nil)
-    let mockDataSourceDelegate = MockDataSourceDelegate<PlaylistState, PlaylistAction>(tableView: UITableView())
+    let mockDataSourceDelegate = MockDataSourceDelegate<PlaylistState, PlaylistAction, PlaylistEffect>(tableView: UITableView())
     let processor = MockReceiver<PlaylistAction>()
 
     init() {
@@ -70,11 +70,17 @@ struct PlaylistViewControllerTests {
     }
 
     @Test("receive deselectAll: tells the table view to select nil")
-    func receiveDeselectAll() {
+    func receiveDeselectAll() async {
         subject.tableView.selectRow(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .none)
         #expect(subject.tableView.indexPathForSelectedRow != nil)
-        subject.receive(.deselectAll)
+        await subject.receive(.deselectAll)
         #expect(subject.tableView.indexPathForSelectedRow == nil)
+    }
+
+    @Test("receive progress: passes it to the datasource")
+    func receiveProgress() async {
+        await subject.receive(.progress("1", 0.5))
+        #expect(mockDataSourceDelegate.thingsReceived.last == .progress("1", 0.5))
     }
 
     @Test("doClear: sends .clear to the processor")
