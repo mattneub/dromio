@@ -1,7 +1,5 @@
 import Foundation
 
-// TODO: Not sure how to test this
-
 /// Class that functions as a delegate for our download task. It observes the progress of the
 /// task and forwards each update to the Networker, where it can be subscribed to.
 ///
