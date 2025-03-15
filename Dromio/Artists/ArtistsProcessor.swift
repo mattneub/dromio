@@ -43,7 +43,21 @@ final class ArtistsProcessor: Processor {
                 print(error)
             }
         case .showAlbums(let id):
-            coordinator?.showAlbumsForArtist(state: AlbumsState(listType: .albumsForArtist(id: id)))
+            switch state.listType {
+            case .allArtists:
+                coordinator?.showAlbumsForArtist(
+                    state: AlbumsState(
+                        listType: .albumsForArtist(id: id, source: .artists)
+                    )
+                )
+            case .composers:
+                guard let name = state.artists.first(where: { $0.id == id })?.name else { return }
+                coordinator?.showAlbumsForArtist(
+                    state: AlbumsState(
+                        listType: .albumsForArtist(id: id, source: .composers(name: name))
+                    )
+                )
+            }
         case .albums:
             await presenter?.receive(.tearDownSearcher)
             coordinator?.dismissArtists()

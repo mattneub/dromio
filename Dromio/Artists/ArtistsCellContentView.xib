@@ -19,16 +19,15 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YW7-7k-Jv6">
-                    <rect key="frame" x="16" y="10" width="324" height="113"/>
+                    <rect key="frame" x="16" y="10" width="318.66666666666669" height="113"/>
                     <fontDescription key="fontDescription" name="Verdana" family="Verdana" pointSize="16"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                     <lineBreakStrategy key="lineBreakStrategy"/>
                 </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="1000" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Z5-gm-sGw">
-                    <rect key="frame" x="348" y="46.666666666666657" width="45" height="40"/>
+                    <rect key="frame" x="342.66666666666669" y="46.666666666666657" width="42.333333333333314" height="40"/>
                     <constraints>
-                        <constraint firstAttribute="width" constant="45" id="X6A-QM-fcv"/>
                         <constraint firstAttribute="height" constant="40" id="bQh-GL-WYK"/>
                     </constraints>
                     <string key="text">101
@@ -44,8 +43,8 @@ albums</string>
                 <constraint firstItem="6Z5-gm-sGw" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="8Cs-hb-XW8"/>
                 <constraint firstItem="YW7-7k-Jv6" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="BMP-OV-ST3"/>
                 <constraint firstItem="YW7-7k-Jv6" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="10" id="CKe-M5-dHF"/>
-                <constraint firstAttribute="trailing" secondItem="6Z5-gm-sGw" secondAttribute="trailing" id="M68-Ic-WDE"/>
-                <constraint firstItem="YW7-7k-Jv6" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="Swi-yn-TtX"/>
+                <constraint firstAttribute="trailing" secondItem="6Z5-gm-sGw" secondAttribute="trailing" constant="8" id="M68-Ic-WDE"/>
+                <constraint firstItem="YW7-7k-Jv6" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" priority="999" constant="16" id="Swi-yn-TtX"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>

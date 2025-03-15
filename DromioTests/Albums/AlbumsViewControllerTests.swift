@@ -42,11 +42,14 @@ struct AlbumsViewControllerTests {
         #expect(mockDataSourceDelegate.processor === processor2)
     }
 
-    @Test("viewDidLoad: sets the data source's processor, sets background color, sends .initialData action")
-    func viewDidLoad() async {
+    @Test("viewDidLoad: sets the data source's processor, sets background color, sets spinner, sends .initialData action")
+    func viewDidLoad() async throws {
         subject.loadViewIfNeeded()
         #expect(mockDataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .systemBackground)
+        let tableBackground = try #require(subject.tableView.backgroundView)
+        #expect(subject.activity.isDescendant(of: tableBackground))
+        #expect(subject.activity.isAnimating)
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .initialData)
     }
@@ -82,10 +85,11 @@ struct AlbumsViewControllerTests {
         #expect(mockDataSourceDelegate.state == state)
     }
 
-    @Test("present: calls searcher setUpSearcher")
+    @Test("present: stops spinner, calls searcher setUpSearcher")
     func presentSearcher() async {
         let state = AlbumsState(albums: [.init(id: "1", name: "name", sortName: nil, artist: "Artist", songCount: 10, song: nil)])
         subject.present(state)
+        #expect(!subject.activity.isAnimating)
         await #while(searcher.methodsCalled.isEmpty)
         #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:updater:)"])
         #expect(searcher.navigationItem === subject.navigationItem)
@@ -142,7 +146,7 @@ struct AlbumsViewControllerTests {
 
     @Test("present: sets the title and no left bar button item, albums for artist")
     func presentAlbumsForArtist() async throws {
-        let state = AlbumsState(listType: .albumsForArtist(id: "1"))
+        let state = AlbumsState(listType: .albumsForArtist(id: "1", source: .artists))
         subject.present(state)
         #expect(subject.title == nil)
         #expect(subject.navigationItem.leftBarButtonItem == nil)

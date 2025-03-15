@@ -10,6 +10,7 @@ final class MockRequestMaker: RequestMakerType {
     var songId: String?
     var artistId: String?
     var pingError: Error?
+    var query: String?
     var methodsCalled = [String]()
     var url = URL(string: "http://example.com")!
 
@@ -50,6 +51,15 @@ final class MockRequestMaker: RequestMakerType {
             throw pingError
         }
         return artistList
+    }
+
+    func getSongsBySearch(query: String) async throws -> [SubsonicSong] {
+        methodsCalled.append(#function)
+        self.query = query
+        if let pingError {
+            throw pingError
+        }
+        return songList
     }
 
     func getAlbumsFor(artistId: String) async throws -> [SubsonicAlbum] {

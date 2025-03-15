@@ -34,7 +34,8 @@ struct PlayerTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: 100
+            duration: 100,
+            contributors: nil
         )
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         subject.adjustNowPlayingItemToCurrentItem()
@@ -55,7 +56,8 @@ struct PlayerTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let url = URL(string: "http://example.com")!
         subject.play(url: url, song: song)
@@ -80,7 +82,8 @@ struct PlayerTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: 100
+            duration: 100,
+            contributors: nil
         )
         let url = URL(string: "http://example.com")!
         subject.play(url: url, song: song)
@@ -103,7 +106,8 @@ struct PlayerTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let url = URL(string: "http://example.com")!
         subject.playNext(url: url, song: song)
@@ -145,7 +149,8 @@ struct PlayerTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         subject.knownSongs["1"] = song
         subject.clear()

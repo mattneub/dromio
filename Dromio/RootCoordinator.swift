@@ -154,7 +154,7 @@ final class RootCoordinator: RootCoordinatorType {
         artistsController.processor = artistsProcessor
         artistsProcessor.coordinator = self
         navigationController.modalPresentationStyle = .fullScreen
-        navigationController.modalTransitionStyle = .flipHorizontal
+        navigationController.modalTransitionStyle = .crossDissolve
         rootViewController?.presentedViewController?.present(navigationController, animated: unlessTesting(true))
     }
 

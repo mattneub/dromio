@@ -37,7 +37,8 @@ struct AlbumProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         subject.state.albumId = "2"
         await subject.receive(.initialData)
@@ -54,7 +55,8 @@ struct AlbumProcessorTests {
                 year: 1970,
                 albumId: "2",
                 suffix: nil,
-                duration: nil
+                duration: nil,
+                contributors: nil
             )]
         )
     }
@@ -71,7 +73,8 @@ struct AlbumProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         await subject.receive(.tapped(song))
         #expect(playlist.methodsCalled == ["append(_:)"])
@@ -92,7 +95,8 @@ struct AlbumProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         playlist.errorToThrow = PlaylistError.songAlreadyInList
         await subject.receive(.tapped(song))

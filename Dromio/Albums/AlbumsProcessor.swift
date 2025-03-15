@@ -23,10 +23,16 @@ final class AlbumsProcessor: Processor {
             switch state.listType {
             case .allAlbums:
                 await receive(.allAlbums)
-            case .albumsForArtist(let id):
+            case .albumsForArtist(let id, let source):
                 do {
-                    let albums = try await services.requestMaker.getAlbumsFor(artistId: id)
-                    state.albums = albums
+                    switch source {
+                    case .artists:
+                        let albums = try await services.requestMaker.getAlbumsFor(artistId: id)
+                        state.albums = albums
+                    case .composers(let name):
+                        let songs = try await services.requestMaker.getSongsBySearch(query: name)
+                        state.albums = albumsForComposer(songs: songs, id: id)
+                    }
                 } catch {
                     print(error)
                 }
@@ -65,5 +71,32 @@ final class AlbumsProcessor: Processor {
         case .viewDidAppear:
             await presenter?.receive(.setUpSearcher)
         }
+    }
+    
+    /// Utility called by .albumsForArtist when the artist is a composer. This is the only query where
+    /// we cannot ask Navidrome directly for the answer: in what albums is this artist a composer?
+    /// Therefore we have to get the _songs_ for this composer and reduce that to a list of the
+    /// albums containing those songs. Luckily, we _already_ a list of _all_ albums, so even though we
+    /// have to go from composer to songs to albums, this move is fast.
+    /// - Parameters:
+    ///   - songs: Songs (returned by a `search3` query on the composer's name).
+    ///   - id: The composer's id.
+    /// - Returns: The list of albums containing a song by that composer.
+    ///
+    func albumsForComposer(songs: [SubsonicSong], id: String) -> [SubsonicAlbum] {
+        // filter to songs containing a contributor whose role is composer and whose id is this id
+        let songsByThisComposer = songs.filter { song in
+            for contributor in (song.contributors ?? []) {
+                if contributor.role == "composer" && contributor.artist.id == id {
+                    return true
+                }
+            }
+            return false
+        }
+        // a song has an albumId so we can unique to those as a set
+        let albumsIds = Set(songsByThisComposer.map { $0.albumId })
+        // now, using the existing list of albums, we can filter to the albums with those ids
+        let allAlbums = caches.albumsList ?? [] // we know we have it
+        return allAlbums.filter({ albumsIds.contains($0.id)}).sorted
     }
 }

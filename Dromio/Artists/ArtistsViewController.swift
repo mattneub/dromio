@@ -12,13 +12,28 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         }
     }
 
+    let activity: UIActivityIndicatorView = {
+        let activity = UIActivityIndicatorView(style: .large)
+        activity.color = .label
+        activity.translatesAutoresizingMaskIntoConstraints = false
+        return activity
+    }()
+
+    lazy var tableViewBackground: UIView = {
+        let view = UIView()
+        view.addSubview(activity)
+        view.centerYAnchor.constraint(equalTo: activity.centerYAnchor).isActive = true
+        view.centerXAnchor.constraint(equalTo: activity.centerXAnchor).isActive = true
+        return view
+    }()
+
     /// Object that handles and configures our search controller; it's a var for testing purposes.
     var searcher = Searcher()
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         dataSourceDelegate = ArtistsDataSourceDelegate(tableView: tableView)
-        title = "All Artists"
+        title = "Artists"
         do {
             let item = UIBarButtonItem(
                 title: nil, image: UIImage(systemName: "list.bullet"), target: self, action: #selector(showPlaylist)
@@ -42,6 +57,8 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
         view.backgroundColor = .systemBackground
+        tableView.backgroundView = tableViewBackground
+        activity.startAnimating()
         Task {
             await processor?.receive(.allArtists)
         }
@@ -64,8 +81,9 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
     }
 
     func present(_ state: ArtistsState) {
+        activity.stopAnimating()
         title = switch state.listType {
-        case .allArtists: "All Artists"
+        case .allArtists: "Artists"
         case .composers: "Composers"
         }
 
@@ -94,7 +112,7 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
             ])
         case .composers:
             UIMenu(title: "", options: [], children: [
-                UIAction(title: "All Artists", handler: { [weak self] _ in
+                UIAction(title: "Artists", handler: { [weak self] _ in
                     Task {
                         await self?.processor?.receive(.allArtists)
                     }

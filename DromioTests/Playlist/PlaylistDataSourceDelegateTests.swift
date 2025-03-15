@@ -37,7 +37,8 @@ struct PlaylistDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
@@ -62,7 +63,8 @@ struct PlaylistDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
@@ -85,7 +87,8 @@ struct PlaylistDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
@@ -102,7 +105,8 @@ struct PlaylistDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         ))
         #expect(configuration == expected)
         let thermometerView = try #require((cell?.contentView as? PlaylistCellContentView)?.thermometer)
@@ -124,6 +128,7 @@ struct PlaylistDataSourceDelegateTests {
             albumId: "2",
             suffix: nil,
             duration: nil,
+            contributors: nil,
             downloaded: true
         )]
         subject.present(state)
@@ -141,7 +146,8 @@ struct PlaylistDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         ))
         #expect(configuration == expected)
         let thermometerView = try #require((cell?.contentView as? PlaylistCellContentView)?.thermometer)
@@ -160,7 +166,8 @@ struct PlaylistDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         makeWindow(view: tableView)
         var state = PlaylistState()

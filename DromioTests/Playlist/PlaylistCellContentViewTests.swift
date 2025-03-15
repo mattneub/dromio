@@ -16,7 +16,8 @@ struct PlaylistCellContentConfigurationTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         ))
         let subject = PlaylistCellContentView(configuration)
         #expect(subject.subviews.count == 1)
@@ -40,7 +41,8 @@ struct PlaylistCellContentConfigurationTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: 120 // test duration formatting
+            duration: 120, // test duration formatting
+            contributors: nil
         ))
         let subject = PlaylistCellContentView(configuration)
         let loadedView = try #require(subject.subviews.first)
@@ -56,7 +58,8 @@ struct PlaylistCellContentConfigurationTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: 12000 // big durations get hours
+            duration: 12000, // big durations get hours
+            contributors: nil
         ))
         subject.configuration = configuration2
         labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }

@@ -15,6 +15,21 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
         }
     }
 
+    let activity: UIActivityIndicatorView = {
+        let activity = UIActivityIndicatorView(style: .large)
+        activity.color = .label
+        activity.translatesAutoresizingMaskIntoConstraints = false
+        return activity
+    }()
+
+    lazy var tableViewBackground: UIView = {
+        let view = UIView()
+        view.addSubview(activity)
+        view.centerYAnchor.constraint(equalTo: activity.centerYAnchor).isActive = true
+        view.centerXAnchor.constraint(equalTo: activity.centerXAnchor).isActive = true
+        return view
+    }()
+
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         dataSourceDelegate = AlbumsDataSourceDelegate(tableView: tableView)
@@ -37,6 +52,8 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
         view.backgroundColor = .systemBackground
+        tableView.backgroundView = tableViewBackground
+        activity.startAnimating()
         Task {
             await processor?.receive(.initialData)
         }
@@ -59,6 +76,7 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
     }
 
     func present(_ state: AlbumsState) {
+        activity.stopAnimating()
         title = switch state.listType {
         case .allAlbums: 
             "All Albums"

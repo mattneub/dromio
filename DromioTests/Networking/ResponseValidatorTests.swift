@@ -63,4 +63,23 @@ struct ResponseValidatorTests {
         }
     }
 
+    @Test("validateResponse: throws if the Navidrome version is not high enough")
+    func navidromeVersionTooLow() async {
+        let response = SubsonicResponse(
+            subsonicResponse: PingResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "0.54.2", // *
+                openSubsonic: true,
+                error: nil
+            )
+        )
+        await #expect {
+            try await subject.validateResponse(response)
+        } throws: { error in
+            error as! NetworkerError == .message("The server version of Navidrome is not high enough.")
+        }
+    }
+
 }

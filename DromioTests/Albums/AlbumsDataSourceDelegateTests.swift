@@ -41,14 +41,14 @@ struct AlbumsDataSourceDelegateTests {
     @Test("present: datasource reflects `albums`, if `albumsForArtist` then sorted and sectionalized")
     func presentWithDataDatasourceItemsAlbumsForArtist() async {
         await #while(subject.datasource == nil)
-        var state = AlbumsState(listType: .albumsForArtist(id: "1"))
+        var state = AlbumsState(listType: .albumsForArtist(id: "1", source: .artists))
         state.albums = [
             .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
             .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
         ]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-        #expect(subject.datasource.listType == .albumsForArtist(id: "1"))
+        #expect(subject.datasource.listType == .albumsForArtist(id: "1", source: .artists))
         let snapshot = subject.datasource.snapshot()
         #expect(snapshot.sectionIdentifiers == ["t", "y"])
         #expect(snapshot.itemIdentifiers(inSection: "t") == ["2"])
@@ -140,7 +140,7 @@ struct AlbumsDataSourceDelegateTests {
     @Test("sectionIndexTitles: with albums for artist, returns nil")
     func sectionIndexTitlesAlbumsForArtist() async throws {
         await #while(subject.datasource == nil)
-        var state = AlbumsState(listType: .albumsForArtist(id: "1"))
+        var state = AlbumsState(listType: .albumsForArtist(id: "1", source: .artists))
         state.albums = [
             .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
             .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),

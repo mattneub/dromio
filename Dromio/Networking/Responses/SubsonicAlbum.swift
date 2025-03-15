@@ -2,7 +2,7 @@ import Foundation
 
 /// Type of the array element of the `album` property of the AlbumsResponse.
 /// Serves as actual data for the app.
-struct SubsonicAlbum: Codable, Equatable {
+struct SubsonicAlbum: Codable, Equatable, Sendable {
     let id: String
     let name: String
     var sortName: String?

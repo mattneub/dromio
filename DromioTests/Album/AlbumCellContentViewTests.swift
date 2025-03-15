@@ -16,7 +16,8 @@ struct AlbumCellContentConfigurationTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         ), totalCount: 10)
         let subject = AlbumCellContentView(configuration)
         #expect(subject.subviews.count == 1)
@@ -38,7 +39,8 @@ struct AlbumCellContentConfigurationTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: 120 // test duration formatting
+            duration: 120, // test duration formatting
+            contributors: nil
         ), totalCount: 10)
         let subject = AlbumCellContentView(configuration)
         let loadedView = try #require(subject.subviews.first)
@@ -54,7 +56,8 @@ struct AlbumCellContentConfigurationTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: 120
+            duration: 120,
+            contributors: nil
         ), totalCount: 10)
         subject.configuration = configuration2
         labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
@@ -69,7 +72,8 @@ struct AlbumCellContentConfigurationTests {
             year: nil, // test empty year
             albumId: "2",
             suffix: nil,
-            duration: 120
+            duration: 120,
+            contributors: nil
         ), totalCount: 10)
         subject.configuration = configuration3
         labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
@@ -84,7 +88,8 @@ struct AlbumCellContentConfigurationTests {
             year: nil,
             albumId: "2",
             suffix: nil,
-            duration: 120
+            duration: 120,
+            contributors: nil
         ), totalCount: 10)
         subject.configuration = configuration4
         labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }

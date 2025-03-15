@@ -14,9 +14,9 @@ struct ArrayTests {
     let artist3 = SubsonicArtist(id: "3", name: "Büiod back better", albumCount: nil, album: nil, roles: nil, sortName: nil)
     let artist4 = SubsonicArtist(id: "4", name: "[hey]", albumCount: nil, album: nil, roles: nil, sortName: nil)
     let artist5 = SubsonicArtist(id: "5", name: "[ha]", albumCount: nil, album: nil, roles: nil, sortName: nil)
-    let song1 = SubsonicSong(id: "1", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil)
-    let song2 = SubsonicSong(id: "2", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil)
-    let song3 = SubsonicSong(id: "3", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil)
+    let song1 = SubsonicSong(id: "1", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
+    let song2 = SubsonicSong(id: "2", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
+    let song3 = SubsonicSong(id: "3", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
 
     @Test("sorted: sorts albums correctly")
     func sortedAlbums() {

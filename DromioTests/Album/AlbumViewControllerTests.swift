@@ -59,7 +59,8 @@ struct AlbumViewControllerTests {
                 year: 1970,
                 albumId: "2",
                 suffix: nil,
-                duration: nil
+                duration: nil,
+                contributors: nil
             )]
         )
         subject.present(state)

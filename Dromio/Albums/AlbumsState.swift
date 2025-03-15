@@ -11,7 +11,13 @@ struct AlbumsState: Equatable {
     enum ListType: Equatable {
         case allAlbums
         case randomAlbums
-        case albumsForArtist(id: String) // the `id` is the id of the artist whose albums we're showing.
+        // the `id` is the id of the artist whose albums we're showing
+        case albumsForArtist(id: String, source: Source)
+
+        enum Source: Equatable {
+            case artists
+            case composers(name: String)
+        }
     }
 }
 

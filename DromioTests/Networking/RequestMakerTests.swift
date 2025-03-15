@@ -113,7 +113,7 @@ struct RequestMakerTests {
         }
     }
 
-    @Test("getAlbumList: calls url maker with action getAlbumList2 add additional, calls networker, calls validator, returns list")
+    @Test("getAlbumList: calls url maker with action getAlbumList2 and additional, calls networker, calls validator, returns list")
     func getAlbumList() async throws {
         let payload = SubsonicResponse(
             subsonicResponse: AlbumList2Response(
@@ -148,7 +148,8 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", sortName: nil, artist: "Artist", songCount: 10, song: nil), count: 500)),
+                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", sortName: nil, artist: "Artist", songCount: 10, song: nil),
+                                                        count: 500)),
                 error: nil
             )
         )
@@ -159,7 +160,8 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", sortName: nil, artist: "Artist", songCount: 10, song: nil), count: 2)),
+                albumList2: AlbumsResponse(album: Array(repeating: SubsonicAlbum(id: "1", name: "title", sortName: nil, artist: "Artist", songCount: 10, song: nil),
+                                                        count: 2)),
                 error: nil
             )
         )
@@ -220,7 +222,7 @@ struct RequestMakerTests {
         }
     }
 
-    @Test("getAlbumsRandom: calls url maker with action getAlbumList2 add additional, calls networker, calls validator, returns list")
+    @Test("getAlbumsRandom: calls url maker with action getAlbumList2 and additional, calls networker, calls validator, returns list")
     func getAlbumsRandom() async throws {
         let payload = SubsonicResponse(
             subsonicResponse: AlbumList2Response(
@@ -298,7 +300,7 @@ struct RequestMakerTests {
         }
     }
 
-    @Test("getAlbumsFor: calls url maker with action getArtist add additional, calls networker, calls validator, returns list")
+    @Test("getAlbumsFor: calls url maker with action getArtist and additional, calls networker, calls validator, returns list")
     func getAlbumsFor() async throws {
         let album = SubsonicAlbum(id: "1", name: "title", sortName: nil, artist: "Artist", songCount: 10, song: nil)
         let payload = SubsonicResponse(
@@ -378,7 +380,7 @@ struct RequestMakerTests {
         }
     }
 
-    @Test("getArtistsBySearch: calls url maker with action getAlbumList2 add additional, calls networker, calls validator, returns list")
+    @Test("getArtistsBySearch: calls url maker with action search3 and additional, calls networker, calls validator, returns list")
     func getArtistsBySearch() async throws {
         let payload = SubsonicResponse(
             subsonicResponse: SearchResult3Response(
@@ -419,7 +421,8 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                searchResult3: SearchResult(artist: Array(repeating: SubsonicArtist(id: "1", name: "Prince", albumCount: 3, album: nil, roles: ["artist"], sortName: "prince"), count: 500), album: nil, song: nil),
+                searchResult3: SearchResult(artist: Array(repeating: SubsonicArtist(id: "1", name: "Prince", albumCount: 3, album: nil, roles: ["artist"], sortName: "prince"),
+                                                          count: 500), album: nil, song: nil),
                 error: nil
             )
         )
@@ -430,7 +433,8 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                searchResult3: SearchResult(artist: Array(repeating: SubsonicArtist(id: "1", name: "Prince", albumCount: 3, album: nil, roles: ["artist"], sortName: "prince"), count: 2), album: nil, song: nil),
+                searchResult3: SearchResult(artist: Array(repeating: SubsonicArtist(id: "1", name: "Prince", albumCount: 3, album: nil, roles: ["artist"], sortName: "prince"),
+                                                          count: 2), album: nil, song: nil),
                 error: nil
             )
         )
@@ -491,6 +495,121 @@ struct RequestMakerTests {
         }
     }
 
+    @Test("getSongsBySearch: calls url maker with action search3 and additional, calls networker, calls validator, returns list")
+    func getSongsBySearch() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: SearchResult3Response(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                searchResult3: SearchResult(artist: nil, album: nil, song: [.init(id: "1", title: "Song", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)]),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        let list = try await subject.getSongsBySearch(query: "Matt")
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "search3")
+        let expectedAdditional: KeyValuePairs = [
+            "query": "Matt",
+            "albumCount": "0",
+            "artistCount": "0",
+            "songCount": "500",
+            "songOffset": "0",
+        ]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+        #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
+        #expect(list == [.init(id: "1", title: "Song", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)])
+    }
+
+    @Test("getSongsBySearch: paginates with chunk 500")
+    func getSongsBySearchPaginate() async throws {
+        let payload1 = SubsonicResponse(
+            subsonicResponse: SearchResult3Response(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                searchResult3: SearchResult(artist: nil, album: nil, song: Array(repeating: .init(id: "1", title: "Song", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil),
+                                                                                 count: 500)),
+                error: nil
+            )
+        )
+        let payload2 = SubsonicResponse(
+            subsonicResponse: SearchResult3Response(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                searchResult3: SearchResult(artist: nil, album: nil, song: Array(repeating: .init(id: "1", title: "Song", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil),
+                                                                                 count: 2)),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload1), try! JSONEncoder().encode(payload2)]
+        let list = try await subject.getSongsBySearch(query: "Matt")
+        #expect(list.count == 502)
+    }
+
+    @Test("getSongsBySearch: rethrows urlMaker throw")
+    func getSongsBySearchUrlMakerThrow() async throws {
+        urlMaker.errorToThrow = NetworkerError.message("oops")
+        await #expect {
+            try await subject.getSongsBySearch(query: "Matt")
+        } throws: { error in
+            error as! NetworkerError == .message("oops")
+        }
+    }
+
+    @Test("getSongsBySearch: rethrows networker throw")
+    func getSongsBySearchNetworkerThrow() async throws {
+        networker.errorToThrow = NetworkerError.message("darn")
+        await #expect {
+            try await subject.getSongsBySearch(query: "Matt")
+        } throws: { error in
+            error as! NetworkerError == .message("darn")
+        }
+    }
+
+    @Test("getSongsBySearch: rethrows decode error")
+    func getSongsBySearchDecoderThrow() async throws {
+        networker.dataToReturn = [try! JSONEncoder().encode(#"{"howdy": "hey"}"#)]
+        await #expect {
+            try await subject.getSongsBySearch(query: "Matt")
+        } throws: { error in
+            error is DecodingError
+        }
+    }
+
+    @Test("getSongsBySearch: rethrows validator error")
+    func getSongsBySearchValidatorThrow() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: SearchResult3Response(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                searchResult3: SearchResult(artist: nil, album: nil, song: [.init(id: "1", title: "Song", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)]),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        responseValidator.errorToThrow = NetworkerError.message("yipes")
+        await #expect {
+            try await subject.getSongsBySearch(query: "Matt")
+        } throws: { error in
+            error as! NetworkerError == .message("yipes")
+        }
+    }
+
     @Test("getSongsFor: calls url maker with action getAlbum and additional id, calls networker, calls validator, returns list")
     func getSongFor() async throws {
         let payload = SubsonicResponse(
@@ -516,7 +635,8 @@ struct RequestMakerTests {
                         year: 1970,
                         albumId: "2",
                         suffix: nil,
-                        duration: nil
+                        duration: nil,
+                        contributors: nil
                     )]
                 ),
                 error: nil
@@ -544,7 +664,8 @@ struct RequestMakerTests {
                     year: 1970,
                     albumId: "2",
                     suffix: nil,
-                    duration: nil
+                    duration: nil,
+                    contributors: nil
                 ),
             ]
         )
@@ -605,7 +726,8 @@ struct RequestMakerTests {
                         year: 1970,
                         albumId: "2",
                         suffix: nil,
-                        duration: nil
+                        duration: nil,
+                        contributors: nil
                     )]
                 ),
                 error: nil

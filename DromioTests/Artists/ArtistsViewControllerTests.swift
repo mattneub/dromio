@@ -19,7 +19,7 @@ struct ArtistsViewControllerTests {
     @Test("Initialize: sets title to Artists, creates data source delegate, configures table view")
     func initialize() throws {
         let subject = ArtistsViewController(nibName: nil, bundle: nil)
-        #expect(subject.title == "All Artists")
+        #expect(subject.title == "Artists")
         #expect(subject.dataSourceDelegate != nil)
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
         #expect(subject.tableView.estimatedRowHeight == 40)
@@ -50,11 +50,14 @@ struct ArtistsViewControllerTests {
         #expect(mockDataSourceDelegate.processor === processor2)
     }
 
-    @Test("viewDidLoad: sets the data source's processor, sets background color, sends .allArtists action")
-    func viewDidLoad() async {
+    @Test("viewDidLoad: sets the data source's processor, sets background color, sets spinner, sends .allArtists action")
+    func viewDidLoad() async throws {
         subject.loadViewIfNeeded()
         #expect(mockDataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .systemBackground)
+        let tableBackground = try #require(subject.tableView.backgroundView)
+        #expect(subject.activity.isDescendant(of: tableBackground))
+        #expect(subject.activity.isAnimating)
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .allArtists)
     }
@@ -90,10 +93,11 @@ struct ArtistsViewControllerTests {
         #expect(mockDataSourceDelegate.state == state)
     }
 
-    @Test("present: calls searcher setUpSearcher")
+    @Test("present: stops spinner calls searcher setUpSearcher")
     func presentSearcher() async {
         let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
         subject.present(state)
+        #expect(!subject.activity.isAnimating)
         await #while(searcher.methodsCalled.isEmpty)
         #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:updater:)"])
         #expect(searcher.navigationItem === subject.navigationItem)
@@ -104,7 +108,7 @@ struct ArtistsViewControllerTests {
     func presentAll() async throws {
         let state = ArtistsState(listType: .allArtists)
         subject.present(state)
-        #expect(subject.title == "All Artists")
+        #expect(subject.title == "Artists")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
         #expect(menu.children.count == 2)
         do {
@@ -133,7 +137,7 @@ struct ArtistsViewControllerTests {
         #expect(menu.children.count == 2)
         do {
             let action = menu.children[0]
-            #expect(action.title == "All Artists")
+            #expect(action.title == "Artists")
             (action as! UIMenuLeaf).performWithSender(nil, target: nil)
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .allArtists)

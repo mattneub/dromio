@@ -36,7 +36,8 @@ struct AlbumDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         state.albumTitle = "My Album"
         subject.present(state)
@@ -61,7 +62,8 @@ struct AlbumDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         ), .init(
             id: "2",
             title: "Title",
@@ -72,7 +74,8 @@ struct AlbumDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
@@ -89,7 +92,8 @@ struct AlbumDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         ), totalCount: 2)
         #expect(configuration == expected)
     }
@@ -107,7 +111,8 @@ struct AlbumDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         state.albumTitle = "My Album"
         subject.present(state)
@@ -132,7 +137,8 @@ struct AlbumDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         state.albumTitle = nil
         subject.present(state)
@@ -152,7 +158,8 @@ struct AlbumDataSourceDelegateTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         makeWindow(view: tableView)
         var state = AlbumState()

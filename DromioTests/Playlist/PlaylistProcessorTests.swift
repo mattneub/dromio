@@ -40,7 +40,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         subject.state.songs = songs
         #expect(presenter.statePresented?.songs == songs)
@@ -58,7 +59,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         #expect(subject.pipeline == nil)
         await subject.receive(.initialData)
@@ -74,6 +76,7 @@ struct PlaylistProcessorTests {
                 albumId: "2",
                 suffix: nil,
                 duration: nil,
+                contributors: nil,
                 downloaded: false // *
             )]
         )
@@ -96,7 +99,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         ), .init(
             id: "2",
             title: "Title",
@@ -107,7 +111,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         await subject.receive(.initialData)
         #expect(
@@ -122,6 +127,7 @@ struct PlaylistProcessorTests {
                 albumId: "2",
                 suffix: nil,
                 duration: nil,
+                contributors: nil,
                 downloaded: true // *
             ), .init(
                 id: "2",
@@ -134,6 +140,7 @@ struct PlaylistProcessorTests {
                 albumId: "2",
                 suffix: nil,
                 duration: nil,
+                contributors: nil,
                 downloaded: false // *
             )]
         )
@@ -151,7 +158,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let song2 = SubsonicSong(
             id: "2",
@@ -163,7 +171,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         subject.state.songs = [song, song2]
         await subject.receive(.tapped(song))
@@ -186,7 +195,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let song2 = SubsonicSong(
             id: "2",
@@ -198,7 +208,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let song3 = SubsonicSong(
             id: "3",
@@ -210,7 +221,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         subject.state.songs = [song, song2, song3]
         await subject.receive(.tapped(song))
@@ -233,7 +245,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let song2 = SubsonicSong(
             id: "2",
@@ -245,7 +258,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let song3 = SubsonicSong(
             id: "3",
@@ -257,7 +271,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         subject.state.songs = [song2, song3]
         await subject.receive(.tapped(song))
@@ -280,7 +295,8 @@ struct PlaylistProcessorTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )]
         subject.state.songs = songs
         await subject.receive(.clear)

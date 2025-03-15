@@ -1,6 +1,6 @@
 import Foundation
 
-struct SubsonicArtist: Codable, Equatable {
+struct SubsonicArtist: Codable, Equatable, Sendable {
     let id: String
     let name: String
     let albumCount: Int?

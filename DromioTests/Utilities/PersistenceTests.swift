@@ -24,7 +24,8 @@ struct PersistenceTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: 100
+            duration: 100,
+            contributors: nil
         )
         try subject.save(songList: [song], key: .currentPlaylist)
         #expect(defaults.key == "currentPlaylist")
@@ -72,6 +73,7 @@ struct PersistenceTests {
             albumId: "2",
             suffix: nil,
             duration: 100,
+            contributors: nil,
             downloaded: nil
         )
         let result = try subject.loadSongList(key: .currentPlaylist)

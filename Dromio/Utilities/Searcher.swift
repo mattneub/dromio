@@ -24,7 +24,7 @@ class Searcher {
             controller.searchResultsUpdater = updater
             controller.delegate = updater
             try? await unlessTesting {
-                try? await Task.sleep(for: .seconds(0.1))
+                try? await Task.sleep(for: .seconds(0.6))
             }
             navigationItem.searchController = controller
             controller.searchBar.autocapitalizationType = .none

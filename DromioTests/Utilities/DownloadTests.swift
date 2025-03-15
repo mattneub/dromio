@@ -51,7 +51,8 @@ final class DownloadTests { // class, because we have cleanup to perform after e
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let subject = Download()
         await #expect {
@@ -74,7 +75,8 @@ final class DownloadTests { // class, because we have cleanup to perform after e
             year: 1970,
             albumId: "2",
             suffix: "mp3",
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let url = await subject.downloadsDirectory()
         let file = url.appendingPathComponent("1.mp3")
@@ -98,7 +100,8 @@ final class DownloadTests { // class, because we have cleanup to perform after e
             year: 1970,
             albumId: "2",
             suffix: "mp3",
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let file = URL.temporaryDirectory.appendingPathComponent("howdy")
         try "howdy".write(to: file, atomically: true, encoding: .utf8)
@@ -126,7 +129,8 @@ final class DownloadTests { // class, because we have cleanup to perform after e
             year: 1970,
             albumId: "2",
             suffix: "mp3",
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let file = URL.temporaryDirectory.appendingPathComponent("howdy")
         try "howdy".write(to: file, atomically: true, encoding: .utf8)
@@ -185,7 +189,8 @@ final class DownloadTests { // class, because we have cleanup to perform after e
             year: 1970,
             albumId: "2",
             suffix: "mp3",
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         #expect(try await subject.downloadedURL(for: song) != nil)
         song = SubsonicSong(
@@ -198,7 +203,8 @@ final class DownloadTests { // class, because we have cleanup to perform after e
             year: 1970,
             albumId: "2",
             suffix: "mp3",
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         #expect(try await subject.downloadedURL(for: song) == nil)
         song = SubsonicSong(
@@ -211,7 +217,8 @@ final class DownloadTests { // class, because we have cleanup to perform after e
             year: 1970,
             albumId: "2",
             suffix: "m4a", // wrong suffix
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         #expect(try await subject.downloadedURL(for: song) == nil)
     }

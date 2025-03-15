@@ -22,7 +22,8 @@ struct PlaylistTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         subject.list = [song1]
         #expect(persistence.songList == [song1])
@@ -41,7 +42,8 @@ struct PlaylistTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         persistence.songList = [song1]
         #expect(subject.list == [song1])
@@ -60,7 +62,8 @@ struct PlaylistTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let song2 = SubsonicSong(
             id: "2",
@@ -72,7 +75,8 @@ struct PlaylistTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         try subject.append(song1)
         #expect(subject.list == [song1])
@@ -97,7 +101,8 @@ struct PlaylistTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         let song2 = SubsonicSong(
             id: "2",
@@ -109,7 +114,8 @@ struct PlaylistTests {
             year: 1970,
             albumId: "2",
             suffix: nil,
-            duration: nil
+            duration: nil,
+            contributors: nil
         )
         subject.list = [song1, song2]
         subject.clear()

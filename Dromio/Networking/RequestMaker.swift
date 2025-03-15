@@ -8,6 +8,7 @@ protocol RequestMakerType: Sendable {
     func getAlbumsRandom() async throws -> [SubsonicAlbum]
     // func getArtists() async throws -> [SubsonicArtist] // probably won't be using this
     func getArtistsBySearch() async throws -> [SubsonicArtist]
+    func getSongsBySearch(query: String) async throws -> [SubsonicSong]
     func getAlbumsFor(artistId: String) async throws -> [SubsonicAlbum]
     func getSongsFor(albumId: String) async throws -> [SubsonicSong]
     func download(songId: String) async throws -> URL
@@ -158,7 +159,32 @@ final class RequestMaker: RequestMakerType {
         try await services.responseValidator.validateResponse(jsonResponse)
         return jsonResponse.subsonicResponse.searchResult3.artist ?? []
     }
-    
+
+    /// Get the list of all songs.
+    func getSongsBySearch(query: String) async throws -> [SubsonicSong] {
+        try await paginate(chunk: 500) { chunk, offset in
+            return try await getSongsBySearch(query: query, chunk: chunk, offset: offset)
+        }
+    }
+
+    /// Pagination helper of the preceding.
+    func getSongsBySearch(query: String, chunk: Int, offset: Int) async throws -> [SubsonicSong] {
+        let url = try services.urlMaker.urlFor(
+            action: "search3",
+            additional: [
+                "query": query,
+                "albumCount": "0",
+                "artistCount": "0",
+                "songCount": String(chunk),
+                "songOffset": String(offset),
+            ]
+        )
+        let data = try await services.networker.performRequest(url: url)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<SearchResult3Response>.self, from: data)
+        try await services.responseValidator.validateResponse(jsonResponse)
+        return jsonResponse.subsonicResponse.searchResult3.song ?? []
+    }
+
     /// Given an artist id, fetch that artist's participatory albums. This
     /// works in coordination with the `"artist"` role only if Navidrome's Subsonic.ArtistParticipations
     /// is turned on.

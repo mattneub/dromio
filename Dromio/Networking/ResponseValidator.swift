@@ -21,13 +21,18 @@ struct ResponseValidator: ResponseValidatorType {
         guard jsonResponse.subsonicResponse.type == "navidrome" else {
             throw NetworkerError.message("The server does not appear to be a Navidrome server.")
         }
-        // TODO: Should check the serverVersion too, eventually
         guard jsonResponse.subsonicResponse.status == "ok" else {
             if let subsonicError = jsonResponse.subsonicResponse.error {
                 throw NetworkerError.message(subsonicError.message)
             } else {
                 throw NetworkerError.message("We got a failed status from the Navidrome server.")
             }
+        }
+        let version = jsonResponse.subsonicResponse.serverVersion.split(separator: " ").first ?? "0"
+        let expectedVersion = "0.55.0" // the BFR or later
+        let result = version.compare(expectedVersion, options: .numeric)
+        if result == .orderedAscending {
+            throw NetworkerError.message("The server version of Navidrome is not high enough.")
         }
     }
 }

@@ -88,12 +88,32 @@ struct ArtistsProcessorTests {
         #expect(coordinator.methodsCalled.last == "showPlaylist()")
     }
 
-    @Test("receive showAlbums: sends no effect, tells coordinator to show albums")
-    func receiveShowAlbums() async {
+    @Test("receive showAlbums: for .allArtists sends no effect, tells coordinator to show albums with source artists")
+    func receiveShowAlbumsAllArtists() async {
+        subject.state.listType = .allArtists
         await subject.receive(.showAlbums(artistId: "1"))
         #expect(coordinator.methodsCalled.last == "showAlbumsForArtist(state:)")
         #expect(presenter.thingsReceived == [])
-        #expect(coordinator.albumsState == .init(listType: .albumsForArtist(id: "1"), albums: []))
+        #expect(coordinator.albumsState == .init(listType: .albumsForArtist(id: "1", source: .artists), albums: []))
+    }
+
+    @Test("receive showAlbums: for .composers sends no effect, tells coordinator to show albums with source composers with correct name")
+    func receiveShowAlbumsAllComposers() async {
+        subject.state.listType = .composers
+        subject.state.artists = [.init(id: "1", name: "Me", albumCount: nil, album: nil, roles: nil, sortName: nil)]
+        await subject.receive(.showAlbums(artistId: "1"))
+        #expect(coordinator.methodsCalled.last == "showAlbumsForArtist(state:)")
+        #expect(presenter.thingsReceived == [])
+        #expect(coordinator.albumsState == .init(listType: .albumsForArtist(id: "1", source: .composers(name: "Me")), albums: []))
+    }
+
+    @Test("receive showAlbums: for .composers sends no effect, if no composer with given id just stops")
+    func receiveShowAlbumsAllComposersNoMatch() async {
+        subject.state.listType = .composers
+        subject.state.artists = [.init(id: "2", name: "Me", albumCount: nil, album: nil, roles: nil, sortName: nil)]
+        await subject.receive(.showAlbums(artistId: "1"))
+        #expect(coordinator.methodsCalled.isEmpty)
+        #expect(presenter.thingsReceived == [])
     }
 
     @Test("receive viewDidAppear: sends `setUpSearcher` effect")
