@@ -16,26 +16,13 @@
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" id="iN0-l3-epB">
-            <rect key="frame" x="0.0" y="0.0" width="393" height="133"/>
+            <rect key="frame" x="0.0" y="0.0" width="393" height="163"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YW7-7k-Jv6">
-                    <rect key="frame" x="16" y="8.0000000000000018" width="326.33333333333331" height="20.666666666666671"/>
-                    <fontDescription key="fontDescription" name="Verdana-Bold" family="Verdana" pointSize="17"/>
-                    <nil key="textColor"/>
-                    <nil key="highlightedColor"/>
-                    <lineBreakStrategy key="lineBreakStrategy"/>
-                </label>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jF7-tx-NHW">
-                    <rect key="frame" x="16" y="40.666666666666664" width="326.33333333333331" height="84.333333333333343"/>
-                    <fontDescription key="fontDescription" name="Verdana" family="Verdana" pointSize="14"/>
-                    <nil key="textColor"/>
-                    <nil key="highlightedColor"/>
-                    <lineBreakStrategy key="lineBreakStrategy"/>
-                </label>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="1000" verticalHuggingPriority="251" horizontalCompressionResistancePriority="1000" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="6Z5-gm-sGw">
-                    <rect key="frame" x="350.33333333333331" y="46.666666666666657" width="34.666666666666686" height="40"/>
+                    <rect key="frame" x="344" y="61.666666666666657" width="45" height="40"/>
                     <constraints>
+                        <constraint firstAttribute="width" constant="45" id="X6A-QM-fcv"/>
                         <constraint firstAttribute="height" constant="40" id="bQh-GL-WYK"/>
                     </constraints>
                     <string key="text">101
@@ -44,23 +31,49 @@ tracks</string>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KOG-LD-PSl">
+                    <rect key="frame" x="16" y="8" width="324" height="147"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="jF7-tx-NHW" userLabel="Artist">
+                            <rect key="frame" x="0.0" y="129.66666666666666" width="324" height="17.333333333333343"/>
+                            <fontDescription key="fontDescription" name="Verdana" family="Verdana" pointSize="14"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                            <lineBreakStrategy key="lineBreakStrategy"/>
+                        </label>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YW7-7k-Jv6" userLabel="Title">
+                            <rect key="frame" x="0.0" y="0.0" width="324" height="20.666666666666668"/>
+                            <fontDescription key="fontDescription" name="Verdana-Bold" family="Verdana" pointSize="17"/>
+                            <nil key="textColor"/>
+                            <nil key="highlightedColor"/>
+                            <lineBreakStrategy key="lineBreakStrategy"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <constraints>
+                        <constraint firstItem="YW7-7k-Jv6" firstAttribute="top" secondItem="KOG-LD-PSl" secondAttribute="top" id="9qW-dJ-EdJ"/>
+                        <constraint firstAttribute="trailing" secondItem="YW7-7k-Jv6" secondAttribute="trailing" id="DWl-mr-XVE"/>
+                        <constraint firstAttribute="bottom" secondItem="jF7-tx-NHW" secondAttribute="bottom" id="Gie-Es-1FH"/>
+                        <constraint firstItem="jF7-tx-NHW" firstAttribute="top" secondItem="YW7-7k-Jv6" secondAttribute="bottom" priority="999" constant="8" id="W2D-zb-XKX"/>
+                        <constraint firstItem="YW7-7k-Jv6" firstAttribute="leading" secondItem="KOG-LD-PSl" secondAttribute="leading" id="YcI-sQ-gIa"/>
+                        <constraint firstAttribute="trailing" secondItem="jF7-tx-NHW" secondAttribute="trailing" id="j9D-e1-tAt"/>
+                        <constraint firstItem="jF7-tx-NHW" firstAttribute="leading" secondItem="KOG-LD-PSl" secondAttribute="leading" id="oSQ-Nm-jqk"/>
+                    </constraints>
+                </view>
             </subviews>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
-                <constraint firstItem="6Z5-gm-sGw" firstAttribute="leading" secondItem="YW7-7k-Jv6" secondAttribute="trailing" constant="8" id="3qW-MJ-bRo"/>
-                <constraint firstItem="jF7-tx-NHW" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" priority="999" constant="16" id="43F-iQ-RNa"/>
+                <constraint firstItem="KOG-LD-PSl" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="3VI-cp-xca"/>
                 <constraint firstItem="6Z5-gm-sGw" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="8Cs-hb-XW8"/>
-                <constraint firstAttribute="trailing" secondItem="6Z5-gm-sGw" secondAttribute="trailing" constant="8" id="M68-Ic-WDE"/>
-                <constraint firstItem="YW7-7k-Jv6" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="Ocz-Ht-SLd"/>
-                <constraint firstItem="jF7-tx-NHW" firstAttribute="top" secondItem="YW7-7k-Jv6" secondAttribute="bottom" constant="12" id="QsI-mT-YR8"/>
-                <constraint firstItem="YW7-7k-Jv6" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" priority="999" constant="16" id="Swi-yn-TtX"/>
-                <constraint firstAttribute="bottom" secondItem="jF7-tx-NHW" secondAttribute="bottom" priority="999" constant="8" id="cSP-Yd-uCv"/>
-                <constraint firstItem="6Z5-gm-sGw" firstAttribute="leading" secondItem="jF7-tx-NHW" secondAttribute="trailing" constant="8" id="z3A-2d-ey5"/>
+                <constraint firstAttribute="trailing" secondItem="6Z5-gm-sGw" secondAttribute="trailing" constant="4" id="M68-Ic-WDE"/>
+                <constraint firstItem="6Z5-gm-sGw" firstAttribute="leading" secondItem="KOG-LD-PSl" secondAttribute="trailing" constant="4" id="Wkq-JJ-igR"/>
+                <constraint firstItem="KOG-LD-PSl" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="X4W-nd-PbK"/>
+                <constraint firstItem="KOG-LD-PSl" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="lAC-k0-5ph"/>
             </constraints>
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <point key="canvasLocation" x="130.53435114503816" y="-244.71830985915494"/>
+            <point key="canvasLocation" x="130.53435114503816" y="-234.1549295774648"/>
         </view>
     </objects>
     <resources>

@@ -17,9 +17,7 @@ struct AlbumsCellContentConfigurationTests {
         let subject = AlbumsCellContentView(configuration)
         #expect(subject.subviews.count == 1)
         let loadedView = try #require(subject.subviews.first)
-        #expect(loadedView.subviews.count == 3)
-        let labels = loadedView.subviews.filter { $0 is UILabel }
-        #expect(labels.count == 3)
+        #expect(loadedView.subviews(ofType: UILabel.self).count == 3)
     }
 
     @Test("Applying configuration to content view configures the displayed content correctly")
@@ -34,7 +32,7 @@ struct AlbumsCellContentConfigurationTests {
         ))
         let subject = AlbumsCellContentView(configuration)
         let loadedView = try #require(subject.subviews.first)
-        var labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
+        var labelTexts = loadedView.subviews(ofType: UILabel.self).map { $0.text ?? "" }
         #expect(Set(labelTexts) == Set(["Title", "Artist", "100\ntracks"]))
         let configuration2 = AlbumsCellContentConfiguration(album: SubsonicAlbum(
             id: "2",
@@ -45,7 +43,7 @@ struct AlbumsCellContentConfigurationTests {
             song: []
         ))
         subject.configuration = configuration2
-        labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
+        labelTexts = loadedView.subviews(ofType: UILabel.self).map { $0.text ?? "" }
         #expect(Set(labelTexts) == Set(["Howdy", " ", "1\ntrack"]))
     }
 }

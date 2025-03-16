@@ -2,7 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23719.2"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23720"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -21,15 +21,15 @@
             <rect key="frame" x="0.0" y="0.0" width="393" height="250"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="STu-iZ-oTp">
-                    <rect key="frame" x="16" y="8.0000000000000018" width="361" height="19.666666666666671"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Title" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="STu-iZ-oTp">
+                    <rect key="frame" x="16" y="8.0000000000000018" width="369" height="19.666666666666671"/>
                     <fontDescription key="fontDescription" name="Verdana-Bold" family="Verdana" pointSize="16"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                     <lineBreakStrategy key="lineBreakStrategy"/>
                 </label>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Artist" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y86-M1-jBL">
-                    <rect key="frame" x="16" y="39.666666666666664" width="361" height="16"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Artist" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y86-M1-jBL">
+                    <rect key="frame" x="16" y="39.666666666666664" width="369" height="16"/>
                     <fontDescription key="fontDescription" name="Verdana" family="Verdana" pointSize="13"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
@@ -57,9 +57,9 @@
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
                 <constraint firstItem="Ksf-YE-lDd" firstAttribute="leading" secondItem="zKj-gq-H4u" secondAttribute="trailing" constant="10" id="06l-DD-jSE"/>
-                <constraint firstAttribute="trailing" secondItem="y86-M1-jBL" secondAttribute="trailing" constant="16" id="2ZC-9H-Nza"/>
+                <constraint firstAttribute="trailing" secondItem="y86-M1-jBL" secondAttribute="trailing" constant="8" id="2ZC-9H-Nza"/>
                 <constraint firstItem="gCT-iE-XbD" firstAttribute="leading" secondItem="Ksf-YE-lDd" secondAttribute="trailing" constant="10" id="3TW-3h-LrJ"/>
-                <constraint firstAttribute="trailing" secondItem="STu-iZ-oTp" secondAttribute="trailing" constant="16" id="AR5-Aa-PFV"/>
+                <constraint firstAttribute="trailing" secondItem="STu-iZ-oTp" secondAttribute="trailing" constant="8" id="AR5-Aa-PFV"/>
                 <constraint firstItem="STu-iZ-oTp" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="Hoj-2u-z1Y"/>
                 <constraint firstItem="gCT-iE-XbD" firstAttribute="centerY" secondItem="Ksf-YE-lDd" secondAttribute="centerY" id="NxX-J2-kbj"/>
                 <constraint firstItem="Ksf-YE-lDd" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="Opg-XU-DZS"/>

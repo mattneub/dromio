@@ -68,6 +68,8 @@ struct ArtistsDataSourceDelegateTests {
         let configuration = try #require(cell?.contentConfiguration as? ArtistsCellContentConfiguration)
         let expected = ArtistsCellContentConfiguration(artist: .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil))
         #expect(configuration == expected)
+        #expect(tableView.methodsCalled.contains("beginUpdates()"))
+        #expect(tableView.methodsCalled.contains("endUpdates()"))
     }
 
     @Test("sectionIndexTitles: with allArtists, returns uppercased section identifiers")

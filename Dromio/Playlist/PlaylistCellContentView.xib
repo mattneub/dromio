@@ -26,15 +26,15 @@
                     <rect key="frame" x="0.0" y="0.0" width="393" height="250"/>
                     <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                 </view>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="STu-iZ-oTp">
-                    <rect key="frame" x="16" y="8.0000000000000018" width="361" height="19.666666666666671"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Title" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="STu-iZ-oTp">
+                    <rect key="frame" x="16" y="8.0000000000000018" width="369" height="19.666666666666671"/>
                     <fontDescription key="fontDescription" name="Verdana-Bold" family="Verdana" pointSize="16"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                     <lineBreakStrategy key="lineBreakStrategy"/>
                 </label>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Artist" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y86-M1-jBL">
-                    <rect key="frame" x="16" y="39.666666666666664" width="361" height="16"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Artist" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="y86-M1-jBL">
+                    <rect key="frame" x="16" y="39.666666666666664" width="369" height="16"/>
                     <fontDescription key="fontDescription" name="Verdana" family="Verdana" pointSize="13"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
@@ -61,7 +61,7 @@
             </subviews>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="y86-M1-jBL" secondAttribute="trailing" constant="16" id="2ZC-9H-Nza"/>
+                <constraint firstAttribute="trailing" secondItem="y86-M1-jBL" secondAttribute="trailing" constant="8" id="2ZC-9H-Nza"/>
                 <constraint firstItem="Zwd-4k-wAS" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="7H9-rH-wLO"/>
                 <constraint firstItem="bFs-wc-LmU" firstAttribute="centerY" secondItem="zKj-gq-H4u" secondAttribute="centerY" id="AyU-1D-liK"/>
                 <constraint firstItem="gCT-iE-XbD" firstAttribute="centerY" secondItem="zKj-gq-H4u" secondAttribute="centerY" id="B5c-DA-mwz"/>
@@ -77,7 +77,7 @@
                 <constraint firstAttribute="trailing" secondItem="Zwd-4k-wAS" secondAttribute="trailing" id="i7P-g2-C7k"/>
                 <constraint firstItem="zKj-gq-H4u" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="16" id="iL8-eM-ly0"/>
                 <constraint firstItem="Zwd-4k-wAS" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="nXY-nM-a2k"/>
-                <constraint firstAttribute="trailing" secondItem="STu-iZ-oTp" secondAttribute="trailing" constant="16" id="q7Q-K6-kfL"/>
+                <constraint firstAttribute="trailing" secondItem="STu-iZ-oTp" secondAttribute="trailing" constant="8" id="q7Q-K6-kfL"/>
                 <constraint firstItem="bFs-wc-LmU" firstAttribute="leading" secondItem="zKj-gq-H4u" secondAttribute="trailing" constant="10" id="tn6-LJ-QjC"/>
                 <constraint firstItem="gCT-iE-XbD" firstAttribute="leading" secondItem="bFs-wc-LmU" secondAttribute="trailing" constant="10" id="u56-5v-BX3"/>
             </constraints>

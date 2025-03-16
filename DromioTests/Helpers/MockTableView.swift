@@ -13,4 +13,12 @@ final class MockTableView: UITableView {
         methodsCalled.append(#function)
         self.indexPath = indexPath
     }
+
+    override func beginUpdates() {
+        methodsCalled.append(#function)
+    }
+
+    override func endUpdates() {
+        methodsCalled.append(#function)
+    }
 }

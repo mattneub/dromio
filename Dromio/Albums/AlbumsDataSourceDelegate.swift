@@ -104,6 +104,10 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
             snapshot.appendItems(section.rows.map {$0.id})
         }
         await datasource.apply(snapshot, animatingDifferences: false)
+        UIView.performWithoutAnimation {
+            self.tableView?.beginUpdates()
+            self.tableView?.endUpdates()
+        }
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
