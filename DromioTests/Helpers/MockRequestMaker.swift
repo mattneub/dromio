@@ -9,6 +9,7 @@ final class MockRequestMaker: RequestMakerType {
     var albumId: String?
     var songId: String?
     var artistId: String?
+    var user: SubsonicUser?
     var pingError: Error?
     var query: String?
     var methodsCalled = [String]()
@@ -19,6 +20,15 @@ final class MockRequestMaker: RequestMakerType {
         if let pingError {
             throw pingError
         }
+    }
+
+    func getUser() async throws -> SubsonicUser {
+        methodsCalled.append(#function)
+        if let pingError {
+            throw pingError
+        }
+        guard let user else { fatalError("You forgot to provide a `user`.") }
+        return user
     }
 
     func getAlbumList() async throws -> [SubsonicAlbum] {

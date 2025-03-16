@@ -113,6 +113,81 @@ struct RequestMakerTests {
         }
     }
 
+    @Test("getUser: calls url maker with action getUser, calls networker, calls validator")
+    func getUser() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: UserResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                user: .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: false),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        let user = try await subject.getUser()
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "getUser")
+        #expect(urlMaker.additional == nil)
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+        #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
+        #expect(user == .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: false))
+    }
+
+    @Test("getUser: rethrows urlMaker throw")
+    func getUserUrlMakerThrow() async throws {
+        urlMaker.errorToThrow = NetworkerError.message("oops")
+        await #expect {
+            try await subject.getUser()
+        } throws: { error in
+            error as! NetworkerError == .message("oops")
+        }
+    }
+
+    @Test("getUser: rethrows networker throw")
+    func getUserNetworkerThrow() async throws {
+        networker.errorToThrow = NetworkerError.message("darn")
+        await #expect {
+            try await subject.getUser()
+        } throws: { error in
+            error as! NetworkerError == .message("darn")
+        }
+    }
+
+    @Test("getUser: rethrows decode error")
+    func getUserDecoderThrow() async throws {
+        networker.dataToReturn = [try! JSONEncoder().encode(#"{"howdy": "hey"}"#)]
+        await #expect {
+            try await subject.getUser()
+        } throws: { error in
+            error is DecodingError
+        }
+    }
+
+    @Test("getUser: rethrows validator error")
+    func getUserValidatorThrow() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: UserResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                user: .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: false),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        responseValidator.errorToThrow = NetworkerError.message("yipes")
+        await #expect {
+            try await subject.getUser()
+        } throws: { error in
+            error as! NetworkerError == .message("yipes")
+        }
+    }
+
     @Test("getAlbumList: calls url maker with action getAlbumList2 and additional, calls networker, calls validator, returns list")
     func getAlbumList() async throws {
         let payload = SubsonicResponse(

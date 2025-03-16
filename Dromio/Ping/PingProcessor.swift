@@ -27,6 +27,11 @@ final class PingProcessor: Processor {
                     services.urlMaker.currentServerInfo = server
                 }
                 try await services.requestMaker.ping()
+                let user = try await services.requestMaker.getUser()
+                guard user.downloadRole && user.streamRole else {
+                    throw NetworkerError.message("User needs stream and download privileges.")
+                }
+                userHasJukeboxRole = user.jukeboxRole
                 state.success = .success
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.6))

@@ -4,6 +4,7 @@ import Foundation
 @MainActor
 protocol RequestMakerType: Sendable {
     func ping() async throws
+    func getUser() async throws -> SubsonicUser
     func getAlbumList() async throws -> [SubsonicAlbum]
     func getAlbumsRandom() async throws -> [SubsonicAlbum]
     // func getArtists() async throws -> [SubsonicArtist] // probably won't be using this
@@ -61,6 +62,14 @@ final class RequestMaker: RequestMakerType {
         let data = try await services.networker.performRequest(url: url)
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<PingResponse>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)
+    }
+
+    func getUser() async throws -> SubsonicUser {
+        let url = try services.urlMaker.urlFor(action: "getUser")
+        let data = try await services.networker.performRequest(url: url)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<UserResponse>.self, from: data)
+        try await services.responseValidator.validateResponse(jsonResponse)
+        return jsonResponse.subsonicResponse.user
     }
 
     /// Get a list of all albums in alphabetical title order and return it, throwing if anything goes wrong.

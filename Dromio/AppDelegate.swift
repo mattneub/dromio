@@ -9,6 +9,14 @@ var services: Services = Services()
 @MainActor
 var caches: Caches = Caches()
 
+/// Global info about the user's jukebox role.
+@MainActor
+var userHasJukeboxRole = false {
+    didSet {
+        print("jukebox?", userHasJukeboxRole)
+    }
+}
+
 let logger = Logger(subsystem: "dromio", category: "debugging")
 
 @main

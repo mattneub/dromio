@@ -17,6 +17,7 @@ struct PingProcessorTests {
         services.persistence = persistence
         subject.presenter = presenter
         subject.coordinator = coordinator
+        requestMaker.user = .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: true)
     }
 
     @Test("changing the state presents the state")
@@ -69,7 +70,45 @@ struct PingProcessorTests {
         #expect(requestMaker.methodsCalled[0] == "ping()")
     }
 
-    @Test("receive doPing: with current server calls networker ping, sets state success to .success if no throw and calls coordinator showAlbums")
+    @Test("receive doPing: with no issues call networker getUser, sets global user jukebox info")
+    func receiveDoPingGetUser() async {
+        userHasJukeboxRole = false
+        let server = ServerInfo.init(
+            scheme: "http",
+            host: "h",
+            port: 1,
+            username: "u",
+            password: "p",
+            version: "v"
+        )
+        persistence.servers = [server]
+        await subject.receive(.doPing)
+        #expect(requestMaker.methodsCalled[1] == "getUser()")
+        #expect(userHasJukeboxRole == true)
+    }
+
+    @Test("receive doPing: with no issues call networker getUser, barfs if user cannot stream and download")
+    func receiveDoPingGetUserNoDownload() async {
+        let server = ServerInfo.init(
+            scheme: "http",
+            host: "h",
+            port: 1,
+            username: "u",
+            password: "p",
+            version: "v"
+        )
+        persistence.servers = [server]
+        requestMaker.user = .init(scrobblingEnabled: false, downloadRole: false, streamRole: true, jukeboxRole: true)
+        await subject.receive(.doPing)
+        #expect(presenter.statePresented?.success == .failure(message: "User needs stream and download privileges."))
+        #expect(coordinator.methodsCalled.isEmpty)
+        requestMaker.user = .init(scrobblingEnabled: false, downloadRole: true, streamRole: false, jukeboxRole: true)
+        await subject.receive(.doPing)
+        #expect(presenter.statePresented?.success == .failure(message: "User needs stream and download privileges."))
+        #expect(coordinator.methodsCalled.isEmpty)
+    }
+
+    @Test("receive doPing: with no issues sets state success to .success if no throw and calls coordinator showAlbums")
     func receiveDoPingSuccess() async {
         let server = ServerInfo.init(
             scheme: "http",
