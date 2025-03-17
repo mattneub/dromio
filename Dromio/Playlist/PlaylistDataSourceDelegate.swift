@@ -41,6 +41,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
 
     func present(_ state: PlaylistState) {
         data = state.songs
+        currentItem = state.currentItem
         Task {
             await updateTableView()
         }
@@ -51,6 +52,9 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
 
     /// Data to be displayed by the table view.
     var data = [SubsonicSong]()
+
+    /// Id of the currently playing item, according to the state presented.
+    var currentItem: String?
 
     /// Type of the diffable data source.
     typealias Datasource = UITableViewDiffableDataSource<String, String>
@@ -81,7 +85,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
             return nil
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
-        cell.contentConfiguration = PlaylistCellContentConfiguration(song: song)
+        cell.contentConfiguration = PlaylistCellContentConfiguration(song: song, currentItem: currentItem)
         if let contentView = cell.contentView as? PlaylistCellContentView {
             contentView.thermometer.progress = song.downloaded == true ? 1 : 0
         }

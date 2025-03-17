@@ -1,8 +1,10 @@
 @testable import Dromio
 import Foundation
+import Combine
 
 @MainActor
 final class MockPlayer: PlayerType {
+    var currentItem = CurrentValueSubject<String?, Never>(nil)
     var url: URL?
     var song: SubsonicSong?
     var methodsCalled = [String]()

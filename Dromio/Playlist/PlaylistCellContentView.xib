@@ -13,6 +13,7 @@
                 <outlet property="artist" destination="y86-M1-jBL" id="1OJ-U6-aTa"/>
                 <outlet property="composer" destination="zKj-gq-H4u" id="f3o-MK-BSU"/>
                 <outlet property="duration" destination="bFs-wc-LmU" id="c2Q-c9-JvZ"/>
+                <outlet property="nowPlaying" destination="NQv-j5-fZi" id="jNG-bC-EKA"/>
                 <outlet property="thermometer" destination="Zwd-4k-wAS" id="IwI-kU-HOp"/>
                 <outlet property="title" destination="STu-iZ-oTp" id="AyR-N0-lUn"/>
             </connections>
@@ -58,6 +59,13 @@
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                 </label>
+                <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.5" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="music.note" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="NQv-j5-fZi">
+                    <rect key="frame" x="359" y="111" width="30" height="28.666666666666686"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="30" id="9hI-8b-5dt"/>
+                        <constraint firstAttribute="height" constant="30" id="l9U-ee-Jom"/>
+                    </constraints>
+                </imageView>
             </subviews>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
@@ -65,8 +73,10 @@
                 <constraint firstItem="Zwd-4k-wAS" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" id="7H9-rH-wLO"/>
                 <constraint firstItem="bFs-wc-LmU" firstAttribute="centerY" secondItem="zKj-gq-H4u" secondAttribute="centerY" id="AyU-1D-liK"/>
                 <constraint firstItem="gCT-iE-XbD" firstAttribute="centerY" secondItem="zKj-gq-H4u" secondAttribute="centerY" id="B5c-DA-mwz"/>
+                <constraint firstItem="NQv-j5-fZi" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="DRM-w8-0Yg"/>
                 <constraint firstItem="STu-iZ-oTp" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" constant="8" id="Hoj-2u-z1Y"/>
                 <constraint firstItem="bFs-wc-LmU" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="Lvh-Jc-PeC"/>
+                <constraint firstAttribute="trailing" secondItem="NQv-j5-fZi" secondAttribute="trailing" constant="4" id="MMo-RH-Mjw"/>
                 <constraint firstItem="zKj-gq-H4u" firstAttribute="top" secondItem="y86-M1-jBL" secondAttribute="bottom" priority="999" constant="12" id="ST1-n9-kfk"/>
                 <constraint firstItem="y86-M1-jBL" firstAttribute="top" secondItem="STu-iZ-oTp" secondAttribute="bottom" constant="12" id="X4X-5d-Nvb"/>
                 <constraint firstAttribute="bottom" secondItem="Zwd-4k-wAS" secondAttribute="bottom" id="ZFC-Lp-0cI"/>
@@ -88,6 +98,7 @@
         </view>
     </objects>
     <resources>
+        <image name="music.note" catalog="system" width="96" height="128"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

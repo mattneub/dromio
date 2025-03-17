@@ -7,6 +7,7 @@ final class PlaylistCellContentView: UIView, UIContentView {
     @IBOutlet var composer: UILabel!
     @IBOutlet var duration: UILabel!
     @IBOutlet var thermometer: ThermometerView!
+    @IBOutlet var nowPlaying: UIImageView!
 
     /// Boilerplate.
     var configuration: any UIContentConfiguration {
@@ -45,6 +46,7 @@ final class PlaylistCellContentView: UIView, UIContentView {
         album.text = configuration.album
         duration.text = configuration.duration
         composer.text = configuration.composer
+        nowPlaying.isHidden = !configuration.nowPlaying
     }
 }
 
@@ -55,11 +57,12 @@ struct PlaylistCellContentConfiguration: UIContentConfiguration, Equatable {
     let album: String
     let duration: String
     let composer: String
-    
+    let nowPlaying: Bool
+
     /// The configuration must be created directly from a song.
     /// - Parameters:
     ///   - song: The song.
-    init(song: SubsonicSong) {
+    init(song: SubsonicSong, currentItem: String? = nil) {
         self.title = song.title
         self.artist = song.artist.ensureNoBreakSpace
         self.album = song.album.ensureNoBreakSpace
@@ -69,6 +72,7 @@ struct PlaylistCellContentConfiguration: UIContentConfiguration, Equatable {
             )
         } ?? ""
         self.composer = song.displayComposer.ensureNoBreakSpace
+        self.nowPlaying = currentItem == song.id
     }
 
     func makeContentView() -> any UIView & UIContentView {

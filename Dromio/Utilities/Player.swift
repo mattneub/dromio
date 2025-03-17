@@ -1,6 +1,7 @@
 import UIKit
 import AVFoundation
 import MediaPlayer
+import Combine
 
 @MainActor
 protocol QueuePlayerType {
@@ -17,6 +18,7 @@ extension AVQueuePlayer: QueuePlayerType {}
 
 @MainActor
 protocol PlayerType {
+    var currentItem: CurrentValueSubject<String?, Never> { get }
     func play(url: URL, song: SubsonicSong)
     func playNext(url: URL, song: SubsonicSong)
     func clear()
@@ -26,6 +28,9 @@ protocol PlayerType {
 final class Player: NSObject, PlayerType {
     var player: QueuePlayerType = AVQueuePlayer()
     var observation: NSKeyValueObservation?
+
+    /// Public publisher of the current item. He who has ears to hear, let him hear.
+    var currentItem = CurrentValueSubject<String?, Never>(nil)
 
     /// List of all songs we've ever been handed, accessed by song id. Thus, if we know the id
     /// of a song, we know its title and artist. But if a song is in the queue, we have its URL.
@@ -58,9 +63,11 @@ final class Player: NSObject, PlayerType {
             services.nowPlayingInfo.info[.title] = song.title
             services.nowPlayingInfo.info[.duration] = song.duration
             print("current item change", song.title)
+            currentItem.send(song.id)
         } else if player.currentItem == nil {
             services.nowPlayingInfo.clear()
             try? services.audioSession.setActive(false, options: [])
+            currentItem.send(nil)
         }
     }
 
@@ -98,6 +105,7 @@ final class Player: NSObject, PlayerType {
             .rate: 1.0
         ]
         knownSongs[song.id] = song
+        currentItem.send(song.id)
     }
 
     func playNext(url: URL, song: SubsonicSong) {
@@ -117,6 +125,7 @@ final class Player: NSObject, PlayerType {
         player.play()
         services.nowPlayingInfo.info[.rate] = 1.0
         services.nowPlayingInfo.info[.time] = player.currentTime().seconds
+        currentItem.send(currentSongId)
     }
 
     @objc func doPause(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
@@ -138,5 +147,6 @@ final class Player: NSObject, PlayerType {
         knownSongs.removeAll()
         services.nowPlayingInfo.clear()
         try? services.audioSession.setActive(false, options: [])
+        currentItem.send(nil)
     }
 }

@@ -18,7 +18,10 @@ final class PlaylistProcessor: Processor {
     }
 
     /// Pipeline subscribing to Download's `progress` during a download, so we can report progress.
-    var pipeline: AnyCancellable?
+    var downloadPipeline: AnyCancellable?
+
+    /// Pipeline subscribing to Player's `currentItem`, so we can display what's playing.
+    var playerPipeline: AnyCancellable?
 
     func receive(_ action: PlaylistAction) async {
         switch action {
@@ -38,12 +41,17 @@ final class PlaylistProcessor: Processor {
                 songs[index].downloaded = (url != nil)
             }
             state.songs = songs
-            // set up pipeline, only once
-            if pipeline == nil, let presenter {
-                pipeline = services.networker.progress.sink { [weak presenter] pair in
+            // set up pipelines, only once
+            if downloadPipeline == nil, let presenter {
+                downloadPipeline = services.networker.progress.sink { [weak presenter] pair in
                     Task {
                         await presenter?.receive(.progress(pair.id, pair.fraction))
                     }
+                }
+            }
+            if playerPipeline == nil {
+                playerPipeline = services.player.currentItem.sink { [weak self] song in
+                    self?.state.currentItem = song
                 }
             }
         case .jukeboxButton:

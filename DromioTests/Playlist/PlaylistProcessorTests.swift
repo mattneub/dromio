@@ -47,7 +47,7 @@ struct PlaylistProcessorTests {
         #expect(presenter.statePresented?.songs == songs)
     }
 
-    @Test("receive initialData: sets state `songs`, sets pipeline which forwards .progress to the presenter")
+    @Test("receive initialData: sets state `songs`, sets pipelines, pipelines work")
     func receiveInitialData() async {
         playlist.list = [SubsonicSong(
             id: "1",
@@ -62,7 +62,8 @@ struct PlaylistProcessorTests {
             duration: nil,
             contributors: nil
         )]
-        #expect(subject.pipeline == nil)
+        #expect(subject.downloadPipeline == nil)
+        #expect(subject.playerPipeline == nil)
         await subject.receive(.initialData)
         #expect(
             presenter.statePresented?.songs == [.init(
@@ -80,10 +81,13 @@ struct PlaylistProcessorTests {
                 downloaded: false // *
             )]
         )
-        #expect(subject.pipeline != nil)
+        #expect(subject.downloadPipeline != nil)
+        #expect(subject.playerPipeline != nil)
         networker.progress.send((id: "2", fraction: 0.5))
         await #while(presenter.thingsReceived.isEmpty)
         #expect(presenter.thingsReceived[0] == .progress("2", 0.5))
+        player.currentItem.send("10")
+        #expect(subject.state.currentItem == "10")
     }
 
     @Test("receive initialData: if the Download says this song is downloaded, marks it as downloaded in the state")

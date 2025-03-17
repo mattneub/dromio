@@ -107,7 +107,48 @@ struct PlaylistDataSourceDelegateTests {
             suffix: nil,
             duration: nil,
             contributors: nil
-        ))
+        ), currentItem: nil)
+        #expect(configuration == expected)
+        let thermometerView = try #require((cell?.contentView as? PlaylistCellContentView)?.thermometer)
+        #expect(thermometerView.progress == 0)
+    }
+
+    @Test("present: state currentItem is passed to configuration")
+    func presentWithCurrentItemCell() async throws {
+        makeWindow(view: tableView)
+        var state = PlaylistState()
+        state.songs = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        state.currentItem = "10"
+        subject.present(state)
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
+        let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
+        let configuration = try #require(cell?.contentConfiguration as? PlaylistCellContentConfiguration)
+        let expected = PlaylistCellContentConfiguration(song: .init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), currentItem: "10")
         #expect(configuration == expected)
         let thermometerView = try #require((cell?.contentView as? PlaylistCellContentView)?.thermometer)
         #expect(thermometerView.progress == 0)

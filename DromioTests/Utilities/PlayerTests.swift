@@ -22,7 +22,7 @@ struct PlayerTests {
         #expect(subject.currentSongId == "4")
     }
 
-    @Test("adjustNowPlayingItemToCurrentItem: configured now playing info to match song")
+    @Test("adjustNowPlayingItemToCurrentItem: configures now playing info to match song, sets currentItem")
     func adjust() {
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
@@ -42,6 +42,17 @@ struct PlayerTests {
         #expect(nowPlayingInfo.info[.title] as? String == "Title")
         #expect(nowPlayingInfo.info[.artist] as? String == "Artist")
         #expect(nowPlayingInfo.info[.duration] as? Int == 100)
+        #expect(subject.currentItem.value == "4")
+    }
+
+    @Test("adjustNowPlayingItemToCurrentItem: if current item is nil, calls clear, deactivates session, sets currentItem")
+    func adjustNil() {
+        audioPlayer.currentItem = nil
+        subject.adjustNowPlayingItemToCurrentItem()
+        #expect(nowPlayingInfo.methodsCalled.contains("clear()"))
+        #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
+        #expect(audioSession.active == false)
+        #expect(subject.currentItem.value == nil)
     }
 
     @Test("play(url:song:) calls removeAllItems, calls insertAfter nil, sets category active, calls play, sets action to advance, adds to known songs")
@@ -70,7 +81,7 @@ struct PlayerTests {
         #expect(subject.knownSongs["1"] == song)
     }
 
-    @Test("play(url:song:) configures now playing info")
+    @Test("play(url:song:) configures now playing info, sets current item")
     func playNowPlayingInfo() {
         let song = SubsonicSong(
             id: "1",
@@ -92,6 +103,7 @@ struct PlayerTests {
         #expect(nowPlayingInfo.info[.time] as? Double == 0)
         #expect(nowPlayingInfo.info[.rate] as? Double == 1)
         #expect(nowPlayingInfo.info[.duration] as? Int == 100)
+        #expect(subject.currentItem.value == "1")
     }
 
     @Test("playNext(url:song:) calls insertAfter nil, adds to known songs")
@@ -117,8 +129,9 @@ struct PlayerTests {
         #expect(subject.knownSongs["1"] == song)
     }
 
-    @Test("doPlay: activates audio session, calls play, configures now playing info")
+    @Test("doPlay: activates audio session, calls play, configures now playing info, sets current item")
     func doPlay() {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         audioPlayer.time = 30
         subject.doPlay()
         #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
@@ -126,6 +139,7 @@ struct PlayerTests {
         #expect(audioPlayer.methodsCalled.contains("play()"))
         #expect(nowPlayingInfo.info[.time] as? Double == 30)
         #expect(nowPlayingInfo.info[.rate] as? Double == 1)
+        #expect(subject.currentItem.value == "4")
     }
 
     @Test("doPause: calls pause, configures now playing info")
@@ -137,8 +151,9 @@ struct PlayerTests {
         #expect(nowPlayingInfo.info[.rate] as? Double == 0)
     }
 
-    @Test("clear: call pause and removeAllItems, empties the known list")
+    @Test("clear: call pause and removeAllItems, empties the known list, nilifies currentItem")
     func clear() {
+        subject.currentItem.value = "10"
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -159,6 +174,7 @@ struct PlayerTests {
         #expect(nowPlayingInfo.methodsCalled == ["clear()"])
         #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
         #expect(audioSession.active == false)
+        #expect(subject.currentItem.value == nil)
     }
 
 }

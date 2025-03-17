@@ -22,11 +22,13 @@ struct PlaylistCellContentConfigurationTests {
         let subject = PlaylistCellContentView(configuration)
         #expect(subject.subviews.count == 1)
         let loadedView = try #require(subject.subviews.first)
-        #expect(loadedView.subviews.count == 6)
+        #expect(loadedView.subviews.count == 7)
         let labels = loadedView.subviews.filter { $0 is UILabel }
         #expect(labels.count == 5)
         let therms = loadedView.subviews.filter { $0 is ThermometerView }
         #expect(therms.count == 1)
+        let imageViews = loadedView.subviews.filter { $0 is UIImageView }
+        #expect(imageViews.count == 1)
     }
 
     @Test("Applying configuration to content view configures the displayed content correctly")
@@ -43,11 +45,13 @@ struct PlaylistCellContentConfigurationTests {
             suffix: nil,
             duration: 120, // test duration formatting
             contributors: nil
-        ))
+        ), currentItem: nil)
         let subject = PlaylistCellContentView(configuration)
         let loadedView = try #require(subject.subviews.first)
         var labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
         #expect(Set(labelTexts) == Set(["Title", "2:00", "Album", "Artist", "Me"]))
+        var imageView = loadedView.subviews.filter { $0 is UIImageView }.first!
+        #expect(imageView.isHidden)
         let configuration2 = PlaylistCellContentConfiguration(song: SubsonicSong(
             id: "2",
             title: "Title",
@@ -60,9 +64,11 @@ struct PlaylistCellContentConfigurationTests {
             suffix: nil,
             duration: 12000, // big durations get hours
             contributors: nil
-        ))
+        ), currentItem: "2")
         subject.configuration = configuration2
         labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
         #expect(Set(labelTexts) == Set(["Title", "3:20:00", "Album", " ", " "]))
+        imageView = loadedView.subviews.filter { $0 is UIImageView }.first!
+        #expect(!imageView.isHidden)
     }
 }
