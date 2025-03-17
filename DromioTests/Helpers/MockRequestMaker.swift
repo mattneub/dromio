@@ -108,4 +108,9 @@ final class MockRequestMaker: RequestMakerType {
         return url
     }
 
+    func jukebox(additional: KeyValuePairs<String, String>) async throws -> Dromio.JukeboxStatus? {
+        methodsCalled.append(#function)
+        return nil
+    }
+
 }

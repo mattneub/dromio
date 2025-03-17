@@ -47,8 +47,8 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         Task {
             await processor?.receive(.initialData)
         }
-        if userHasJukeboxRole {
-            tableView.tableHeaderView = tableHeaderView
+        if userHasJukeboxRole { // withdrawing this feature for now, alas
+            // tableView.tableHeaderView = tableHeaderView
         }
     }
 

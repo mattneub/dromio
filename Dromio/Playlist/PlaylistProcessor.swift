@@ -59,7 +59,11 @@ final class PlaylistProcessor: Processor {
                 try? await Task.sleep(for: .seconds(unlessTesting(0.3)))
                 await presenter?.receive(.deselectAll)
             }
-            try? await play(sequence: sequence)
+            if state.jukebox { // always false, this feature is withdrawn
+                try? await playOnJukebox(sequence: sequence)
+            } else {
+                try? await play(sequence: sequence)
+            }
         }
     }
 
@@ -96,5 +100,19 @@ final class PlaylistProcessor: Processor {
         if let index = state.songs.firstIndex(where: { $0.id == song.id }) {
             state.songs[index].downloaded = true
         }
+    }
+
+    /// This code is provisional and never runs, because I can't get jukebox working on my server.
+    private func playOnJukebox(sequence: [SubsonicSong]) async throws {
+        var status = try await services.requestMaker.jukebox(additional: ["action": "stop"])
+        dump(status)
+        status = try await services.requestMaker.jukebox(additional: ["action": "clear"])
+        dump(status)
+        for song in sequence {
+            status = try await services.requestMaker.jukebox(additional: ["action": "add", "id": song.id])
+            dump(status)
+        }
+        status = try await services.requestMaker.jukebox(additional: ["action": "start"])
+        dump(status)
     }
 }

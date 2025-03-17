@@ -25,12 +25,14 @@ struct PlaylistViewControllerTests {
 
     @Test("table header view is created only iff user has jukebox role")
     func tableHeaderView() {
+        // this test has been altered: we currently expect no table view header no matter what
         userHasJukeboxRole = false
         var subject = PlaylistViewController(nibName: nil, bundle: nil)
         #expect(subject.tableView.tableHeaderView == nil)
         userHasJukeboxRole = true
         subject = PlaylistViewController(nibName: nil, bundle: nil)
-        #expect(subject.tableView.tableHeaderView === subject.tableHeaderView)
+        // #expect(subject.tableView.tableHeaderView === subject.tableHeaderView)
+        #expect(subject.tableView.tableHeaderView == nil)
     }
 
     @Test("Setting the processor sets the data source's processor")
@@ -80,6 +82,8 @@ struct PlaylistViewControllerTests {
         #expect(mockDataSourceDelegate.state == state)
     }
 
+    // Withdrawn, there is no such header currently
+    /*
     @Test("present: sets the image of the jukebox button in the table view header")
     func presentJukeboxButton() async throws {
         userHasJukeboxRole = true
@@ -93,6 +97,7 @@ struct PlaylistViewControllerTests {
         subject.present(state)
         #expect(button.configuration?.image == UIImage(systemName: "rectangle"))
     }
+     */
 
     @Test("receive deselectAll: tells the table view to select nil")
     func receiveDeselectAll() async {

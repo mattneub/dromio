@@ -14,6 +14,7 @@ protocol RequestMakerType: Sendable {
     func getSongsFor(albumId: String) async throws -> [SubsonicSong]
     func download(songId: String) async throws -> URL
     func stream(songId: String) async throws -> URL
+    func jukebox(additional: KeyValuePairs<String, String>) async throws -> JukeboxStatus?
 }
 
 /// Class that makes constructs and sends requests to the server. If you want to talk to the server,
@@ -248,4 +249,19 @@ final class RequestMaker: RequestMakerType {
         return url
     }
 
+    // TODO: If we ever restore this feature, we'll need a test here
+    func jukebox(additional: KeyValuePairs<String, String>) async throws -> JukeboxStatus? {
+        let url = try services.urlMaker.urlFor(
+            action: "jukeboxControl",
+            additional: additional
+        )
+        print(url)
+        let data = try await services.networker.performRequest(url: url)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<JukeboxResponse>.self, from: data)
+        try await services.responseValidator.validateResponse(jsonResponse)
+        if let error = jsonResponse.subsonicResponse.error {
+            dump(error)
+        }
+        return jsonResponse.subsonicResponse.jukeboxStatus
+    }
 }
