@@ -23,6 +23,21 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         fatalError("init(coder:) has not been implemented")
     }
 
+    lazy var tableHeaderView: UIView = {
+        let tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
+        tableHeaderView.backgroundColor = .secondarySystemBackground
+        var config = UIButton.Configuration.plain()
+        config.title = "Jukebox Mode: "
+        config.image = UIImage(systemName: "rectangle")
+        config.imagePlacement = .trailing
+        let button = UIButton(configuration: config, primaryAction: UIAction() {
+            [weak self] _ in self?.doJukeboxButton()
+        })
+        button.frame = CGRect(x: 0, y: 0, width: 200, height: 40)
+        tableHeaderView.addSubview(button)
+        return tableHeaderView
+    }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
@@ -32,10 +47,20 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         Task {
             await processor?.receive(.initialData)
         }
+        if userHasJukeboxRole {
+            tableView.tableHeaderView = tableHeaderView
+        }
     }
 
     func present(_ state: PlaylistState) {
         dataSourceDelegate?.present(state)
+        if let jukeboxButton = tableView.tableHeaderView?.subviews(ofType: UIButton.self).first {
+            jukeboxButton.configuration?.image = if state.jukebox {
+                UIImage(systemName: "checkmark.rectangle")
+            } else {
+                UIImage(systemName: "rectangle")
+            }
+        }
     }
 
     func receive(_ effect: PlaylistEffect) async {
@@ -50,6 +75,12 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     @objc func doClear() {
         Task {
             await processor?.receive(.clear)
+        }
+    }
+
+    @objc func doJukeboxButton() {
+        Task {
+            await processor?.receive(.jukeboxButton)
         }
     }
 }

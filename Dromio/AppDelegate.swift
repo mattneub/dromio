@@ -11,11 +11,7 @@ var caches: Caches = Caches()
 
 /// Global info about the user's jukebox role.
 @MainActor
-var userHasJukeboxRole = false {
-    didSet {
-        print("jukebox?", userHasJukeboxRole)
-    }
-}
+var userHasJukeboxRole = false
 
 let logger = Logger(subsystem: "dromio", category: "debugging")
 

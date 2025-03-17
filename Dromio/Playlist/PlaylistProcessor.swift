@@ -46,6 +46,8 @@ final class PlaylistProcessor: Processor {
                     }
                 }
             }
+        case .jukeboxButton:
+            state.jukebox.toggle()
         case .tapped(let song):
             let sequence = state.songs.buildSequence(startingWith: song)
             guard sequence.count > 0 else {

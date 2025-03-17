@@ -146,6 +146,15 @@ struct PlaylistProcessorTests {
         )
     }
 
+    @Test("receive jukeboxButton: toggles state jukebox")
+    func receiveJukebox() async {
+        #expect(!subject.state.jukebox)
+        await subject.receive(.jukeboxButton)
+        #expect(subject.state.jukebox)
+        await subject.receive(.jukeboxButton)
+        #expect(!subject.state.jukebox)
+    }
+
     @Test("receive tapped: calls haptic, sets audio session active, sends .deselectAll")
     func receiveTapped() async {
         let song = SubsonicSong(

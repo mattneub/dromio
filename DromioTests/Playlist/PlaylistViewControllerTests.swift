@@ -23,6 +23,16 @@ struct PlaylistViewControllerTests {
         #expect(subject.title == "Playlist")
     }
 
+    @Test("table header view is created only iff user has jukebox role")
+    func tableHeaderView() {
+        userHasJukeboxRole = false
+        var subject = PlaylistViewController(nibName: nil, bundle: nil)
+        #expect(subject.tableView.tableHeaderView == nil)
+        userHasJukeboxRole = true
+        subject = PlaylistViewController(nibName: nil, bundle: nil)
+        #expect(subject.tableView.tableHeaderView === subject.tableHeaderView)
+    }
+
     @Test("Setting the processor sets the data source's processor")
     func setProcessor() {
         let processor2 = MockReceiver<PlaylistAction>()
@@ -70,6 +80,20 @@ struct PlaylistViewControllerTests {
         #expect(mockDataSourceDelegate.state == state)
     }
 
+    @Test("present: sets the image of the jukebox button in the table view header")
+    func presentJukeboxButton() async throws {
+        userHasJukeboxRole = true
+        let subject = PlaylistViewController(nibName: nil, bundle: nil)
+        let button = try #require(subject.tableView.tableHeaderView?.subviews(ofType: UIButton.self).first)
+        #expect(button.configuration?.image == UIImage(systemName: "rectangle"))
+        var state = PlaylistState(jukebox: true, songs: [])
+        subject.present(state)
+        #expect(button.configuration?.image == UIImage(systemName: "checkmark.rectangle"))
+        state = PlaylistState(jukebox: false, songs: [])
+        subject.present(state)
+        #expect(button.configuration?.image == UIImage(systemName: "rectangle"))
+    }
+
     @Test("receive deselectAll: tells the table view to select nil")
     func receiveDeselectAll() async {
         subject.tableView.selectRow(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .none)
@@ -89,5 +113,13 @@ struct PlaylistViewControllerTests {
         subject.doClear()
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.last == .clear)
+    }
+
+    @Test("jukebox button sends .jukeboxButton to processor")
+    func doJukeboxButton() async throws {
+        let button = try #require(subject.tableHeaderView.subviews(ofType: UIButton.self).first)
+        button.performPrimaryAction()
+        await #while(processor.thingsReceived.last != .jukeboxButton)
+        #expect(processor.thingsReceived.last == .jukeboxButton)
     }
 }

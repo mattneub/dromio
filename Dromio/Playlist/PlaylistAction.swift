@@ -6,6 +6,8 @@ enum PlaylistAction: Equatable {
     case clear
     /// The view controller is ready for its data.
     case initialData
+    /// The user tapped the jukebox button.
+    case jukeboxButton
     /// The user tapped a song.
     case tapped(SubsonicSong)
 }
