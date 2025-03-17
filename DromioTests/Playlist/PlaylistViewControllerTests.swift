@@ -46,7 +46,7 @@ struct PlaylistViewControllerTests {
     func viewDidLoad() async {
         subject.loadViewIfNeeded()
         #expect(mockDataSourceDelegate.processor === subject.processor)
-        #expect(subject.view.backgroundColor == .systemBackground)
+        #expect(subject.view.backgroundColor == .background)
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .initialData)
     }

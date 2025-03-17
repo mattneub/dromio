@@ -86,6 +86,9 @@ struct AlbumsDataSourceDelegateTests {
         #expect(configuration == expected)
         #expect(tableView.methodsCalled.contains("beginUpdates()"))
         #expect(tableView.methodsCalled.contains("endUpdates()"))
+        #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .background)
+        cell?.isSelected = true
+        #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .systemGray3)
     }
 
     @Test("sectionIndexTitles: with allAlbums, returns uppercased section identifiers")

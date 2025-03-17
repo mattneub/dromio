@@ -69,6 +69,7 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         cell.contentConfiguration = AlbumCellContentConfiguration(song: song, totalCount: totalCount)
+        cell.configureBackground()
         return cell
     }
 

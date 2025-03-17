@@ -67,6 +67,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         cell.contentConfiguration = AlbumsCellContentConfiguration(album: album)
+        cell.configureBackground()
         return cell
     }
 

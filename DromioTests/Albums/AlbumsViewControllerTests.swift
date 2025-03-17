@@ -46,7 +46,7 @@ struct AlbumsViewControllerTests {
     func viewDidLoad() async throws {
         subject.loadViewIfNeeded()
         #expect(mockDataSourceDelegate.processor === subject.processor)
-        #expect(subject.view.backgroundColor == .systemBackground)
+        #expect(subject.view.backgroundColor == .background)
         let tableBackground = try #require(subject.tableView.backgroundView)
         #expect(subject.activity.isDescendant(of: tableBackground))
         #expect(subject.activity.isAnimating)

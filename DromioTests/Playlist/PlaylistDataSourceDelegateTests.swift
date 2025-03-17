@@ -111,6 +111,9 @@ struct PlaylistDataSourceDelegateTests {
         #expect(configuration == expected)
         let thermometerView = try #require((cell?.contentView as? PlaylistCellContentView)?.thermometer)
         #expect(thermometerView.progress == 0)
+        #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .background)
+        cell?.isSelected = true
+        #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .systemGray3)
     }
 
     @Test("present: state currentItem is passed to configuration")

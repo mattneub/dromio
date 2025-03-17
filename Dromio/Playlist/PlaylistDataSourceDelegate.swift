@@ -86,6 +86,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         cell.contentConfiguration = PlaylistCellContentConfiguration(song: song, currentItem: currentItem)
+        cell.configureBackground()
         if let contentView = cell.contentView as? PlaylistCellContentView {
             contentView.thermometer.progress = song.downloaded == true ? 1 : 0
         }

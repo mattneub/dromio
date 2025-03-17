@@ -96,6 +96,9 @@ struct AlbumDataSourceDelegateTests {
             contributors: nil
         ), totalCount: 2)
         #expect(configuration == expected)
+        #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .background)
+        cell?.isSelected = true
+        #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .systemGray3)
     }
 
     @Test("viewForHeaderInSection: correctly populates header view")

@@ -68,6 +68,7 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         cell.contentConfiguration = ArtistsCellContentConfiguration(artist: artist)
+        cell.configureBackground()
         return cell
     }
 

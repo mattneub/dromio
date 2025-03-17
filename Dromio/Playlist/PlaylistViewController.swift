@@ -41,7 +41,7 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     override func viewDidLoad() {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .background
         let rightBarButtonItem = UIBarButtonItem(title: "Clear", image: nil, target: self, action: #selector(doClear))
         navigationItem.rightBarButtonItem = rightBarButtonItem
         Task {
