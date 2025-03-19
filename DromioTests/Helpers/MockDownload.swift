@@ -3,7 +3,7 @@ import Foundation
 
 actor MockDownload: DownloadType {
 
-    var urlToReturn: URL = URL(string: "http://example.com")!
+    var urlToReturn: URL = URL(string: "file://temp/stuff")!
     var song: SubsonicSong?
     var methodsCalled = [String]()
     nonisolated(unsafe) var bools: [String: Bool] = [:]

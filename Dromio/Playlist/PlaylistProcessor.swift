@@ -10,10 +10,15 @@ final class PlaylistProcessor: Processor {
     /// Reference to the view controller, set by coordinator on creation.
     weak var presenter: (any ReceiverPresenter<PlaylistEffect, PlaylistState>)?
 
-    /// State to be presented to the presenter; mutating it presents.
-    var state: PlaylistState = PlaylistState() {
+    /// State to be presented to the presenter; mutating it presents, unless `noPresentation` forbids.
+    var noPresentation = false
+    var state = PlaylistState() {
         didSet {
-            presenter?.present(state)
+            if noPresentation {
+                noPresentation = false
+            } else {
+                presenter?.present(state)
+            }
         }
     }
 
@@ -35,12 +40,16 @@ final class PlaylistProcessor: Processor {
             }
             coordinator?.popPlaylist()
         case .initialData:
-            var songs = services.currentPlaylist.list
-            for index in songs.indices {
-                let url = try? await services.download.downloadedURL(for: songs[index])
-                songs[index].downloaded = (url != nil)
+            // collection songs, mark downloaded-ness
+            noPresentation = true
+            state.songs = services.currentPlaylist.list
+            for song in state.songs {
+                if let _ = try? await services.download.downloadedURL(for: song) {
+                    noPresentation = true
+                    markDownloaded(song: song)
+                }
             }
-            state.songs = songs
+            presenter?.present(state)
             // set up pipelines, only once
             if downloadPipeline == nil, let presenter {
                 downloadPipeline = services.networker.progress.sink { [weak presenter] pair in
@@ -62,6 +71,7 @@ final class PlaylistProcessor: Processor {
                 return
             }
             services.haptic.success()
+            logger.log("activating session")
             try? services.audioSession.setActive(true, options: [])
             Task { // don't let this delay also delay the start of playing
                 try? await Task.sleep(for: .seconds(unlessTesting(0.3)))
@@ -83,12 +93,15 @@ final class PlaylistProcessor: Processor {
     ///
     func play(sequence: [SubsonicSong]) async throws {
         var sequence = sequence
-        // first one, stream / play, and also download
+        // first one, stream / play, and also download — but if _already_ downloaded, just play
         let song = sequence.removeFirst()
-        let url = try await services.requestMaker.stream(songId: song.id)
-        services.player.play(url: url, song: song)
+        if let url = try? await services.download.downloadedURL(for: song) {
+            services.player.play(url: url, song: song)
+        } else if let url = try? await services.requestMaker.stream(songId: song.id) {
+            services.player.play(url: url, song: song)
+        }
         let operation = BackgroundTaskOperation<Void> { @MainActor [weak self] in
-            _ = try await services.download.download(song: song)
+            _ = try await services.download.download(song: song) // if already downloaded, no harm done
             self?.markDownloaded(song: song)
         }
         try await operation.start()

@@ -6,18 +6,21 @@ import Combine
 final class MockPlayer: PlayerType {
     var currentItem = CurrentValueSubject<String?, Never>(nil)
     var url: URL?
+    var urls = [URL]()
     var song: SubsonicSong?
     var methodsCalled = [String]()
 
     func play(url: URL, song: SubsonicSong) {
         methodsCalled.append(#function)
         self.url = url
+        self.urls.append(url)
         self.song = song
     }
 
     func playNext(url: URL, song: SubsonicSong) {
         methodsCalled.append(#function)
         self.url = url
+        self.urls.append(url)
         self.song = song
     }
 

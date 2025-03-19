@@ -13,7 +13,8 @@ final class MockRequestMaker: RequestMakerType {
     var pingError: Error?
     var query: String?
     var methodsCalled = [String]()
-    var url = URL(string: "http://example.com")!
+    var streamURL = URL(string: "http://example.com")!
+    var downloadURL = URL(string: "file://tempFolder/stuff")!
 
     func ping() async throws {
         methodsCalled.append(#function)
@@ -96,7 +97,7 @@ final class MockRequestMaker: RequestMakerType {
         if let pingError {
             throw pingError
         }
-        return url
+        return downloadURL
     }
 
     func stream(songId: String) async throws -> URL {
@@ -105,7 +106,7 @@ final class MockRequestMaker: RequestMakerType {
         if let pingError {
             throw pingError
         }
-        return url
+        return streamURL
     }
 
     func jukebox(additional: KeyValuePairs<String, String>) async throws -> Dromio.JukeboxStatus? {

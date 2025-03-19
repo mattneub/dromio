@@ -105,7 +105,7 @@ final class DownloadTests { // class, because we have cleanup to perform after e
         )
         let file = URL.temporaryDirectory.appendingPathComponent("howdy")
         try "howdy".write(to: file, atomically: true, encoding: .utf8)
-        requestMaker.url = file
+        requestMaker.downloadURL = file
         let result = try await subject.download(song: song)
         #expect(requestMaker.methodsCalled == ["download(songId:)"])
         #expect(requestMaker.songId == "1")
@@ -134,7 +134,7 @@ final class DownloadTests { // class, because we have cleanup to perform after e
         )
         let file = URL.temporaryDirectory.appendingPathComponent("howdy")
         try "howdy".write(to: file, atomically: true, encoding: .utf8)
-        requestMaker.url = file
+        requestMaker.downloadURL = file
         requestMaker.pingError = DownloadError.ranOutOfTime
         async #expect {
             try await subject.download(song: song)

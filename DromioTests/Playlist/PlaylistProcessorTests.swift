@@ -47,6 +47,27 @@ struct PlaylistProcessorTests {
         #expect(presenter.statePresented?.songs == songs)
     }
 
+    @Test("mutating the state with `noPresentation` doesn't present the state")
+    func stateNoPresentation() {
+        let songs = [SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        subject.noPresentation = true
+        subject.state.songs = songs
+        #expect(presenter.statePresented == nil)
+        #expect(subject.noPresentation == false)
+    }
+
     @Test("receive initialData: sets state `songs`, sets pipelines, pipelines work")
     func receiveInitialData() async {
         playlist.list = [SubsonicSong(
@@ -78,7 +99,7 @@ struct PlaylistProcessorTests {
                 suffix: nil,
                 duration: nil,
                 contributors: nil,
-                downloaded: false // *
+                downloaded: nil
             )]
         )
         #expect(subject.downloadPipeline != nil)
@@ -120,7 +141,7 @@ struct PlaylistProcessorTests {
         )]
         await subject.receive(.initialData)
         #expect(
-            presenter.statePresented?.songs == [.init(
+            subject.state.songs == [.init(
                 id: "1",
                 title: "Title",
                 album: "Album",
@@ -145,7 +166,68 @@ struct PlaylistProcessorTests {
                 suffix: nil,
                 duration: nil,
                 contributors: nil,
-                downloaded: false // *
+                downloaded: nil
+            )]
+        )
+    }
+
+    @Test("receive initialData: presents only once while looping thru downloads")
+    func receiveInitialDataDownloadedOnePresentation() async {
+        download.bools["1"] = true
+        download.bools["2"] = true
+        playlist.list = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        await subject.receive(.initialData)
+        #expect(
+            presenter.statesPresented.first?.songs == [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true // *
+            ), .init(
+                id: "2",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true // * got them both in one presentation
             )]
         )
     }
@@ -240,9 +322,60 @@ struct PlaylistProcessorTests {
         subject.state.songs = [song, song2, song3]
         await subject.receive(.tapped(song))
         #expect(requestMaker.methodsCalled == ["stream(songId:)"])
-        #expect(requestMaker.songId == "1")
-        await #expect(download.methodsCalled == ["download(song:)", "download(song:)", "download(song:)"])
+        await #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
         #expect(player.methodsCalled == ["play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
+        #expect(player.urls.map { $0.scheme } == ["http", "file", "file"])
+        #expect(subject.state.songs.filter { $0.downloaded == true }.count == 3)
+    }
+
+    @Test("receive tapped: if first is already downloaded, calls play, download for the first; download, playNext for the rest")
+    func receiveTappedDownloadAndPlayNoStream() async {
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        let song2 = SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        let song3 = SubsonicSong(
+            id: "3",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        download.bools = ["1": true, "2": true, "3": false]
+        subject.state.songs = [song, song2, song3]
+        await subject.receive(.tapped(song))
+        #expect(requestMaker.methodsCalled.isEmpty)
+        await #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
+        #expect(player.methodsCalled == ["play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
+        #expect(player.urls.map { $0.scheme } == ["file", "file", "file"])
         #expect(subject.state.songs.filter { $0.downloaded == true }.count == 3)
     }
 
