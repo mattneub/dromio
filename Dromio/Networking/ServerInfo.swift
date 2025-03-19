@@ -49,6 +49,17 @@ struct ServerInfo: Codable, Equatable {
         case usernameEmpty
         case invalidURL
         case schemeInvalid
+        var issue: String {
+            switch self {
+            case .hostEmpty: "The host cannot be empty."
+            case .invalidURL: "A valid URL could not be constructed."
+            case .passwordEmpty: "The password cannot be empty."
+            case .portEmpty: "The port cannot be empty."
+            case .portNotNumber: "The port must be a number (an integer)."
+            case .usernameEmpty: "The username cannot be empty."
+            case .schemeInvalid: "The scheme must be http or https."
+            }
+        }
     }
 }
 

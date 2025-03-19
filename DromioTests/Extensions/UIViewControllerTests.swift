@@ -9,7 +9,7 @@ struct UIViewControllerTests {
     func ultimatePresented() async {
         let root = UIViewController()
         makeWindow(viewController: root)
-        #expect(root.ultimatePresented == nil)
+        #expect(root.ultimatePresented == root)
 
         let presented1 = UIViewController()
         root.present(presented1, animated: false)
@@ -22,6 +22,6 @@ struct UIViewControllerTests {
         #expect(root.ultimatePresented === presented2)
 
         #expect(presented1.ultimatePresented === presented2)
-        #expect(presented2.ultimatePresented == nil)
+        #expect(presented2.ultimatePresented == presented2)
     }
 }

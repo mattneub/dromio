@@ -20,15 +20,6 @@ final class ServerViewController: UIViewController, ReceiverPresenter {
     /// We don't actually need to be presented with any state.
     func present(_ state: ServerState) {}
 
-    func receive(_ effect: ServerEffect) async {
-        switch effect {
-        case .alertWithMessage(let message):
-            let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-            alert.addAction(.init(title: "OK", style: .cancel))
-            present(alert, animated: unlessTesting(true))
-        }
-    }
-
     /// Action of all the text fields.
     @IBAction func textFieldChanged (_ sender: UITextField) {
         let field: ServerAction.Field = switch sender {

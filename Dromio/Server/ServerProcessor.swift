@@ -5,7 +5,7 @@ import Foundation
 final class ServerProcessor: Processor {
     weak var coordinator: (any RootCoordinatorType)?
 
-    weak var presenter: (any ReceiverPresenter<ServerEffect, ServerState>)?
+    weak var presenter: (any ReceiverPresenter<Void, ServerState>)?
 
     weak var delegate: (any ServerDelegate)?
 
@@ -45,19 +45,10 @@ final class ServerProcessor: Processor {
                     username: state.username,
                     password: state.password
                 )
-                coordinator?.dismissServer()
+                coordinator?.dismissToPing()
                 delegate?.userEdited(serverInfo: serverInfo)
             } catch {
-                let issue: String = switch error {
-                case .hostEmpty: "The host cannot be empty."
-                case .invalidURL: "A valid URL could not be constructed."
-                case .passwordEmpty: "The password cannot be empty."
-                case .portEmpty: "The port cannot be empty."
-                case .portNotNumber: "The port must be a number (an integer)."
-                case .usernameEmpty: "The username cannot be empty."
-                case .schemeInvalid: "The scheme must be http or https."
-                }
-                await presenter?.receive(.alertWithMessage(issue))
+                coordinator?.showAlert(title: "Error", message: error.issue)
             }
         }
     }

@@ -5,7 +5,7 @@ import WaitWhile
 @MainActor
 struct ServerProcessorTests {
     let subject = ServerProcessor()
-    let presenter = MockReceiverPresenter<ServerEffect, ServerState>()
+    let presenter = MockReceiverPresenter<Void, ServerState>()
     let urlMaker = MockURLMaker()
     let persistence = MockPersistence()
     let coordinator = MockRootCoordinator()
@@ -52,7 +52,7 @@ struct ServerProcessorTests {
         #expect(presenter.statePresented == nil)
     }
 
-    @Test("receive done: makes the correct ServerInfo, calls dismissServer, passes the server info to delegate `userEdited`")
+    @Test("receive done: makes the correct ServerInfo, calls dismissToPing, passes the server info to delegate `userEdited`")
     func doDone() async {
         subject.state = .init(
             scheme: .http,
@@ -70,12 +70,12 @@ struct ServerProcessorTests {
             version: "1.16.1"
         )
         await subject.receive(.done)
-        #expect(coordinator.methodsCalled == ["dismissServer()"])
+        #expect(coordinator.methodsCalled == ["dismissToPing()"])
         #expect(delegate.methodsCalled == ["userEdited(serverInfo:)"])
         #expect(delegate.serverInfo == expected)
     }
 
-    @Test("receive done: makes the correct ServerInfo with https, calls dismissServer, passes the server info to delegate `userEdited`")
+    @Test("receive done: makes the correct ServerInfo with https, calls dismissToPing, passes the server info to delegate `userEdited`")
     func doDoneHttps() async {
         subject.state = .init(
             scheme: .https,
@@ -93,12 +93,12 @@ struct ServerProcessorTests {
             version: "1.16.1"
         )
         await subject.receive(.done)
-        #expect(coordinator.methodsCalled == ["dismissServer()"])
+        #expect(coordinator.methodsCalled == ["dismissToPing()"])
         #expect(delegate.methodsCalled == ["userEdited(serverInfo:)"])
         #expect(delegate.serverInfo == expected)
     }
 
-    @Test("receive done: if ServerInfo throws empty host, sends alertWithMessage effect to presenter")
+    @Test("receive done: if ServerInfo throws empty host, sends showAlert to coordinator")
     func doDoneEmptyHost() async {
         let info = urlMaker.currentServerInfo
         subject.state = .init(
@@ -112,10 +112,12 @@ struct ServerProcessorTests {
         #expect(persistence.methodsCalled == [])
         #expect(persistence.servers == nil)
         #expect(urlMaker.currentServerInfo == info)
-        #expect(presenter.thingsReceived.first == .alertWithMessage("The host cannot be empty."))
+        #expect(coordinator.methodsCalled.last == "showAlert(title:message:)")
+        #expect(coordinator.title == "Error")
+        #expect(coordinator.message == "The host cannot be empty.")
     }
 
-    @Test("receive done: if ServerInfo throws invalidURL, sends alertWithMessage effect to presenter")
+    @Test("receive done: if ServerInfo throws invalidURL, sends sends showAlert to coordinator")
     func doDoneBadURL() async {
         let info = urlMaker.currentServerInfo
         subject.state = .init(
@@ -129,10 +131,12 @@ struct ServerProcessorTests {
         #expect(persistence.methodsCalled == [])
         #expect(persistence.servers == nil)
         #expect(urlMaker.currentServerInfo == info)
-        #expect(presenter.thingsReceived.first == .alertWithMessage("A valid URL could not be constructed."))
+        #expect(coordinator.methodsCalled.last == "showAlert(title:message:)")
+        #expect(coordinator.title == "Error")
+        #expect(coordinator.message == "A valid URL could not be constructed.")
     }
 
-    @Test("receive done: if ServerInfo throws password empty, sends alertWithMessage effect to presenter")
+    @Test("receive done: if ServerInfo throws password empty, sends sends showAlert to coordinator")
     func doDoneEmptyPassword() async {
         let info = urlMaker.currentServerInfo
         subject.state = .init(
@@ -146,10 +150,12 @@ struct ServerProcessorTests {
         #expect(persistence.methodsCalled == [])
         #expect(persistence.servers == nil)
         #expect(urlMaker.currentServerInfo == info)
-        #expect(presenter.thingsReceived.first == .alertWithMessage("The password cannot be empty."))
+        #expect(coordinator.methodsCalled.last == "showAlert(title:message:)")
+        #expect(coordinator.title == "Error")
+        #expect(coordinator.message == "The password cannot be empty.")
     }
 
-    @Test("receive done: if ServerInfo throws port empty, sends alertWithMessage effect to presenter")
+    @Test("receive done: if ServerInfo throws port empty, sends sends showAlert to coordinator")
     func doDoneEmptyPort() async {
         let info = urlMaker.currentServerInfo
         subject.state = .init(
@@ -163,10 +169,12 @@ struct ServerProcessorTests {
         #expect(persistence.methodsCalled == [])
         #expect(persistence.servers == nil)
         #expect(urlMaker.currentServerInfo == info)
-        #expect(presenter.thingsReceived.first == .alertWithMessage("The port cannot be empty."))
+        #expect(coordinator.methodsCalled.last == "showAlert(title:message:)")
+        #expect(coordinator.title == "Error")
+        #expect(coordinator.message == "The port cannot be empty.")
     }
 
-    @Test("receive done: if ServerInfo throws port not number, sends alertWithMessage effect to presenter")
+    @Test("receive done: if ServerInfo throws port not number, sends sends showAlert to coordinator")
     func doDoneNonnumericPort() async {
         let info = urlMaker.currentServerInfo
         subject.state = .init(
@@ -180,10 +188,12 @@ struct ServerProcessorTests {
         #expect(persistence.methodsCalled == [])
         #expect(persistence.servers == nil)
         #expect(urlMaker.currentServerInfo == info)
-        #expect(presenter.thingsReceived.first == .alertWithMessage("The port must be a number (an integer)."))
+        #expect(coordinator.methodsCalled.last == "showAlert(title:message:)")
+        #expect(coordinator.title == "Error")
+        #expect(coordinator.message == "The port must be a number (an integer).")
     }
 
-    @Test("receive done: if ServerInfo throws username empty, sends alertWithMessage effect to presenter")
+    @Test("receive done: if ServerInfo throws username empty, sends sends showAlert to coordinator")
     func doDoneEmptyUsername() async {
         let info = urlMaker.currentServerInfo
         subject.state = .init(
@@ -197,7 +207,9 @@ struct ServerProcessorTests {
         #expect(persistence.methodsCalled == [])
         #expect(persistence.servers == nil)
         #expect(urlMaker.currentServerInfo == info)
-        #expect(presenter.thingsReceived.first == .alertWithMessage("The username cannot be empty."))
+        #expect(coordinator.methodsCalled.last == "showAlert(title:message:)")
+        #expect(coordinator.title == "Error")
+        #expect(coordinator.message == "The username cannot be empty.")
     }
 
     // I don't know how to test the bad scheme message, I don't think it can happen.

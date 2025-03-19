@@ -11,7 +11,7 @@ protocol RootCoordinatorType: AnyObject {
     var artistsProcessor: (any Processor<ArtistsAction, ArtistsState, ArtistsEffect>)? { get }
     var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)? { get }
-    var serverProcessor: (any Processor<ServerAction, ServerState, ServerEffect>)? { get }
+    var serverProcessor: (any Processor<ServerAction, ServerState, Void>)? { get }
 
     // The root coordinator also needs a reference to the true root view controller.
 
@@ -23,9 +23,6 @@ protocol RootCoordinatorType: AnyObject {
 
     /// Create the Server module and show the view controller.
     func showServer(delegate: any ServerDelegate)
-
-    /// Dismiss the Server module's view controller.
-    func dismissServer()
 
     /// Dismiss all presented controllers to return to the ping view.
     func dismissToPing()
@@ -76,7 +73,7 @@ final class RootCoordinator: RootCoordinatorType {
     // a second instance of the albums processor.
     var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)?
-    var serverProcessor: (any Processor<ServerAction, ServerState, ServerEffect>)?
+    var serverProcessor: (any Processor<ServerAction, ServerState, Void>)?
 
     weak var rootViewController: UIViewController?
 
@@ -102,14 +99,6 @@ final class RootCoordinator: RootCoordinatorType {
         serverProcessor.coordinator = self
         serverController.modalPresentationStyle = .pageSheet
         rootViewController?.present(serverController, animated: unlessTesting(true))
-    }
-
-    // TODO: Couldn't this just be another case of dismissToPing?
-    func dismissServer() {
-        guard let serverController = rootViewController?.presentedViewController as? ServerViewController else {
-            return
-        }
-        serverController.dismiss(animated: unlessTesting(true))
     }
 
     func dismissToPing() {
@@ -197,7 +186,7 @@ final class RootCoordinator: RootCoordinatorType {
         guard !(title == nil && message == nil) else { return }
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
-        rootViewController?.present(alert, animated: unlessTesting(true))
+        rootViewController?.ultimatePresented.present(alert, animated: unlessTesting(true))
     }
 
     func showActionSheet(title: String, options: [String]) async -> String? {

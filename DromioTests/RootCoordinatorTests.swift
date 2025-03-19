@@ -45,26 +45,6 @@ struct RootCoordinatorTests {
         #expect(serverProcessor.delegate === delegate)
     }
 
-    @Test("dismissServer: dismisses the server view controller")
-    func dismissServer() async throws {
-        // fake minimal initial interface
-        let subject = RootCoordinator()
-        let pingProcessor = MockProcessor<PingAction, PingState, Void>()
-        subject.pingProcessor = pingProcessor
-        let rootViewController = UIViewController()
-        makeWindow(viewController: rootViewController)
-        subject.rootViewController = rootViewController
-        let delegate = MockServerDelegate()
-        // ok, here we go!
-        subject.showServer(delegate: delegate)
-        await #while(subject.rootViewController?.presentedViewController == nil)
-        _ = try #require(subject.rootViewController?.presentedViewController as? ServerViewController)
-        #expect(pingProcessor.thingsReceived.isEmpty)
-        subject.dismissServer()
-        await #while(subject.rootViewController?.presentedViewController != nil)
-        #expect(subject.rootViewController?.presentedViewController == nil)
-    }
-
     @Test("dismissToPing: dismisses everything down to the ping view controller")
     func dismissToPing() async {
         // fake minimal initial interface

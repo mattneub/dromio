@@ -6,7 +6,7 @@ import UIKit
 @MainActor
 struct ServerViewControllerTests {
     let subject = ServerViewController(nibName: "Server", bundle: nil)
-    let processor = MockProcessor<ServerAction, ServerState, ServerEffect>()
+    let processor = MockProcessor<ServerAction, ServerState, Void>()
     let persistence = MockPersistence()
 
     init() {
@@ -22,16 +22,6 @@ struct ServerViewControllerTests {
         subject.viewDidAppear(false)
         let presentationController = try #require(subject.presentationController)
         #expect(presentationController.delegate === subject)
-    }
-
-    @Test("receive alertWithMessage: puts up alert with message")
-    func receiveAlert() async throws {
-        makeWindow(viewController: subject)
-        await subject.receive(.alertWithMessage("Hello!"))
-        await #while(subject.presentedViewController == nil)
-        let alert = try #require(subject.presentedViewController as? UIAlertController)
-        #expect(alert.title == "Error")
-        #expect(alert.message == "Hello!")
     }
 
     @Test("textFieldChanged: sends textFieldChanged with field and text, host")

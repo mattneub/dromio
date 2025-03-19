@@ -3,7 +3,7 @@ import UIKit
 
 @MainActor
 final class MockRootCoordinator: RootCoordinatorType {
-    var serverProcessor: (any Processor<ServerAction, ServerState, ServerEffect>)?
+    var serverProcessor: (any Processor<ServerAction, ServerState, Void>)?
     var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)?
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
     var artistsProcessor: (any Processor<ArtistsAction, ArtistsState, ArtistsEffect>)?
@@ -27,10 +27,6 @@ final class MockRootCoordinator: RootCoordinatorType {
     func showServer(delegate: any ServerDelegate) {
         methodsCalled.append(#function)
         self.delegate = delegate
-    }
-
-    func dismissServer() {
-        methodsCalled.append(#function)
     }
 
     func dismissToPing() {
