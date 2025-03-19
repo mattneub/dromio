@@ -7,6 +7,8 @@ final class ServerProcessor: Processor {
 
     weak var presenter: (any ReceiverPresenter<ServerEffect, ServerState>)?
 
+    weak var delegate: (any ServerDelegate)?
+
     /// Sometimes we want to maintain state without presenting, so this temporary toggle lets us
     /// mutate the state without presenting.
     var noPresentation = false
@@ -43,10 +45,9 @@ final class ServerProcessor: Processor {
                     username: state.username,
                     password: state.password
                 )
-                try services.persistence.save(servers: [serverInfo])
-                services.urlMaker.currentServerInfo = serverInfo
                 coordinator?.dismissServer()
-            } catch let error as ServerInfo.ValidationError {
+                delegate?.userEdited(serverInfo: serverInfo)
+            } catch {
                 let issue: String = switch error {
                 case .hostEmpty: "The host cannot be empty."
                 case .invalidURL: "A valid URL could not be constructed."
@@ -57,7 +58,12 @@ final class ServerProcessor: Processor {
                 case .schemeInvalid: "The scheme must be http or https."
                 }
                 await presenter?.receive(.alertWithMessage(issue))
-            } catch {}
+            }
         }
     }
+}
+
+@MainActor
+protocol ServerDelegate: AnyObject {
+    func userEdited(serverInfo: ServerInfo)
 }

@@ -55,6 +55,10 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
         tableView.backgroundView = tableViewBackground
         activity.startAnimating()
         Task {
+            try? await unlessTesting {
+                // cosmetic, looks better if we wait a moment
+                try? await Task.sleep(for: .seconds(0.4))
+            }
             await processor?.receive(.initialData)
         }
     }
@@ -119,6 +123,11 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
                         await self?.processor?.receive(.artists)
                     }
                 }),
+                UIAction(title: "Server", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.server)
+                    }
+                }),
             ])
         case .randomAlbums:
             UIMenu(title: "", options: [], children: [
@@ -132,6 +141,11 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
                         await self?.processor?.receive(.artists)
                     }
                 }),
+                UIAction(title: "Server", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.server)
+                    }
+                }),
             ])
         case .albumsForArtist:
             UIMenu()
@@ -142,5 +156,9 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
         Task {
             await processor?.receive(.showPlaylist)
         }
+    }
+
+    deinit {
+        print("farewell from albums")
     }
 }

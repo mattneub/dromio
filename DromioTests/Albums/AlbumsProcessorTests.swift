@@ -21,6 +21,34 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented?.albums.first == .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil))
     }
 
+    @Test("receive allAlbums: sends `tearDown` effect, sends `getAlbumList` to request maker, sets state")
+    func receiveAllAlbums() async {
+        requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        await subject.receive(.allAlbums)
+        #expect(presenter.thingsReceived == [.tearDownSearcher])
+        #expect(requestMaker.methodsCalled == ["getAlbumList()"])
+        #expect(subject.state.listType == .allAlbums)
+        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+    }
+
+    @Test("receive allAlbums: gets list from cache if it exists, sends teardown, sends getAlbumList, sets state")
+    func receiveAllAlbumsCached() async {
+        caches.albumsList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        requestMaker.albumList = []
+        await subject.receive(.allAlbums)
+        #expect(presenter.thingsReceived == [.tearDownSearcher])
+        #expect(requestMaker.methodsCalled.isEmpty)
+        #expect(subject.state.listType == .allAlbums)
+        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+    }
+
+    @Test("receive artists: sends `tearDown` effect, tells coordinator to showArtists")
+    func showArtists() async {
+        await subject.receive(.artists)
+        #expect(presenter.thingsReceived == [.tearDownSearcher])
+        #expect(coordinator.methodsCalled.last == "showArtists()")
+    }
+
     @Test("receive initialData: if listType is .albumsForArtist and source .artists, sends getAlbumsFor with id to request maker, sets state")
     func receiveInitialDataForArtist() async {
         subject.state.listType = .albumsForArtist(id: "1", source: .artists)
@@ -168,27 +196,6 @@ struct AlbumsProcessorTests {
         #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
     }
 
-    @Test("receive allAlbums: sends `tearDown` effect, sends `getAlbumList` to request maker, sets state")
-    func receiveAllAlbums() async {
-        requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
-        await subject.receive(.allAlbums)
-        #expect(presenter.thingsReceived == [.tearDownSearcher])
-        #expect(requestMaker.methodsCalled == ["getAlbumList()"])
-        #expect(subject.state.listType == .allAlbums)
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
-    }
-
-    @Test("receive allAlbums: gets list from cache if it exists, sends teardown, sends getAlbumList, sets state")
-    func receiveAllAlbumsCached() async {
-        caches.albumsList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
-        requestMaker.albumList = []
-        await subject.receive(.allAlbums)
-        #expect(presenter.thingsReceived == [.tearDownSearcher])
-        #expect(requestMaker.methodsCalled.isEmpty)
-        #expect(subject.state.listType == .allAlbums)
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
-    }
-
     @Test("receive randomAlbums: sends `tearDown` effect, sends `getAlbumList` to request maker, sets state")
     func receiveRandomAlbums() async {
         requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
@@ -199,6 +206,12 @@ struct AlbumsProcessorTests {
         #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
     }
 
+    @Test("receive server: sends dismissToPing to coordinator")
+    func receiveServer() async {
+        await subject.receive(.server)
+        #expect(coordinator.methodsCalled.last == "dismissToPing()")
+    }
+
     @Test("showAlbum: sends no effect, sends `showAlbum` to coordinator, with info from specified album")
     func showAlbum() async {
         subject.state.albums = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
@@ -207,13 +220,6 @@ struct AlbumsProcessorTests {
         #expect(coordinator.methodsCalled == ["showAlbum(albumId:title:)"])
         #expect(coordinator.albumId == "1")
         #expect(coordinator.title == "Yoho")
-    }
-
-    @Test("receive artists: sends `tearDown` effect, tells coordinator to showArtists")
-    func showArtists() async {
-        await subject.receive(.artists)
-        #expect(presenter.thingsReceived == [.tearDownSearcher])
-        #expect(coordinator.methodsCalled.last == "showArtists()")
     }
 
     @Test("receive showPlaylist: sends no effect, tells coordinator to showPlaylist")

@@ -109,6 +109,11 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
                         await self?.processor?.receive(.albums)
                     }
                 }),
+                UIAction(title: "Server", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.server)
+                    }
+                }),
             ])
         case .composers:
             UIMenu(title: "", options: [], children: [
@@ -122,6 +127,11 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
                         await self?.processor?.receive(.albums)
                     }
                 }),
+                UIAction(title: "Server", handler: { [weak self] _ in
+                    Task {
+                        await self?.processor?.receive(.server)
+                    }
+                }),
             ])
         }
     }
@@ -130,5 +140,9 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         Task {
             await processor?.receive(.showPlaylist)
         }
+    }
+
+    deinit {
+        print("farewell from artists")
     }
 }

@@ -65,8 +65,8 @@ final class ServerViewController: UIViewController, ReceiverPresenter {
 }
 
 extension ServerViewController: UIAdaptivePresentationControllerDelegate {
-    // sheet presentation, but don't let the user dismiss it
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
-        false
+        let servers = (try? services.persistence.loadServers()) ?? []
+        return servers.count > 0 // i.e., if user has no servers, user cannot cancel
     }
 }

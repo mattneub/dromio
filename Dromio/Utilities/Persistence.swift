@@ -63,9 +63,7 @@ struct Persistence: PersistenceType {
             return String(data: data, encoding: .utf8)
         }, forKey: PersistenceKey.servers.rawValue)
         for server in servers {
-            let (host, username, password) = (server.host, server.username, server.password)
-            let key = host + username
-            Self.keychain[key] = password
+            Self.keychain[server.id] = server.password
         }
     }
 
@@ -75,8 +73,7 @@ struct Persistence: PersistenceType {
             let data = server.data(using: .utf8) ?? Data()
             return try JSONDecoder().decode(ServerInfo.self, from: data)
         }.map { server in
-            let key = server.host + server.username
-            let newPassword = Self.keychain[key] ?? ""
+            let newPassword = Self.keychain[server.id] ?? ""
             return server.updateWithPassword(newPassword)
         }
         return servers

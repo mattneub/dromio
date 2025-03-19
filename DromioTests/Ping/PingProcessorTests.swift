@@ -1,6 +1,7 @@
 @testable import Dromio
 import Testing
 import Foundation
+import WaitWhile
 
 @MainActor
 struct PingProcessorTests {
@@ -23,65 +24,95 @@ struct PingProcessorTests {
     @Test("changing the state presents the state")
     func changeState() {
         #expect(presenter.statePresented == nil)
-        subject.state.success = .success
-        #expect(presenter.statePresented?.success == .success)
+        subject.state.status = .success
+        #expect(presenter.statePresented?.status == .success)
     }
 
-    @Test("receive doPing: if current server is nil, tries to load the server")
+    @Test("receive choices: sets the status to choices")
+    func receiveChoices() async {
+        await subject.receive(.choices)
+        #expect(subject.state.status == .choices)
+    }
+
+    @Test("receive deleteServer: if no servers, calls coordinator showAlert")
+    func receiveDeleteServerNoServers() async {
+        await subject.receive(.deleteServer)
+        #expect(coordinator.methodsCalled.last == "showAlert(title:message:)")
+        #expect(coordinator.title == "Nothing to delete.")
+        #expect(coordinator.message == "Tap Enter Server Info if you want to add a server.")
+    }
+
+    @Test("receive deleteServer: if servers, call coordinator showActionSheet, stops if result is nil")
+    func receiveDeleteServerNil() async {
+        persistence.servers = [ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v")]
+        await subject.receive(.deleteServer)
+        #expect(coordinator.methodsCalled.last == "showActionSheet(title:options:)")
+        #expect(coordinator.title == "Pick a server to delete:")
+        #expect(coordinator.options == ["u@h"])
+        #expect(!persistence.methodsCalled.contains("save(servers:)"))
+    }
+
+    @Test("receive deleteServer: if servers, call coordinator showActionSheet, deletes given server from servers list")
+    func receiveDeleteServerNotNil() async {
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        coordinator.optionToReturn = "u@h"
+        await subject.receive(.deleteServer)
+        #expect(coordinator.methodsCalled.last == "showActionSheet(title:options:)")
+        #expect(coordinator.title == "Pick a server to delete:")
+        #expect(coordinator.options == ["u@h", "uu@hh"])
+        #expect(persistence.methodsCalled.contains("save(servers:)"))
+        #expect(persistence.servers == [
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ])
+    }
+
+    @Test("receive doPing: sets status to empty; if current server is nil, tries to load the server")
     func receiveDoPingNilCurrentServer() async {
         await subject.receive(.doPing)
+        #expect(presenter.statesPresented.first?.status == .empty)
         #expect(persistence.methodsCalled[0] == "loadServers()")
     }
 
     @Test("receive doPing: if current server is nil, and there is no stored server, shows the server interface")
     func receiveDoPingNilCurrentServerNoStored() async {
         await subject.receive(.doPing)
-        #expect(coordinator.methodsCalled[0] == "showServer()")
+        #expect(presenter.statesPresented.first?.status == .empty)
+        #expect(coordinator.methodsCalled[0] == "showServer(delegate:)")
+        #expect(coordinator.delegate === subject)
     }
 
-    @Test("receive doPing: if current server is nil, and there is a stored server, sets current server to it")
+    @Test("receive doPing: if current server is nil, and there are stored servers, sets current server to the first one")
     func receiveDoPingNilCurrentServerStored() async {
-        let server = ServerInfo.init(
-            scheme: "http",
-            host: "h",
-            port: 1,
-            username: "u",
-            password: "p",
-            version: "v"
-        )
-        persistence.servers = [server]
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
         await subject.receive(.doPing)
-        #expect(!coordinator.methodsCalled.contains("showServer()"))
-        #expect(urlMaker.currentServerInfo == server)
+        #expect(!coordinator.methodsCalled.contains("showServer(delegate:)"))
+        #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"))
     }
 
-    @Test("receive doPing: with current server calls networker ping")
+    @Test("receive doPing: with current server sets status to unknown, calls networker ping")
     func receiveDoPing() async {
-        let server = ServerInfo.init(
-            scheme: "http",
-            host: "h",
-            port: 1,
-            username: "u",
-            password: "p",
-            version: "v"
-        )
-        persistence.servers = [server]
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled[0] == "ping()")
+        #expect(presenter.statesPresented[1].status == .unknown)
     }
 
-    @Test("receive doPing: with no issues call networker getUser, sets global user jukebox info")
+    @Test("receive doPing: with no ping issues call networker getUser, sets global user jukebox info")
     func receiveDoPingGetUser() async {
         userHasJukeboxRole = false
-        let server = ServerInfo.init(
-            scheme: "http",
-            host: "h",
-            port: 1,
-            username: "u",
-            password: "p",
-            version: "v"
-        )
-        persistence.servers = [server]
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == true)
@@ -89,79 +120,146 @@ struct PingProcessorTests {
 
     @Test("receive doPing: with no issues call networker getUser, barfs if user cannot stream and download")
     func receiveDoPingGetUserNoDownload() async {
-        let server = ServerInfo.init(
-            scheme: "http",
-            host: "h",
-            port: 1,
-            username: "u",
-            password: "p",
-            version: "v"
-        )
-        persistence.servers = [server]
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
         requestMaker.user = .init(scrobblingEnabled: false, downloadRole: false, streamRole: true, jukeboxRole: true)
         await subject.receive(.doPing)
-        #expect(presenter.statePresented?.success == .failure(message: "User needs stream and download privileges."))
+        #expect(presenter.statePresented?.status == .failure(message: "User needs stream and download privileges."))
         #expect(coordinator.methodsCalled.isEmpty)
         requestMaker.user = .init(scrobblingEnabled: false, downloadRole: true, streamRole: false, jukeboxRole: true)
         await subject.receive(.doPing)
-        #expect(presenter.statePresented?.success == .failure(message: "User needs stream and download privileges."))
+        #expect(presenter.statePresented?.status == .failure(message: "User needs stream and download privileges."))
         #expect(coordinator.methodsCalled.isEmpty)
     }
 
-    @Test("receive doPing: with no issues sets state success to .success if no throw and calls coordinator showAlbums")
+    @Test("receive doPing: with no issues sets state status to .success if no throw and calls coordinator showAlbums")
     func receiveDoPingSuccess() async {
-        let server = ServerInfo.init(
-            scheme: "http",
-            host: "h",
-            port: 1,
-            username: "u",
-            password: "p",
-            version: "v"
-        )
-        persistence.servers = [server]
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
         requestMaker.pingError = nil
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled[0] == "ping()")
-        #expect(presenter.statePresented?.success == .success)
+        #expect(presenter.statePresented?.status == .success)
         #expect(coordinator.methodsCalled[0] == "showAlbums()")
     }
 
-    @Test("receive doPing: with current server calls networker ping, sets state success to .failure and message if throw NetworkerError")
+    @Test("receive doPing: with current server calls networker ping, sets state status to .failure and message if throw NetworkerError")
     func receiveDoPingFailure() async {
-        let server = ServerInfo.init(
-            scheme: "http",
-            host: "h",
-            port: 1,
-            username: "u",
-            password: "p",
-            version: "v"
-        )
-        persistence.servers = [server]
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
         requestMaker.pingError = NetworkerError.message("test")
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled == ["ping()"])
-        #expect(presenter.statePresented?.success == .failure(message: "test"))
+        #expect(presenter.statePresented?.status == .failure(message: "test"))
         #expect(coordinator.methodsCalled.isEmpty)
     }
 
-    @Test("receive doPing: with current server calls networker ping, sets state success to .failure and localized description if throw other error")
+    @Test("receive doPing: with current server calls networker ping, sets state status to .failure and localized description if throw other error")
     func receiveDoPingFailure2() async {
         class MyError: NSError, @unchecked Sendable {
             override var localizedDescription: String { "oops" }
         }
-        let server = ServerInfo.init(
-            scheme: "http",
-            host: "h",
-            port: 1,
-            username: "u",
-            password: "p",
-            version: "v"
-        )
-        persistence.servers = [server]
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
         requestMaker.pingError = MyError(domain: "domain", code: 0)
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled == ["ping()"])
-        #expect(presenter.statePresented?.success == .failure(message: "oops"))
+        #expect(presenter.statePresented?.status == .failure(message: "oops"))
         #expect(coordinator.methodsCalled.isEmpty)
+    }
+
+    @Test("receive pickServer: if no servers, calls showAlert and stops")
+    func pickServerNoServer() async {
+        await subject.receive(.pickServer)
+        #expect(coordinator.methodsCalled == ["showAlert(title:message:)"])
+        #expect(coordinator.title == "Nothing to choose between.")
+        #expect(coordinator.message == "Tap Enter Server Info if you want to add a server.")
+    }
+
+    @Test("receive pickServer: if servers, calls showActionSheet, if nil response, stops")
+    func pickServerNoChoice() async {
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        await subject.receive(.pickServer)
+        #expect(coordinator.methodsCalled == ["showActionSheet(title:options:)"])
+        #expect(coordinator.title == "Pick a server to use:")
+        #expect(coordinator.options == ["u@h", "uu@hh"])
+        #expect(persistence.methodsCalled.count == 1)
+    }
+
+    @Test("receive pickServer: if servers, calls showActionSheet, if one is chosen, brings it to front, saves, sets current server, calls doPing")
+    func pickServer() async {
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        coordinator.optionToReturn = "uu@hh"
+        urlMaker.currentServerInfo = nil
+        await subject.receive(.pickServer)
+        #expect(coordinator.methodsCalled == ["showActionSheet(title:options:)"])
+        #expect(coordinator.title == "Pick a server to use:")
+        #expect(coordinator.options == ["u@h", "uu@hh"])
+        #expect(persistence.methodsCalled.contains("save(servers:)"))
+        #expect(persistence.servers == [
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+        ])
+        #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"))
+        await #while(presenter.statesPresented.isEmpty)
+        #expect(presenter.statesPresented.first?.status == .empty)
+    }
+
+    @Test("receive reenterServerInfo: calls coordinator showServer with self as delegate")
+    func reenter() async {
+        await subject.receive(.reenterServerInfo)
+        #expect(coordinator.methodsCalled == ["showServer(delegate:)"])
+        #expect(coordinator.delegate === subject)
+    }
+
+    @Test("userEdited: puts the new server info first in the list, sets the current server, calls ping")
+    func userEdited() async {
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        let newServer = ServerInfo(scheme: "http", host: "hhh", port: 1, username: "uuu", password: "p", version: "v")
+        subject.userEdited(serverInfo: newServer)
+        #expect(persistence.methodsCalled.last == "save(servers:)")
+        #expect(persistence.servers == [
+            ServerInfo(scheme: "http", host: "hhh", port: 1, username: "uuu", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ])
+        #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hhh", port: 1, username: "uuu", password: "p", version: "v"))
+        await #while(presenter.statesPresented.isEmpty)
+        #expect(presenter.statesPresented.first?.status == .empty)
+    }
+
+    @Test("userEdited: if this server was already in the list, the old version is removed")
+    func userEditedAlreadyExists() async {
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        let newServer = ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "pp", version: "v")
+        subject.userEdited(serverInfo: newServer)
+        #expect(persistence.methodsCalled.last == "save(servers:)")
+        #expect(persistence.servers == [
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "pp", version: "v"),
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+        ])
+        #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "pp", version: "v"))
+        await #while(presenter.statesPresented.isEmpty)
+        #expect(presenter.statesPresented.first?.status == .empty)
     }
 }

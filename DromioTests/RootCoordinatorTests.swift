@@ -25,15 +25,16 @@ struct RootCoordinatorTests {
         #expect(pingProcessor.coordinator === subject)
     }
 
-    @Test("showServer: configures server module, presents server view controller")
+    @Test("showServer: configures server module, presents server view controller, setting delegate")
     func showServer() async throws {
         // fake minimal initial interface
         let subject = RootCoordinator()
         let rootViewController = UIViewController()
         makeWindow(viewController: rootViewController)
         subject.rootViewController = rootViewController
+        let delegate = MockServerDelegate()
         // ok, here we go!
-        subject.showServer()
+        subject.showServer(delegate: delegate)
         await #while(subject.rootViewController?.presentedViewController == nil)
         let serverViewController = try #require(subject.rootViewController?.presentedViewController as? ServerViewController)
         #expect(serverViewController.modalPresentationStyle == .pageSheet)
@@ -41,9 +42,10 @@ struct RootCoordinatorTests {
         #expect(serverViewController.processor === serverProcessor)
         #expect(serverProcessor.presenter === serverViewController)
         #expect(serverProcessor.coordinator === subject)
+        #expect(serverProcessor.delegate === delegate)
     }
 
-    @Test("dismissServer: dismisses the server view controller, sends .doPing to the ping processor")
+    @Test("dismissServer: dismisses the server view controller")
     func dismissServer() async throws {
         // fake minimal initial interface
         let subject = RootCoordinator()
@@ -52,15 +54,36 @@ struct RootCoordinatorTests {
         let rootViewController = UIViewController()
         makeWindow(viewController: rootViewController)
         subject.rootViewController = rootViewController
+        let delegate = MockServerDelegate()
         // ok, here we go!
-        subject.showServer()
+        subject.showServer(delegate: delegate)
         await #while(subject.rootViewController?.presentedViewController == nil)
         _ = try #require(subject.rootViewController?.presentedViewController as? ServerViewController)
         #expect(pingProcessor.thingsReceived.isEmpty)
         subject.dismissServer()
         await #while(subject.rootViewController?.presentedViewController != nil)
         #expect(subject.rootViewController?.presentedViewController == nil)
-        #expect(pingProcessor.thingsReceived == [.doPing])
+    }
+
+    @Test("dismissToPing: dismisses everything down to the ping view controller")
+    func dismissToPing() async {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let pingProcessor = MockProcessor<PingAction, PingState, Void>()
+        subject.pingProcessor = pingProcessor
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        let presented1 = UIViewController()
+        rootViewController.present(presented1, animated: false)
+        await #while(rootViewController.presentedViewController != presented1)
+        let presented2 = UIViewController()
+        presented1.present(presented2, animated: false)
+        await #while(presented1.presentedViewController != presented2)
+        // okay, here we go!
+        subject.dismissToPing()
+        await #while(rootViewController.presentedViewController != nil)
+        #expect(rootViewController.presentedViewController == nil)
     }
 
     @Test("showAlbums: presents albums view controller, configures module")
@@ -233,4 +256,59 @@ struct RootCoordinatorTests {
         #expect(playlistViewController.navigationController == nil)
     }
 
+    @Test("showAlert presents an alert on the root view controller")
+    func showAlert() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let pingProcessor = MockProcessor<PingAction, PingState, Void>()
+        subject.pingProcessor = pingProcessor
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        // ok here we go
+        subject.showAlert(title: "title", message: "message")
+        await #while(rootViewController.presentedViewController == nil)
+        let alert = try #require(rootViewController.presentedViewController as? UIAlertController)
+        #expect(alert.title == "title")
+        #expect(alert.message == "message")
+        #expect(alert.actions.count == 1)
+        #expect(alert.actions.first?.title == "OK")
+        #expect(alert.preferredStyle == .alert)
+    }
+
+    @Test("showActionSheet presents an action sheet on the root view controller")
+    func showActionSheet() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let pingProcessor = MockProcessor<PingAction, PingState, Void>()
+        subject.pingProcessor = pingProcessor
+        let rootViewController = UIViewController()
+        makeWindow(viewController: rootViewController)
+        subject.rootViewController = rootViewController
+        // ok here we go
+        var result: String?
+        Task {
+            result = await subject.showActionSheet(title: "title", options: ["hey", "ho"])
+        }
+        await #while(rootViewController.presentedViewController == nil)
+        let alert = try #require(rootViewController.presentedViewController as? UIAlertController)
+        #expect(alert.title == "title")
+        #expect(alert.actions.count == 3)
+        #expect(alert.actions[0].title == "hey")
+        #expect(alert.actions[1].title == "ho")
+        #expect(alert.actions[2].title == "Cancel")
+        #expect(alert.preferredStyle == .actionSheet)
+        // TODO: there must be a way to test that `showActionSheet` returns the expected result when the handler runs
+    }
+
+}
+
+@MainActor
+class MockServerDelegate: ServerDelegate {
+    var methodsCalled = [String]()
+    var serverInfo: ServerInfo?
+    func userEdited(serverInfo: ServerInfo) {
+        methodsCalled.append(#function)
+        self.serverInfo = serverInfo
+    }
 }

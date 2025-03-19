@@ -18,6 +18,9 @@ final class ArtistsProcessor: Processor {
 
     func receive(_ action: ArtistsAction) async {
         switch action {
+        case .albums:
+            await presenter?.receive(.tearDownSearcher)
+            coordinator?.dismissArtists()
         case .allArtists:
             do {
                 await presenter?.receive(.tearDownSearcher)
@@ -42,6 +45,8 @@ final class ArtistsProcessor: Processor {
             } catch {
                 print(error)
             }
+        case .server:
+            coordinator?.dismissToPing()
         case .showAlbums(let id):
             switch state.listType {
             case .allArtists:
@@ -58,9 +63,6 @@ final class ArtistsProcessor: Processor {
                     )
                 )
             }
-        case .albums:
-            await presenter?.receive(.tearDownSearcher)
-            coordinator?.dismissArtists()
         case .showPlaylist:
             coordinator?.showPlaylist()
         case .viewDidAppear:

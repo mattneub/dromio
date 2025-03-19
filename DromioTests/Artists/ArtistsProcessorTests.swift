@@ -21,6 +21,12 @@ struct ArtistsProcessorTests {
         #expect(presenter.statePresented?.artists.first == .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil))
     }
 
+    @Test("receive albums: sends dismissArtists to coordinator")
+    func receiveAlbums() async {
+        await subject.receive(.albums)
+        #expect(coordinator.methodsCalled.last == "dismissArtists()")
+    }
+
     @Test("receive allArtists: sends tearDown effect, sends `getArtists` to request maker, filters, sets state")
     func receiveAllArtists() async {
         requestMaker.artistList = [
@@ -75,10 +81,10 @@ struct ArtistsProcessorTests {
         #expect(subject.state.artists == [.init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil)])
     }
 
-    @Test("receive albums: sends dismissArtists to coordinator")
-    func receiveAlbums() async {
-        await subject.receive(.albums)
-        #expect(coordinator.methodsCalled.last == "dismissArtists()")
+    @Test("receiver server: tell coordinator to dismissToPing")
+    func receiveServer() async {
+        await subject.receive(.server)
+        #expect(coordinator.methodsCalled.last == "dismissToPing()")
     }
 
     @Test("receive showPlaylist: sends no effect, tells coordinator to showPlaylist")

@@ -110,7 +110,7 @@ struct ArtistsViewControllerTests {
         subject.present(state)
         #expect(subject.title == "Artists")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
-        #expect(menu.children.count == 2)
+        #expect(menu.children.count == 3)
         do {
             let action = menu.children[0]
             #expect(action.title == "Composers")
@@ -126,6 +126,14 @@ struct ArtistsViewControllerTests {
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .albums)
         }
+        processor.thingsReceived.removeAll()
+        do {
+            let action = menu.children[2]
+            #expect(action.title == "Server")
+            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            await #while(processor.thingsReceived.isEmpty)
+            #expect(processor.thingsReceived.last == .server)
+        }
     }
 
     @Test("present: sets the title and left bar button menu item according to the state")
@@ -134,7 +142,7 @@ struct ArtistsViewControllerTests {
         subject.present(state)
         #expect(subject.title == "Composers")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
-        #expect(menu.children.count == 2)
+        #expect(menu.children.count == 3)
         do {
             let action = menu.children[0]
             #expect(action.title == "Artists")
@@ -149,6 +157,14 @@ struct ArtistsViewControllerTests {
             (action as! UIMenuLeaf).performWithSender(nil, target: nil)
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .albums)
+        }
+        processor.thingsReceived.removeAll()
+        do {
+            let action = menu.children[2]
+            #expect(action.title == "Server")
+            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            await #while(processor.thingsReceived.isEmpty)
+            #expect(processor.thingsReceived.last == .server)
         }
     }
 

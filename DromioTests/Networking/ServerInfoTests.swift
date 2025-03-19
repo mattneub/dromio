@@ -21,6 +21,7 @@ struct ServerInfoTests {
         #expect(result.username == "u")
         #expect(result.password == "")
         #expect(result.version == "v")
+        #expect(result.id == "u@h")
     }
 
     @Test("update with password replaces password")
@@ -32,6 +33,7 @@ struct ServerInfoTests {
         #expect(result.username == "u")
         #expect(result.password == "1234")
         #expect(result.version == "v")
+        #expect(result.id == "u@h")
     }
 
     @Test("initializer from strings throws if scheme is not http/s")
@@ -165,6 +167,7 @@ struct ServerInfoTests {
                 version: "1.16.1"
             )
         )
+        #expect(result.id == "u@h")
     }
 
     @Test("initializer from string gives expected result if all is well, https")
@@ -186,5 +189,6 @@ struct ServerInfoTests {
                 version: "1.16.1"
             )
         )
+        #expect(result.id == "u@h")
     }
 }

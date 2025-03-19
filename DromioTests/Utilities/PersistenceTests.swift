@@ -105,7 +105,7 @@ struct PersistenceTests {
         """
         let result = try #require(defaults.value as? [String])
         #expect(result == [expected])
-        let password = try #require(keychain.dictionary["hostusername"])
+        let password = try #require(keychain.dictionary["username@host"])
         #expect(password == "password")
     }
 
@@ -122,7 +122,7 @@ struct PersistenceTests {
         }
         """
         defaults.stringArrayToReturn = [server]
-        keychain.dictionary["hostusername"] = "password"
+        keychain.dictionary["username@host"] = "password"
         let result = try subject.loadServers()
         #expect(result.count == 1)
         let expected = ServerInfo(

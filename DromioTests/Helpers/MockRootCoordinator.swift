@@ -3,7 +3,6 @@ import UIKit
 
 @MainActor
 final class MockRootCoordinator: RootCoordinatorType {
-
     var serverProcessor: (any Processor<ServerAction, ServerState, ServerEffect>)?
     var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)?
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
@@ -15,17 +14,26 @@ final class MockRootCoordinator: RootCoordinatorType {
     var methodsCalled = [String]()
     var albumId: String?
     var title: String?
+    var message: String?
+    var options = [String]()
+    var optionToReturn: String?
     var albumsState: AlbumsState?
+    var delegate: (any ServerDelegate)?
 
     func createInitialInterface(window: UIWindow) {
         methodsCalled.append(#function)
     }
 
-    func showServer() {
+    func showServer(delegate: any ServerDelegate) {
         methodsCalled.append(#function)
+        self.delegate = delegate
     }
 
     func dismissServer() {
+        methodsCalled.append(#function)
+    }
+
+    func dismissToPing() {
         methodsCalled.append(#function)
     }
 
@@ -59,4 +67,18 @@ final class MockRootCoordinator: RootCoordinatorType {
     func popPlaylist() {
         methodsCalled.append(#function)
     }
+
+    func showAlert(title: String?, message: String?) {
+        methodsCalled.append(#function)
+        self.title = title
+        self.message = message
+    }
+
+    func showActionSheet(title: String, options: [String]) async -> String? {
+        methodsCalled.append(#function)
+        self.title = title
+        self.options = options
+        return optionToReturn
+    }
+
 }

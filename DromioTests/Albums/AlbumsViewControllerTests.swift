@@ -102,7 +102,7 @@ struct AlbumsViewControllerTests {
         subject.present(state)
         #expect(subject.title == "All Albums")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
-        #expect(menu.children.count == 2)
+        #expect(menu.children.count == 3)
         do {
             let action = menu.children[0]
             #expect(action.title == "Random Albums")
@@ -118,6 +118,14 @@ struct AlbumsViewControllerTests {
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .artists)
         }
+        processor.thingsReceived.removeAll()
+        do {
+            let action = menu.children[2]
+            #expect(action.title == "Server")
+            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            await #while(processor.thingsReceived.isEmpty)
+            #expect(processor.thingsReceived.last == .server)
+        }
     }
 
     @Test("present: sets the title and left bar button menu item according to the state, random albums")
@@ -126,7 +134,7 @@ struct AlbumsViewControllerTests {
         subject.present(state)
         #expect(subject.title == "Random Albums")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
-        #expect(menu.children.count == 2)
+        #expect(menu.children.count == 3)
         do {
             let action = menu.children[0]
             #expect(action.title == "All Albums")
@@ -141,6 +149,14 @@ struct AlbumsViewControllerTests {
             (action as! UIMenuLeaf).performWithSender(nil, target: nil)
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .artists)
+        }
+        processor.thingsReceived.removeAll()
+        do {
+            let action = menu.children[2]
+            #expect(action.title == "Server")
+            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            await #while(processor.thingsReceived.isEmpty)
+            #expect(processor.thingsReceived.last == .server)
         }
     }
 

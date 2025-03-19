@@ -7,9 +7,11 @@ import UIKit
 struct ServerViewControllerTests {
     let subject = ServerViewController(nibName: "Server", bundle: nil)
     let processor = MockProcessor<ServerAction, ServerState, ServerEffect>()
+    let persistence = MockPersistence()
 
     init() {
         subject.processor = processor
+        services.persistence = persistence
     }
 
     @Test("viewDidAppear: sets subject as delegate of presentation controller")
@@ -93,8 +95,8 @@ struct ServerViewControllerTests {
         #expect(processor.thingsReceived.first == .done)
     }
 
-    @Test("presentationControllerShouldDismiss: returns false")
-    func shouldDismiss() throws {
+    @Test("presentationControllerShouldDismiss: returns false if there are no servers")
+    func shouldDismissFalse() throws {
         let viewController = UIViewController()
         makeWindow(viewController: viewController)
         viewController.present(subject, animated: false)
@@ -102,5 +104,17 @@ struct ServerViewControllerTests {
         let presentationController = try #require(subject.presentationController)
         let result = subject.presentationControllerShouldDismiss(presentationController)
         #expect(result == false)
+    }
+
+    @Test("presentationControllerShouldDismiss: returns true if there are servers")
+    func shouldDismissTrue() throws {
+        persistence.servers = [ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v")]
+        let viewController = UIViewController()
+        makeWindow(viewController: viewController)
+        viewController.present(subject, animated: false)
+        subject.viewDidAppear(false)
+        let presentationController = try #require(subject.presentationController)
+        let result = subject.presentationControllerShouldDismiss(presentationController)
+        #expect(result == true)
     }
 }

@@ -1,5 +1,6 @@
 @testable import Dromio
 import Testing
+import WaitWhile
 
 @MainActor
 struct ServerProcessorTests {
@@ -8,12 +9,14 @@ struct ServerProcessorTests {
     let urlMaker = MockURLMaker()
     let persistence = MockPersistence()
     let coordinator = MockRootCoordinator()
+    let delegate = MockServerDelegate()
 
     init() {
         subject.presenter = presenter
         subject.coordinator = coordinator
         services.urlMaker = urlMaker
         services.persistence = persistence
+        subject.delegate = delegate
     }
 
     @Test("mutating state presents, but if `noPresentation` flag, does not present and resets the flag")
@@ -49,7 +52,7 @@ struct ServerProcessorTests {
         #expect(presenter.statePresented == nil)
     }
 
-    @Test("receive done: makes the correct ServerInfo, saves it, sets it as current, calls dismissServer")
+    @Test("receive done: makes the correct ServerInfo, calls dismissServer, passes the server info to delegate `userEdited`")
     func doDone() async {
         subject.state = .init(
             scheme: .http,
@@ -67,13 +70,12 @@ struct ServerProcessorTests {
             version: "1.16.1"
         )
         await subject.receive(.done)
-        #expect(persistence.methodsCalled == ["save(servers:)"])
-        #expect(persistence.servers == [expected])
-        #expect(urlMaker.currentServerInfo == expected)
         #expect(coordinator.methodsCalled == ["dismissServer()"])
+        #expect(delegate.methodsCalled == ["userEdited(serverInfo:)"])
+        #expect(delegate.serverInfo == expected)
     }
 
-    @Test("receive done: makes the correct ServerInfo with https, saves it, sets it as current, calls dismissServer")
+    @Test("receive done: makes the correct ServerInfo with https, calls dismissServer, passes the server info to delegate `userEdited`")
     func doDoneHttps() async {
         subject.state = .init(
             scheme: .https,
@@ -91,10 +93,9 @@ struct ServerProcessorTests {
             version: "1.16.1"
         )
         await subject.receive(.done)
-        #expect(persistence.methodsCalled == ["save(servers:)"])
-        #expect(persistence.servers == [expected])
-        #expect(urlMaker.currentServerInfo == expected)
         #expect(coordinator.methodsCalled == ["dismissServer()"])
+        #expect(delegate.methodsCalled == ["userEdited(serverInfo:)"])
+        #expect(delegate.serverInfo == expected)
     }
 
     @Test("receive done: if ServerInfo throws empty host, sends alertWithMessage effect to presenter")

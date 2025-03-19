@@ -1,11 +1,13 @@
 /// State to be presented by the Ping view controller.
 ///
 struct PingState: Equatable {
-    /// Whether the ping succeeded or failed and, if it failed, a message to display.
-    var success: PingResult = .failure(message: "")
+    var status: PingStatus = .empty
 
-    enum PingResult: Equatable {
-        case success
-        case failure(message: String)
+    enum PingStatus: Equatable {
+        case empty // no status (we are looking to see whether we even _have_ a server)
+        case unknown // we are about to try to ping
+        case success // it worked
+        case failure(message: String) // it didn't work
+        case choices // we are "at rest"; give the user options on how to proceed
     }
 }

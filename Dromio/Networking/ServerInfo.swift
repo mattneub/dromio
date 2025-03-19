@@ -11,7 +11,8 @@ struct ServerInfo: Codable, Equatable {
     let username: String // "u"
     let password: String // used to calculate "t" and "s"
     let version: String // "v"
-    
+    var id: String { username + "@" + host }
+
     /// Copy self, replacing the password with an empty string.
     /// - Returns: The copy.
     func updateWithoutPassword() -> ServerInfo {

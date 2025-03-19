@@ -22,10 +22,13 @@ protocol RootCoordinatorType: AnyObject {
     func createInitialInterface(window: UIWindow)
 
     /// Create the Server module and show the view controller.
-    func showServer()
+    func showServer(delegate: any ServerDelegate)
 
     /// Dismiss the Server module's view controller.
     func dismissServer()
+
+    /// Dismiss all presented controllers to return to the ping view.
+    func dismissToPing()
 
     /// Create the Albums module and show the view controller.
     func showAlbums()
@@ -53,6 +56,12 @@ protocol RootCoordinatorType: AnyObject {
 
     /// Pop the Playlist view controller.
     func popPlaylist()
+
+    /// Show a simple alert with an OK button.
+    func showAlert(title: String?, message: String?)
+
+    /// Show a simple action sheet.
+    func showActionSheet(title: String, options: [String]) async -> String?
 }
 
 /// Class of single instance responsible for all view controller manipulation.
@@ -83,26 +92,28 @@ final class RootCoordinator: RootCoordinatorType {
         pingProcessor.coordinator = self
     }
 
-    func showServer() {
+    func showServer(delegate: any ServerDelegate) {
         let serverController = ServerViewController(nibName: "Server", bundle: nil)
         let serverProcessor = ServerProcessor()
         self.serverProcessor = serverProcessor
         serverProcessor.presenter = serverController
+        serverProcessor.delegate = delegate
         serverController.processor = serverProcessor
         serverProcessor.coordinator = self
         serverController.modalPresentationStyle = .pageSheet
         rootViewController?.present(serverController, animated: unlessTesting(true))
     }
 
+    // TODO: Couldn't this just be another case of dismissToPing?
     func dismissServer() {
         guard let serverController = rootViewController?.presentedViewController as? ServerViewController else {
             return
         }
-        serverController.dismiss(animated: unlessTesting(true)) {
-            Task {
-                await self.pingProcessor?.receive(.doPing)
-            }
-        }
+        serverController.dismiss(animated: unlessTesting(true))
+    }
+
+    func dismissToPing() {
+        rootViewController?.dismiss(animated: unlessTesting(true))
     }
 
     func showAlbums() {
@@ -181,5 +192,26 @@ final class RootCoordinator: RootCoordinatorType {
         }
         navigationController.popViewController(animated: unlessTesting(true))
     }
-}
 
+    func showAlert(title: String?, message: String?) {
+        guard !(title == nil && message == nil) else { return }
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        rootViewController?.present(alert, animated: unlessTesting(true))
+    }
+
+    func showActionSheet(title: String, options: [String]) async -> String? {
+        await withCheckedContinuation { continuation in
+            let alert = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
+            for option in options {
+                alert.addAction(AlertAction(title: option, style: .default, handler: { action in
+                    continuation.resume(returning: action.title)
+                }))
+            }
+            alert.addAction(AlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                continuation.resume(returning: nil)
+            }))
+            rootViewController?.present(alert, animated: unlessTesting(true))
+        }
+    }
+}

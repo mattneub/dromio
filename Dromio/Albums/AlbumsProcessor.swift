@@ -18,6 +18,20 @@ final class AlbumsProcessor: Processor {
 
     func receive(_ action: AlbumsAction) async {
         switch action {
+        case .allAlbums:
+            do {
+                await presenter?.receive(.tearDownSearcher)
+                let albums = try await caches.fetch(\.albumsList) {
+                    try await services.requestMaker.getAlbumList()
+                }
+                state.listType = .allAlbums
+                state.albums = albums
+            } catch {
+                print(error)
+            }
+        case .artists:
+            await presenter?.receive(.tearDownSearcher)
+            coordinator?.showArtists()
         case .initialData:
             // how we fetch the initial data depends on what "mode" of albums this is
             switch state.listType {
@@ -38,17 +52,6 @@ final class AlbumsProcessor: Processor {
                 }
             default: break
             }
-        case .allAlbums:
-            do {
-                await presenter?.receive(.tearDownSearcher)
-                let albums = try await caches.fetch(\.albumsList) {
-                    try await services.requestMaker.getAlbumList()
-                }
-                state.listType = .allAlbums
-                state.albums = albums
-            } catch {
-                print(error)
-            }
         case .randomAlbums:
             do {
                 await presenter?.receive(.tearDownSearcher)
@@ -58,14 +61,13 @@ final class AlbumsProcessor: Processor {
             } catch {
                 print(error)
             }
+        case .server:
+            coordinator?.dismissToPing()
         case .showAlbum(let id):
             guard let album = state.albums.first(where: { $0.id == id }) else {
                 return
             }
             coordinator?.showAlbum(albumId: id, title: album.name)
-        case .artists:
-            await presenter?.receive(.tearDownSearcher)
-            coordinator?.showArtists()
         case .showPlaylist:
             coordinator?.showPlaylist()
         case .viewDidAppear:

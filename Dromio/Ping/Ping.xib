@@ -2,7 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_9" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23719.2"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23720"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -10,7 +10,10 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PingViewController" customModule="Dromio" customModuleProvider="target">
             <connections>
+                <outlet property="deleteServerButton" destination="vHJ-u8-kXz" id="2e6-L0-p3a"/>
                 <outlet property="failureLabel" destination="Mpo-fM-QrY" id="T3o-wH-boo"/>
+                <outlet property="pickServerButton" destination="Fqj-F7-Fqc" id="3DB-3m-ttK"/>
+                <outlet property="pingingLabel" destination="1WM-wj-KSO" id="0CD-H9-PQg"/>
                 <outlet property="reenterButton" destination="uMr-C9-MHs" id="1Iz-QZ-Amk"/>
                 <outlet property="successLabel" destination="NW3-C5-yms" id="GAK-Uz-ffc"/>
                 <outlet property="view" destination="iN0-l3-epB" id="I3P-Px-hVy"/>
@@ -22,7 +25,7 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="baT-sF-97w" customClass="PingView" customModule="Dromio" customModuleProvider="target">
-                    <rect key="frame" x="16" y="248" width="408" height="248"/>
+                    <rect key="frame" x="16" y="248" width="408" height="400"/>
                     <subviews>
                         <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Failure!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mpo-fM-QrY">
                             <rect key="frame" x="33" y="87.333333333333314" width="342" height="25.333333333333329"/>
@@ -31,14 +34,14 @@
                             <nil key="highlightedColor"/>
                         </label>
                         <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uMr-C9-MHs">
-                            <rect key="frame" x="115" y="143.66666666666669" width="178" height="34.333333333333343"/>
+                            <rect key="frame" x="109" y="144.66666666666669" width="190" height="35"/>
                             <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="plain" title="Re-enter Server Info"/>
+                            <buttonConfiguration key="configuration" style="plain" title="Enter New Server Info"/>
                             <connections>
                                 <action selector="doReenterButton:" destination="-1" eventType="touchUpInside" id="o7n-QJ-Vos"/>
                             </connections>
                         </button>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Pinging the Navidrome server..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1WM-wj-KSO">
+                        <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Pinging the Navidrome server..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1WM-wj-KSO">
                             <rect key="frame" x="65.333333333333343" y="32" width="277.33333333333326" height="25.333333333333329"/>
                             <fontDescription key="fontDescription" name="GillSans" family="Gill Sans" pointSize="22"/>
                             <nil key="textColor"/>
@@ -50,20 +53,39 @@
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>
+                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fqj-F7-Fqc">
+                            <rect key="frame" x="135.66666666666666" y="195.66666666666669" width="136.99999999999997" height="35"/>
+                            <state key="normal" title="Button"/>
+                            <buttonConfiguration key="configuration" style="plain" title="Choose Server"/>
+                            <connections>
+                                <action selector="doPickServerButton:" destination="-1" eventType="touchUpInside" id="5sZ-6u-HJQ"/>
+                            </connections>
+                        </button>
+                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vHJ-u8-kXz">
+                            <rect key="frame" x="140.33333333333334" y="246.66666666666669" width="127.33333333333334" height="35"/>
+                            <state key="normal" title="Button"/>
+                            <buttonConfiguration key="configuration" style="plain" title="Delete Server"/>
+                            <connections>
+                                <action selector="doDeleteServerButton:" destination="-1" eventType="touchUpInside" id="78b-Ee-INS"/>
+                            </connections>
+                        </button>
                     </subviews>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
                         <constraint firstItem="1WM-wj-KSO" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="2Gd-BE-yue"/>
+                        <constraint firstAttribute="height" constant="400" id="4L3-us-KBu"/>
                         <constraint firstItem="1WM-wj-KSO" firstAttribute="top" secondItem="baT-sF-97w" secondAttribute="top" constant="32" id="4ey-q9-2jC"/>
                         <constraint firstItem="Mpo-fM-QrY" firstAttribute="leading" secondItem="baT-sF-97w" secondAttribute="leading" constant="33" id="8iA-EG-lil"/>
-                        <constraint firstAttribute="height" priority="999" constant="10" id="C5R-nx-rAj"/>
                         <constraint firstItem="Mpo-fM-QrY" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="30" id="Cgp-Wb-cAb"/>
                         <constraint firstItem="Mpo-fM-QrY" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="DYI-E8-pOD"/>
+                        <constraint firstItem="Fqj-F7-Fqc" firstAttribute="top" secondItem="uMr-C9-MHs" secondAttribute="bottom" constant="16" id="Ift-a1-x51"/>
+                        <constraint firstItem="vHJ-u8-kXz" firstAttribute="top" secondItem="Fqj-F7-Fqc" secondAttribute="bottom" constant="16" id="P0m-M2-vKM"/>
                         <constraint firstItem="uMr-C9-MHs" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="Q3G-Kq-BdR"/>
-                        <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="uMr-C9-MHs" secondAttribute="bottom" constant="70" id="XI1-t1-kEh"/>
                         <constraint firstItem="NW3-C5-yms" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="YbI-tr-ZYj"/>
                         <constraint firstItem="NW3-C5-yms" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="30" id="f65-TT-9Ot"/>
-                        <constraint firstItem="uMr-C9-MHs" firstAttribute="top" secondItem="Mpo-fM-QrY" secondAttribute="bottom" constant="31" id="u50-Ec-FVE"/>
+                        <constraint firstItem="vHJ-u8-kXz" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="k9k-je-Ujh"/>
+                        <constraint firstItem="uMr-C9-MHs" firstAttribute="top" secondItem="Mpo-fM-QrY" secondAttribute="bottom" constant="32" id="u50-Ec-FVE"/>
+                        <constraint firstItem="Fqj-F7-Fqc" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="yib-eU-lRH"/>
                     </constraints>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">

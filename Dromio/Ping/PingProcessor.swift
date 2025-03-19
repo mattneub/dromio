@@ -17,33 +17,110 @@ final class PingProcessor: Processor {
 
     func receive(_ action: PingAction) async {
         switch action {
+        case .choices:
+            state.status = .choices
+        case .deleteServer:
+            await deleteServer()
         case .doPing:
-            do {
-                if services.urlMaker.currentServerInfo == nil {
-                    guard let server = try services.persistence.loadServers().first else {
-                        coordinator?.showServer()
-                        return
-                    }
-                    services.urlMaker.currentServerInfo = server
-                }
-                try await services.requestMaker.ping()
-                let user = try await services.requestMaker.getUser()
-                guard user.downloadRole && user.streamRole else {
-                    throw NetworkerError.message("User needs stream and download privileges.")
-                }
-                userHasJukeboxRole = user.jukeboxRole
-                state.success = .success
-                try? await unlessTesting {
-                    try? await Task.sleep(for: .seconds(0.6))
-                }
-                coordinator?.showAlbums()
-            } catch NetworkerError.message(let message) {
-                state.success = .failure(message: message)
-            } catch {
-                state.success = .failure(message: error.localizedDescription)
-            }
+            await ping()
+        case .pickServer:
+            await pickServer()
         case .reenterServerInfo:
-            coordinator?.showServer()
+            coordinator?.showServer(delegate: self)
+        }
+    }
+
+    func ping() async {
+        do {
+            state.status = .empty
+            await Task.yield()
+            if services.urlMaker.currentServerInfo == nil {
+                guard let server = try services.persistence.loadServers().first else {
+                    coordinator?.showServer(delegate: self)
+                    return
+                }
+                services.urlMaker.currentServerInfo = server
+            }
+            state.status = .unknown
+            await Task.yield()
+            try await services.requestMaker.ping()
+            try? await unlessTesting {
+                try? await Task.sleep(for: .seconds(0.4))
+            }
+            let user = try await services.requestMaker.getUser()
+            guard user.downloadRole && user.streamRole else {
+                throw NetworkerError.message("User needs stream and download privileges.")
+            }
+            userHasJukeboxRole = user.jukeboxRole
+            state.status = .success
+            await Task.yield()
+            try? await unlessTesting {
+                try? await Task.sleep(for: .seconds(0.6))
+            }
+            coordinator?.showAlbums()
+        } catch NetworkerError.message(let message) {
+            state.status = .failure(message: message)
+        } catch {
+            state.status = .failure(message: error.localizedDescription)
+        }
+    }
+
+    func deleteServer() async {
+        guard var servers = try? services.persistence.loadServers() else { return }
+        guard servers.count > 0 else {
+            coordinator?.showAlert(title: "Nothing to delete.", message: "Tap Enter Server Info if you want to add a server.")
+            return
+        }
+
+        guard let serverId = await coordinator?.showActionSheet(
+            title: "Pick a server to delete:",
+            options: servers.map { $0.id }
+        ) else {
+            return
+        }
+
+        let index = servers.firstIndex(where: { $0.id == serverId }) ?? 0
+        servers.remove(at: index)
+        try? services.persistence.save(servers: servers)
+        // and stop
+    }
+
+    func pickServer() async {
+        guard var servers = try? services.persistence.loadServers() else { return }
+        guard servers.count > 0 else {
+            coordinator?.showAlert(title: "Nothing to choose between.", message: "Tap Enter Server Info if you want to add a server.")
+            return
+        }
+
+        guard let serverId = await coordinator?.showActionSheet(
+            title: "Pick a server to use:",
+            options: servers.map { $0.id }
+        ) else {
+            return
+        }
+
+        let index = servers.firstIndex(where: { $0.id == serverId }) ?? 0
+        let server = servers.remove(at: index)
+        servers.insert(server, at: 0)
+        try? services.persistence.save(servers: servers)
+        services.urlMaker.currentServerInfo = server
+        Task {
+            await receive(.doPing)
+        }
+    }
+}
+
+extension PingProcessor: ServerDelegate {
+    func userEdited(serverInfo: ServerInfo) {
+        var servers = (try? services.persistence.loadServers()) ?? []
+        if let index = servers.firstIndex(where: { $0.id == serverInfo.id}) {
+            servers.remove(at: index)
+        }
+        servers.insert(serverInfo, at: 0) // new server becomes first, i.e. default
+        try? services.persistence.save(servers: servers)
+        services.urlMaker.currentServerInfo = serverInfo
+        Task {
+            await receive(.doPing)
         }
     }
 }
