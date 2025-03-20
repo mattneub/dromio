@@ -24,7 +24,7 @@ final class AlbumProcessor: Processor {
                 let songs = try await services.requestMaker.getSongsFor(albumId: albumId)
                 state.songs = songs
             } catch {
-                print(error)
+                logger.log("\(error.localizedDescription, privacy: .public)")
             }
         case .tapped(let song):
             do {

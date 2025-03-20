@@ -31,7 +31,7 @@ final class ArtistsProcessor: Processor {
                 state.listType = .allArtists
                 state.artists = artistsWhoAreArtists
             } catch {
-                print(error)
+                logger.log("\(error.localizedDescription, privacy: .public)")
             }
         case .composers:
             do {
@@ -43,7 +43,7 @@ final class ArtistsProcessor: Processor {
                 state.listType = .composers
                 state.artists = artistsWhoAreComposers
             } catch {
-                print(error)
+                logger.log("\(error.localizedDescription, privacy: .public)")
             }
         case .server:
             coordinator?.dismissToPing()

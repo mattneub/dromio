@@ -27,7 +27,7 @@ final class AlbumsProcessor: Processor {
                 state.listType = .allAlbums
                 state.albums = albums
             } catch {
-                print(error)
+                logger.log("\(error.localizedDescription, privacy: .public)")
             }
         case .artists:
             await presenter?.receive(.tearDownSearcher)
@@ -48,7 +48,7 @@ final class AlbumsProcessor: Processor {
                         state.albums = albumsForComposer(songs: songs, id: id)
                     }
                 } catch {
-                    print(error)
+                    logger.log("\(error.localizedDescription, privacy: .public)")
                 }
             default: break
             }
@@ -59,7 +59,7 @@ final class AlbumsProcessor: Processor {
                 state.listType = .randomAlbums
                 state.albums = albums
             } catch {
-                print(error)
+                logger.log("\(error.localizedDescription, privacy: .public)")
             }
         case .server:
             coordinator?.dismissToPing()
