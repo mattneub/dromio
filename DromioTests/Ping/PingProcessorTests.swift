@@ -11,11 +11,15 @@ struct PingProcessorTests {
     let coordinator = MockRootCoordinator()
     let urlMaker = MockURLMaker()
     let persistence = MockPersistence()
+    let download = MockDownload()
+    let currentPlaylist = MockPlaylist()
 
     init() {
         services.requestMaker = requestMaker
         services.urlMaker = urlMaker
         services.persistence = persistence
+        services.currentPlaylist = currentPlaylist
+        services.download = download
         subject.presenter = presenter
         subject.coordinator = coordinator
         requestMaker.user = .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: true)
@@ -197,7 +201,7 @@ struct PingProcessorTests {
         #expect(persistence.methodsCalled.count == 1)
     }
 
-    @Test("receive pickServer: if servers, calls showActionSheet, if one is chosen, brings it to front, saves, sets current server, calls doPing")
+    @Test("receive pickServer: if servers, calls showActionSheet, if one is chosen, brings it to front, saves, sets current server, clears playlist and downloads, calls doPing")
     func pickServer() async {
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
@@ -215,6 +219,8 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
         ])
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"))
+        #expect(currentPlaylist.methodsCalled == ["clear()"])
+        #expect(await download.methodsCalled == ["clear()"])
         await #while(presenter.statesPresented.isEmpty)
         #expect(presenter.statesPresented.first?.status == .empty)
     }
@@ -226,7 +232,7 @@ struct PingProcessorTests {
         #expect(coordinator.delegate === subject)
     }
 
-    @Test("userEdited: puts the new server info first in the list, sets the current server, calls ping")
+    @Test("userEdited: puts the new server info first in the list, sets the current server, clears current playlist and downloads, calls ping")
     func userEdited() async {
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
@@ -241,7 +247,9 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ])
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hhh", port: 1, username: "uuu", password: "p", version: "v"))
+        #expect(currentPlaylist.methodsCalled == ["clear()"])
         await #while(presenter.statesPresented.isEmpty)
+        #expect(await download.methodsCalled == ["clear()"])
         #expect(presenter.statesPresented.first?.status == .empty)
     }
 

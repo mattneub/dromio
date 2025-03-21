@@ -82,7 +82,7 @@ final class PingProcessor: Processor {
         let index = servers.firstIndex(where: { $0.id == serverId }) ?? 0
         servers.remove(at: index)
         try? services.persistence.save(servers: servers)
-        // and stop
+        // and stop; user cannot proceed without explicitly picking a server
     }
 
     func pickServer() async {
@@ -104,6 +104,8 @@ final class PingProcessor: Processor {
         servers.insert(server, at: 0)
         try? services.persistence.save(servers: servers)
         services.urlMaker.currentServerInfo = server
+        services.currentPlaylist.clear()
+        await services.download.clear()
         Task {
             await receive(.doPing)
         }
@@ -119,7 +121,9 @@ extension PingProcessor: ServerDelegate {
         servers.insert(serverInfo, at: 0) // new server becomes first, i.e. default
         try? services.persistence.save(servers: servers)
         services.urlMaker.currentServerInfo = serverInfo
+        services.currentPlaylist.clear()
         Task {
+            await services.download.clear()
             await receive(.doPing)
         }
     }
