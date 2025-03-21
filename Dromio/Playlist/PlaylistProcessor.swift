@@ -31,14 +31,18 @@ final class PlaylistProcessor: Processor {
     func receive(_ action: PlaylistAction) async {
         switch action {
         case .clear:
-            services.currentPlaylist.clear()
-            services.player.clear()
-            await services.download.clear()
-            state.songs = services.currentPlaylist.list
-            try? await unlessTesting {
-                try? await Task.sleep(for: .seconds(0.3))
+            if state.jukeboxMode {
+                try? await stopAndClearJukebox()
+            } else {
+                services.currentPlaylist.clear()
+                services.player.clear()
+                await services.download.clear()
+                state.songs = services.currentPlaylist.list
+                try? await unlessTesting {
+                    try? await Task.sleep(for: .seconds(0.3))
+                }
+                coordinator?.popPlaylist()
             }
-            coordinator?.popPlaylist()
         case .initialData:
             // collection songs, mark downloaded-ness
             noPresentation = true
@@ -65,7 +69,7 @@ final class PlaylistProcessor: Processor {
                 }
             }
         case .jukeboxButton:
-            state.jukebox.toggle()
+            state.jukeboxMode.toggle()
         case .tapped(let song):
             let sequence = state.songs.buildSequence(startingWith: song)
             guard sequence.count > 0 else {
@@ -76,7 +80,7 @@ final class PlaylistProcessor: Processor {
                 try? await Task.sleep(for: .seconds(unlessTesting(0.3)))
                 await presenter?.receive(.deselectAll)
             }
-            if state.jukebox { // always false, this feature is withdrawn
+            if state.jukeboxMode {
                 try? await playOnJukebox(sequence: sequence)
             } else {
                 try? await play(sequence: sequence)
@@ -122,17 +126,20 @@ final class PlaylistProcessor: Processor {
         }
     }
 
-    /// This code is provisional and never runs, because I can't get jukebox working on my server.
     private func playOnJukebox(sequence: [SubsonicSong]) async throws {
-        var status = try await services.requestMaker.jukebox(additional: ["action": "stop"])
-        dump(status)
-        status = try await services.requestMaker.jukebox(additional: ["action": "clear"])
-        dump(status)
+        try await stopAndClearJukebox()
         for song in sequence {
-            status = try await services.requestMaker.jukebox(additional: ["action": "add", "id": song.id])
+            let status = try await services.requestMaker.jukebox(action: .add, songId: song.id)
             dump(status)
         }
-        status = try await services.requestMaker.jukebox(additional: ["action": "start"])
+        let status = try await services.requestMaker.jukebox(action: .start)
+        dump(status)
+    }
+
+    private func stopAndClearJukebox() async throws {
+        var status = try await services.requestMaker.jukebox(action: .stop)
+        dump(status)
+        status = try await services.requestMaker.jukebox(action: .clear)
         dump(status)
     }
 }

@@ -25,16 +25,22 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
 
     lazy var tableHeaderView: UIView = {
         let tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
-        tableHeaderView.backgroundColor = .secondarySystemBackground
+        tableHeaderView.backgroundColor = .tertiarySystemBackground
         var config = UIButton.Configuration.plain()
-        config.title = "Jukebox Mode: "
+        config.attributedTitle = AttributedString("Jukebox Mode: ", attributes: .init (
+            [.font: UIFont(name: "GillSans-Bold", size: 15) as Any],
+        ))
         config.image = UIImage(systemName: "rectangle")
         config.imagePlacement = .trailing
         let button = UIButton(configuration: config, primaryAction: UIAction() {
             [weak self] _ in self?.doJukeboxButton()
         })
-        button.frame = CGRect(x: 0, y: 0, width: 200, height: 40)
         tableHeaderView.addSubview(button)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            button.centerXAnchor.constraint(equalTo: tableHeaderView.centerXAnchor),
+            button.centerYAnchor.constraint(equalTo: tableHeaderView.centerYAnchor),
+        ])
         return tableHeaderView
     }()
 
@@ -48,14 +54,14 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
             await processor?.receive(.initialData)
         }
         if userHasJukeboxRole { // withdrawing this feature for now, alas
-            // tableView.tableHeaderView = tableHeaderView
+            tableView.tableHeaderView = tableHeaderView
         }
     }
 
     func present(_ state: PlaylistState) {
         dataSourceDelegate?.present(state)
         if let jukeboxButton = tableView.tableHeaderView?.subviews(ofType: UIButton.self).first {
-            jukeboxButton.configuration?.image = if state.jukebox {
+            jukeboxButton.configuration?.image = if state.jukeboxMode {
                 UIImage(systemName: "checkmark.rectangle")
             } else {
                 UIImage(systemName: "rectangle")

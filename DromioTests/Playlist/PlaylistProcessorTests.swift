@@ -230,13 +230,13 @@ struct PlaylistProcessorTests {
         )
     }
 
-    @Test("receive jukeboxButton: toggles state jukebox")
+    @Test("receive jukeboxButton: toggles state jukeboxMode")
     func receiveJukebox() async {
-        #expect(!subject.state.jukebox)
+        #expect(!subject.state.jukeboxMode)
         await subject.receive(.jukeboxButton)
-        #expect(subject.state.jukebox)
+        #expect(subject.state.jukeboxMode)
         await subject.receive(.jukeboxButton)
-        #expect(!subject.state.jukebox)
+        #expect(!subject.state.jukeboxMode)
     }
 
     @Test("receive tapped: calls haptic, sends .deselectAll")
@@ -424,6 +424,56 @@ struct PlaylistProcessorTests {
         #expect(player.methodsCalled.isEmpty)
     }
 
+    @Test("receive tapped: in jukebox mode tells the jukebox stop, clear, add each song, start")
+    func receiveTappedJukeboxMode() async {
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        let song2 = SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        let song3 = SubsonicSong(
+            id: "3",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        subject.state.songs = [song, song2, song3]
+        subject.state.jukeboxMode = true
+        await subject.receive(.tapped(song))
+        #expect(requestMaker.methodsCalled == ["jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)"])
+        #expect(requestMaker.actions == [.stop, .clear, .add, .add, .add, .start])
+        #expect(requestMaker.songIds == [nil, nil, "1", "2", "3", nil])
+    }
+
+
     @Test("receive clear: tells the current playlist, player, and download to clear, sets the state, call popPlaylist")
     func clear() async {
         let songs = [SubsonicSong(
@@ -447,5 +497,16 @@ struct PlaylistProcessorTests {
         #expect(subject.state.songs.isEmpty)
         await #while(coordinator.methodsCalled.isEmpty)
         #expect(coordinator.methodsCalled == ["popPlaylist()"])
+    }
+
+    @Test("receive clear: in jukebox mode tells request maker to send jukebox control stop and clear")
+    func clearJukeboxMode() async {
+        subject.state.jukeboxMode = true
+        await subject.receive(.clear)
+        #expect(playlist.methodsCalled.isEmpty)
+        #expect((await download.methodsCalled).isEmpty)
+        #expect(coordinator.methodsCalled.isEmpty)
+        #expect(requestMaker.methodsCalled == ["jukebox(action:songId:)", "jukebox(action:songId:)"])
+        #expect(requestMaker.actions == [.stop, .clear])
     }
 }

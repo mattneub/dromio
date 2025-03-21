@@ -874,4 +874,166 @@ struct RequestMakerTests {
             error as! NetworkerError == .message("oops")
         }
     }
+
+    @Test("jukebox: start uses start action")
+    func jukeboxStart() async throws {
+        let status = JukeboxStatus(currentIndex: 0, playing: false, gain: 1)
+        let payload = SubsonicResponse(
+            subsonicResponse: JukeboxResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                jukeboxStatus: status,
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        let result = try await subject.jukebox(action: .start)
+        #expect(result == status)
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "jukeboxControl")
+        let expectedAdditional: KeyValuePairs = ["action": "start"]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+        #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
+    }
+
+    @Test("jukebox: stop uses stop action")
+    func jukeboxStop() async throws {
+        let status = JukeboxStatus(currentIndex: 0, playing: false, gain: 1)
+        let payload = SubsonicResponse(
+            subsonicResponse: JukeboxResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                jukeboxStatus: status,
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        let result = try await subject.jukebox(action: .stop)
+        #expect(result == status)
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "jukeboxControl")
+        let expectedAdditional: KeyValuePairs = ["action": "stop"]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+        #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
+    }
+
+    @Test("jukebox: clear uses clear action")
+    func jukeboxClear() async throws {
+        let status = JukeboxStatus(currentIndex: 0, playing: false, gain: 1)
+        let payload = SubsonicResponse(
+            subsonicResponse: JukeboxResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                jukeboxStatus: status,
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        let result = try await subject.jukebox(action: .clear)
+        #expect(result == status)
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "jukeboxControl")
+        let expectedAdditional: KeyValuePairs = ["action": "clear"]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+        #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
+    }
+
+    @Test("jukebox: add uses add action with id")
+    func jukeboxAdd() async throws {
+        let status = JukeboxStatus(currentIndex: 0, playing: false, gain: 1)
+        let payload = SubsonicResponse(
+            subsonicResponse: JukeboxResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                jukeboxStatus: status,
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        let result = try await subject.jukebox(action: .add, songId: "1")
+        #expect(result == status)
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "jukeboxControl")
+        let expectedAdditional: KeyValuePairs = ["action": "add", "id": "1"]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+        #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
+    }
+
+    @Test("jukebox: rethrows urlMaker throw")
+    func jukeboxUrlMakerThrow() async throws {
+        urlMaker.errorToThrow = NetworkerError.message("oops")
+        await #expect {
+            try await subject.jukebox(action: .clear)
+        } throws: { error in
+            error as! NetworkerError == .message("oops")
+        }
+    }
+
+    @Test("jukebox: rethrows networker throw")
+    func jukeboxNetworkerThrow() async throws {
+        networker.errorToThrow = NetworkerError.message("darn")
+        await #expect {
+            try await subject.jukebox(action: .clear)
+        } throws: { error in
+            error as! NetworkerError == .message("darn")
+        }
+    }
+
+    @Test("jukebox: rethrows decode error")
+    func jukeboxDecoderThrow() async throws {
+        networker.dataToReturn = [try! JSONEncoder().encode(#"{"howdy": "hey"}"#)]
+        await #expect {
+            try await subject.jukebox(action: .clear)
+        } throws: { error in
+            error is DecodingError
+        }
+    }
+
+    @Test("jukebox: rethrows validator error")
+    func jukeboxValidatorThrow() async throws {
+        let status = JukeboxStatus(currentIndex: 0, playing: false, gain: 1)
+        let payload = SubsonicResponse(
+            subsonicResponse: JukeboxResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                jukeboxStatus: status,
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        responseValidator.errorToThrow = NetworkerError.message("yipes")
+        await #expect {
+            try await subject.jukebox(action: .clear)
+        } throws: { error in
+            error as! NetworkerError == .message("yipes")
+        }
+    }
+
 }

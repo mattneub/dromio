@@ -15,6 +15,8 @@ final class MockRequestMaker: RequestMakerType {
     var methodsCalled = [String]()
     var streamURL = URL(string: "http://example.com")!
     var downloadURL = URL(string: "file://tempFolder/stuff")!
+    var actions = [JukeboxAction]()
+    var songIds = [String?]()
 
     func ping() async throws {
         methodsCalled.append(#function)
@@ -109,8 +111,10 @@ final class MockRequestMaker: RequestMakerType {
         return streamURL
     }
 
-    func jukebox(additional: KeyValuePairs<String, String>) async throws -> Dromio.JukeboxStatus? {
+    func jukebox(action: JukeboxAction, songId: String?) async throws -> Dromio.JukeboxStatus? {
         methodsCalled.append(#function)
+        actions.append(action)
+        songIds.append(songId)
         return nil
     }
 

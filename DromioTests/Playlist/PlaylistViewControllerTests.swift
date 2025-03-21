@@ -2,6 +2,7 @@
 import Testing
 import UIKit
 import WaitWhile
+import SnapshotTesting
 
 @MainActor
 struct PlaylistViewControllerTests {
@@ -23,16 +24,28 @@ struct PlaylistViewControllerTests {
         #expect(subject.title == "Playlist")
     }
 
+    @Test("The table header view is correctly constructed")
+    func tableHeaderViewAppearance() throws {
+        #expect(subject.tableHeaderView.backgroundColor == .tertiarySystemBackground)
+        let button = try #require(subject.tableHeaderView.subviews.first as? UIButton)
+        let configuration = try #require(button.configuration)
+        #expect(configuration.attributedTitle == AttributedString("Jukebox Mode: ", attributes: .init (
+            [.font: UIFont(name: "GillSans-Bold", size: 15) as Any],
+        )))
+        #expect(configuration.image == UIImage(systemName: "rectangle"))
+        #expect(configuration.imagePlacement == .trailing)
+        subject.tableHeaderView.bounds = CGRect(origin: .zero, size: .init(width: 600, height: 400))
+        assertSnapshot(of: subject.tableHeaderView, as: .image)
+    }
+
     @Test("table header view is created only iff user has jukebox role")
-    func tableHeaderView() {
-        // this test has been altered: we currently expect no table view header no matter what
+    func tableHeaderViewJukebox() {
         userHasJukeboxRole = false
         var subject = PlaylistViewController(nibName: nil, bundle: nil)
         #expect(subject.tableView.tableHeaderView == nil)
         userHasJukeboxRole = true
         subject = PlaylistViewController(nibName: nil, bundle: nil)
-        // #expect(subject.tableView.tableHeaderView === subject.tableHeaderView)
-        #expect(subject.tableView.tableHeaderView == nil)
+        #expect(subject.tableView.tableHeaderView === subject.tableHeaderView)
     }
 
     @Test("Setting the processor sets the data source's processor")
@@ -82,22 +95,19 @@ struct PlaylistViewControllerTests {
         #expect(mockDataSourceDelegate.state == state)
     }
 
-    // Withdrawn, there is no such header currently
-    /*
     @Test("present: sets the image of the jukebox button in the table view header")
     func presentJukeboxButton() async throws {
         userHasJukeboxRole = true
         let subject = PlaylistViewController(nibName: nil, bundle: nil)
         let button = try #require(subject.tableView.tableHeaderView?.subviews(ofType: UIButton.self).first)
         #expect(button.configuration?.image == UIImage(systemName: "rectangle"))
-        var state = PlaylistState(jukebox: true, songs: [])
+        var state = PlaylistState(jukeboxMode: true, songs: [])
         subject.present(state)
         #expect(button.configuration?.image == UIImage(systemName: "checkmark.rectangle"))
-        state = PlaylistState(jukebox: false, songs: [])
+        state = PlaylistState(jukeboxMode: false, songs: [])
         subject.present(state)
         #expect(button.configuration?.image == UIImage(systemName: "rectangle"))
     }
-     */
 
     @Test("receive deselectAll: tells the table view to select nil")
     func receiveDeselectAll() async {

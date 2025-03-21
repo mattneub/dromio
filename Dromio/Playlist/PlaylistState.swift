@@ -4,7 +4,7 @@ import Foundation
 @MainActor
 struct PlaylistState: Equatable {
     var currentSongId: String? // id of the currently playing song, from the current playlist
-    var jukebox = false // _always_ false, at the moment
+    var jukeboxMode = false
     var songs = [SubsonicSong]()
 }
 

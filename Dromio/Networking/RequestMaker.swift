@@ -14,7 +14,13 @@ protocol RequestMakerType: Sendable {
     func getSongsFor(albumId: String) async throws -> [SubsonicSong]
     func download(songId: String) async throws -> URL
     func stream(songId: String) async throws -> URL
-    func jukebox(additional: KeyValuePairs<String, String>) async throws -> JukeboxStatus?
+    func jukebox(action: JukeboxAction, songId: String?) async throws -> JukeboxStatus?
+}
+
+extension RequestMakerType {
+    func jukebox(action: JukeboxAction) async throws -> JukeboxStatus? {
+        try await jukebox(action: action, songId: nil)
+    }
 }
 
 /// Class that makes constructs and sends requests to the server. If you want to talk to the server,
@@ -249,8 +255,13 @@ final class RequestMaker: RequestMakerType {
         return url
     }
 
-    // TODO: If we ever restore this feature, we'll need a test here
-    func jukebox(additional: KeyValuePairs<String, String>) async throws -> JukeboxStatus? {
+    func jukebox(action: JukeboxAction, songId: String?) async throws -> JukeboxStatus? {
+        let additional: KeyValuePairs<String, String> = if let songId {[
+            "action": action.rawValue,
+            "id": songId,
+        ]} else {[
+            "action": action.rawValue,
+        ]}
         let url = try services.urlMaker.urlFor(
             action: "jukeboxControl",
             additional: additional
@@ -265,3 +276,11 @@ final class RequestMaker: RequestMakerType {
         return jsonResponse.subsonicResponse.jukeboxStatus
     }
 }
+
+enum JukeboxAction: String {
+    case start
+    case stop
+    case clear
+    case add
+}
+
