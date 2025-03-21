@@ -34,6 +34,7 @@ final class Networker: NetworkerType {
             self.session = session
         } else {
             let config = URLSessionConfiguration.ephemeral
+            config.timeoutIntervalForRequest = 10
             let session = URLSession(configuration: config)
             self.session = session
         }
