@@ -31,6 +31,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneWillEnterForeground(_ scene: UIScene) {
         try? services.audioSession.setCategory(.playback, mode: .default, options: [])
+        services.player.foregrounding()
+    }
+
+    func sceneDidEnterBackground(_ scene: UIScene) {
+        services.player.backgrounding()
     }
 }
 

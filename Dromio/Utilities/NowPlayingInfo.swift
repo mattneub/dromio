@@ -8,6 +8,9 @@ extension MPNowPlayingInfoCenter: NowPlayingInfoCenterType {}
 
 protocol NowPlayingInfoType {
     var info: [NowPlayingInfoKey: Any] { get set }
+    func display(song: SubsonicSong)
+    func playingAt(_: TimeInterval)
+    func pausedAt(_: TimeInterval)
     func clear()
 }
 
@@ -26,6 +29,23 @@ final class NowPlayingInfo: NowPlayingInfoType {
                 center.nowPlayingInfo = centerInfo
             }
         }
+    }
+
+    func display(song: SubsonicSong) {
+        info[.artist] = song.artist
+        info[.title] = song.title
+        info[.duration] = song.duration
+    }
+
+    func playingAt(_ time: TimeInterval) {
+        info[.time] = time
+        info[.rate] = 1.0
+    }
+
+    func pausedAt(_ time: TimeInterval) {
+        // order matters!
+        info[.time] = time
+        info[.rate] = 0.0
     }
 
     func clear() {

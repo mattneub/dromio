@@ -9,6 +9,12 @@ class Searcher {
     /// The search controller.
     var searchController: UISearchController?
 
+    // Our code masks a bizarre race condition because of the Task.sleep calls; use these flags
+    // to prevent setting up in the middle of tearing down or vice versa.
+    // (Surely there's a better way to deal with this...?)
+    var settingUp = false
+    var tearingDown = false
+
     /// Create and configure the search controller.
     /// - Parameters:
     ///   - navigationItem: Navigation item to add the search bar to.
@@ -17,6 +23,11 @@ class Searcher {
     func setUpSearcher(navigationItem: UINavigationItem, updater: (any SearchHandler)?) async {
         if searchController == nil {
             guard let updater else { return }
+            guard !tearingDown else {
+                return
+            }
+            settingUp = true
+            logger.log("setUpSearcher")
             let controller = UISearchController(searchResultsController: nil)
             self.searchController = controller
             controller.hidesNavigationBarDuringPresentation = false
@@ -31,6 +42,7 @@ class Searcher {
             controller.searchBar.autocorrectionType = .no
             controller.searchBar.spellCheckingType = .no
             controller.searchBar.inlinePredictionType = .no
+            settingUp = false
         }
     }
 
@@ -41,6 +53,11 @@ class Searcher {
     ///
     func tearDownSearcher(navigationItem: UINavigationItem, tableView: UITableView) async {
         if let controller = searchController {
+            guard !settingUp else {
+                return
+            }
+            tearingDown = true
+            logger.log("tearDownSearcher")
             // tableView.scrollToRow(at: .init(row: 0, section: 0), at: .top, animated: false)
             controller.isActive = false
             try? await unlessTesting {
@@ -49,6 +66,7 @@ class Searcher {
             navigationItem.searchController = nil
             searchController = nil
             tableView.scrollToRow(at: .init(row: 0, section: 0), at: .top, animated: false)
+            tearingDown = false
         }
     }
 }

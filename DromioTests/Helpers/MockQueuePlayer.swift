@@ -2,6 +2,8 @@
 import AVFoundation
 
 final class MockQueuePlayer: QueuePlayerType {
+    var rate: Float = 0
+    
     var currentItem: AVPlayerItem?
 
     var actionAtItemEnd: AVPlayer.ActionAtItemEnd = .none

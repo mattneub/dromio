@@ -13,7 +13,6 @@ struct PlaylistProcessorTests {
     let playlist = MockPlaylist()
     let player = MockPlayer()
     let download = MockDownload()
-    let audioSession = MockAudioSession()
     let networker = MockNetworker()
 
     init() {
@@ -24,7 +23,6 @@ struct PlaylistProcessorTests {
         services.currentPlaylist = playlist
         services.player = player
         services.download = download
-        services.audioSession = audioSession
         services.networker = networker
     }
 
@@ -107,8 +105,8 @@ struct PlaylistProcessorTests {
         networker.progress.send((id: "2", fraction: 0.5))
         await #while(presenter.thingsReceived.isEmpty)
         #expect(presenter.thingsReceived[0] == .progress("2", 0.5))
-        player.currentItem.send("10")
-        #expect(subject.state.currentItem == "10")
+        player.currentSongIdPublisher.send("10")
+        #expect(subject.state.currentSongId == "10")
     }
 
     @Test("receive initialData: if the Download says this song is downloaded, marks it as downloaded in the state")
@@ -241,7 +239,7 @@ struct PlaylistProcessorTests {
         #expect(!subject.state.jukebox)
     }
 
-    @Test("receive tapped: calls haptic, sets audio session active, sends .deselectAll")
+    @Test("receive tapped: calls haptic, sends .deselectAll")
     func receiveTapped() async {
         let song = SubsonicSong(
             id: "1",
@@ -272,8 +270,6 @@ struct PlaylistProcessorTests {
         subject.state.songs = [song, song2]
         await subject.receive(.tapped(song))
         #expect(haptic.methodsCalled == ["success()"])
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
         await #while(presenter.thingsReceived.isEmpty)
         #expect(presenter.thingsReceived[0] == .deselectAll)
     }
@@ -423,7 +419,6 @@ struct PlaylistProcessorTests {
         subject.state.songs = [song2, song3]
         await subject.receive(.tapped(song))
         #expect(haptic.methodsCalled.isEmpty)
-        #expect(audioSession.methodsCalled.isEmpty)
         #expect(requestMaker.methodsCalled.isEmpty)
         await #expect(download.methodsCalled.isEmpty)
         #expect(player.methodsCalled.isEmpty)

@@ -107,7 +107,7 @@ struct PlaylistDataSourceDelegateTests {
             suffix: nil,
             duration: nil,
             contributors: nil
-        ), currentItem: nil)
+        ), currentSongId: nil)
         #expect(configuration == expected)
         let thermometerView = try #require((cell?.contentView as? PlaylistCellContentView)?.thermometer)
         #expect(thermometerView.progress == 0)
@@ -116,7 +116,7 @@ struct PlaylistDataSourceDelegateTests {
         #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .systemGray3)
     }
 
-    @Test("present: state currentItem is passed to configuration")
+    @Test("present: state currentSongId is passed to configuration")
     func presentWithCurrentItemCell() async throws {
         makeWindow(view: tableView)
         var state = PlaylistState()
@@ -133,7 +133,7 @@ struct PlaylistDataSourceDelegateTests {
             duration: nil,
             contributors: nil
         )]
-        state.currentItem = "10"
+        state.currentSongId = "10"
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
@@ -151,7 +151,7 @@ struct PlaylistDataSourceDelegateTests {
             suffix: nil,
             duration: nil,
             contributors: nil
-        ), currentItem: "10")
+        ), currentSongId: "10")
         #expect(configuration == expected)
         let thermometerView = try #require((cell?.contentView as? PlaylistCellContentView)?.thermometer)
         #expect(thermometerView.progress == 0)

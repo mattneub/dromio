@@ -12,7 +12,7 @@ struct Services {
     var networker: NetworkerType = Networker()
     var nowPlayingInfo: NowPlayingInfoType = NowPlayingInfo()
     var persistence: PersistenceType = Persistence()
-    var player: PlayerType = Player()
+    var player: PlayerType = Player(player: AVQueuePlayer())
     var requestMaker: RequestMakerType = RequestMaker()
     var responseValidator: ResponseValidatorType = ResponseValidator()
     var urlMaker: URLMakerType = URLMaker()

@@ -62,7 +62,7 @@ struct PlaylistCellContentConfiguration: UIContentConfiguration, Equatable {
     /// The configuration must be created directly from a song.
     /// - Parameters:
     ///   - song: The song.
-    init(song: SubsonicSong, currentItem: String? = nil) {
+    init(song: SubsonicSong, currentSongId: String? = nil) {
         self.title = song.title
         self.artist = song.artist.ensureNoBreakSpace
         self.album = song.album.ensureNoBreakSpace
@@ -72,7 +72,7 @@ struct PlaylistCellContentConfiguration: UIContentConfiguration, Equatable {
             )
         } ?? ""
         self.composer = song.displayComposer.ensureNoBreakSpace
-        self.nowPlaying = currentItem == song.id
+        self.nowPlaying = currentSongId == song.id
     }
 
     func makeContentView() -> any UIView & UIContentView {

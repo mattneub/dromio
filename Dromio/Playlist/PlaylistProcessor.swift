@@ -25,7 +25,7 @@ final class PlaylistProcessor: Processor {
     /// Pipeline subscribing to Download's `progress` during a download, so we can report progress.
     var downloadPipeline: AnyCancellable?
 
-    /// Pipeline subscribing to Player's `currentItem`, so we can display what's playing.
+    /// Pipeline subscribing to Player's `currentSongId`, so we can display what's playing.
     var playerPipeline: AnyCancellable?
 
     func receive(_ action: PlaylistAction) async {
@@ -59,8 +59,9 @@ final class PlaylistProcessor: Processor {
                 }
             }
             if playerPipeline == nil {
-                playerPipeline = services.player.currentItem.sink { [weak self] song in
-                    self?.state.currentItem = song
+                playerPipeline = services.player.currentSongIdPublisher.sink { [weak self] songId in
+                    logger.log("playlist processor setting current item to \(songId ?? "nil", privacy: .public)")
+                    self?.state.currentSongId = songId
                 }
             }
         case .jukeboxButton:
@@ -71,8 +72,6 @@ final class PlaylistProcessor: Processor {
                 return
             }
             services.haptic.success()
-            logger.log("activating session")
-            try? services.audioSession.setActive(true, options: [])
             Task { // don't let this delay also delay the start of playing
                 try? await Task.sleep(for: .seconds(unlessTesting(0.3)))
                 await presenter?.receive(.deselectAll)

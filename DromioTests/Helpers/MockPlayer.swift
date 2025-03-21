@@ -4,7 +4,7 @@ import Combine
 
 @MainActor
 final class MockPlayer: PlayerType {
-    var currentItem = CurrentValueSubject<String?, Never>(nil)
+    var currentSongIdPublisher = CurrentValueSubject<String?, Never>(nil)
     var url: URL?
     var urls = [URL]()
     var song: SubsonicSong?
@@ -27,4 +27,13 @@ final class MockPlayer: PlayerType {
     func clear() {
         methodsCalled.append(#function)
     }
+
+    func backgrounding() {
+        methodsCalled.append(#function)
+    }
+
+    func foregrounding() {
+        methodsCalled.append(#function)
+    }
+
 }
