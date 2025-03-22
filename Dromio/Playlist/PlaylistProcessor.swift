@@ -31,6 +31,7 @@ final class PlaylistProcessor: Processor {
     func receive(_ action: PlaylistAction) async {
         switch action {
         case .clear:
+            services.haptic.impact()
             if state.jukeboxMode {
                 try? await stopAndClearJukebox()
             } else {
@@ -70,6 +71,9 @@ final class PlaylistProcessor: Processor {
             }
         case .jukeboxButton:
             state.jukeboxMode.toggle()
+        case .playPause:
+            services.haptic.impact()
+            services.player.playPause()
         case .tapped(let song):
             let sequence = state.songs.buildSequence(startingWith: song)
             guard sequence.count > 0 else {

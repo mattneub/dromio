@@ -68,9 +68,18 @@ struct PlaylistViewControllerTests {
     func viewDidLoadRight() async throws {
         subject.loadViewIfNeeded()
         let rightBarButtonItem = try #require(subject.navigationItem.rightBarButtonItem)
-        #expect(rightBarButtonItem.title == "Clear")
+        #expect(rightBarButtonItem.image == UIImage(systemName: "clear.fill"))
         #expect(rightBarButtonItem.target === subject)
         #expect(rightBarButtonItem.action == #selector(subject.doClear))
+    }
+
+    @Test("viewDidLoad: creates the other right bar button item")
+    func viewDidLoadRight2() async throws {
+        subject.loadViewIfNeeded()
+        let playpauseButtonItem = try #require(subject.navigationItem.rightBarButtonItems?[1])
+        #expect(playpauseButtonItem.image == UIImage(systemName: "playpause.fill"))
+        #expect(playpauseButtonItem.target === subject)
+        #expect(playpauseButtonItem.action == #selector(subject.doPlayPause))
     }
 
     @Test("present: presents to the data source")
@@ -109,6 +118,28 @@ struct PlaylistViewControllerTests {
         #expect(button.configuration?.image == UIImage(systemName: "rectangle"))
     }
 
+    @Test("present: sets visibility of the playpause button")
+    func presentPlaypauseButton() async throws {
+        let items = try #require(subject.navigationItem.rightBarButtonItems)
+        var state = PlaylistState()
+        state.jukeboxMode = false
+        state.currentSongId = nil
+        subject.present(state)
+        #expect(items[1].isHidden)
+        state.jukeboxMode = true
+        state.currentSongId = nil
+        subject.present(state)
+        #expect(items[1].isHidden)
+        state.jukeboxMode = false
+        state.currentSongId = "1"
+        subject.present(state)
+        #expect(!items[1].isHidden)
+        state.jukeboxMode = true
+        state.currentSongId = "1"
+        subject.present(state)
+        #expect(items[1].isHidden)
+    }
+
     @Test("receive deselectAll: tells the table view to select nil")
     func receiveDeselectAll() async {
         subject.tableView.selectRow(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .none)
@@ -121,6 +152,13 @@ struct PlaylistViewControllerTests {
     func receiveProgress() async {
         await subject.receive(.progress("1", 0.5))
         #expect(mockDataSourceDelegate.thingsReceived.last == .progress("1", 0.5))
+    }
+
+    @Test("doPlayPause: sends .playPause to the processor")
+    func doPlayPause() async {
+        subject.doPlayPause()
+        await #while(processor.thingsReceived.isEmpty)
+        #expect(processor.thingsReceived.last == .playPause)
     }
 
     @Test("doClear: sends .clear to the processor")

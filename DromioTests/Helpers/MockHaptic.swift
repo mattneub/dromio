@@ -12,4 +12,9 @@ final class MockHaptic: HapticType {
     func failure() {
         methodsCalled.append(#function)
     }
+
+    func impact() {
+        methodsCalled.append(#function)
+    }
+
 }

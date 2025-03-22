@@ -48,12 +48,13 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
         view.backgroundColor = .background
-        let rightBarButtonItem = UIBarButtonItem(title: "Clear", image: nil, target: self, action: #selector(doClear))
-        navigationItem.rightBarButtonItem = rightBarButtonItem
+        let clearItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "clear.fill"), target: self, action: #selector(doClear))
+        let pauseItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "playpause.fill"), target: self, action: #selector(doPlayPause))
+        navigationItem.rightBarButtonItems = [clearItem, pauseItem]
         Task {
             await processor?.receive(.initialData)
         }
-        if userHasJukeboxRole { // withdrawing this feature for now, alas
+        if userHasJukeboxRole {
             tableView.tableHeaderView = tableHeaderView
         }
     }
@@ -66,6 +67,9 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
             } else {
                 UIImage(systemName: "rectangle")
             }
+        }
+        if let playPauseButton = navigationItem.rightBarButtonItems?[1] {
+            playPauseButton.isHidden = !state.showPlayPauseButton
         }
     }
 
@@ -81,6 +85,12 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     @objc func doClear() {
         Task {
             await processor?.receive(.clear)
+        }
+    }
+
+    @objc func doPlayPause() {
+        Task {
+            await processor?.receive(.playPause)
         }
     }
 

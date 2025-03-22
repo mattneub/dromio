@@ -12,7 +12,7 @@ struct SubsonicSong: Codable, Equatable, Sendable {
     let year: Int?
     let albumId: String?
     let suffix: String?
-    let duration: Int?
+    let duration: Double?
     let contributors: [Contributor]?
     // Lots of other stuff I'm ignoring for now...
     // This, however, is internal to the app:

@@ -4,26 +4,38 @@ import UIKit
 protocol HapticType {
     func failure()
     func success()
+    func impact()
 }
 
 @MainActor
-protocol GeneratorType {
+protocol NotificationFeedbackGeneratorType {
     func prepare()
     func notificationOccurred(_: UINotificationFeedbackGenerator.FeedbackType)
 }
 
-extension UINotificationFeedbackGenerator: GeneratorType {}
+@MainActor
+protocol ImpactFeedbackGeneratorType {
+    func impactOccurred(intensity: CGFloat)
+}
+
+extension UINotificationFeedbackGenerator: NotificationFeedbackGeneratorType {}
+extension UIImpactFeedbackGenerator: ImpactFeedbackGeneratorType {}
 
 @MainActor
 final class Haptic: HapticType {
-    var generator: GeneratorType = UINotificationFeedbackGenerator()
+    var notificationFeedbackGenerator: NotificationFeedbackGeneratorType = UINotificationFeedbackGenerator()
+    var impactFeedbackGenerator: ImpactFeedbackGeneratorType = UIImpactFeedbackGenerator()
 
     func failure() {
-        generator.notificationOccurred(.error)
+        notificationFeedbackGenerator.notificationOccurred(.error)
     }
 
     func success() {
-        generator.prepare()
-        generator.notificationOccurred(.success)
+        notificationFeedbackGenerator.prepare()
+        notificationFeedbackGenerator.notificationOccurred(.success)
+    }
+
+    func impact() {
+        impactFeedbackGenerator.impactOccurred(intensity: 1.0)
     }
 }

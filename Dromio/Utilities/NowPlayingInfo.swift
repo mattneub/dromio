@@ -34,7 +34,7 @@ final class NowPlayingInfo: NowPlayingInfoType {
     func display(song: SubsonicSong) {
         info[.artist] = song.artist
         info[.title] = song.title
-        info[.duration] = song.duration
+        info[.duration] = song.duration ?? 60
     }
 
     func playingAt(_ time: TimeInterval) {

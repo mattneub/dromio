@@ -473,6 +473,12 @@ struct PlaylistProcessorTests {
         #expect(requestMaker.songIds == [nil, nil, "1", "2", "3", nil])
     }
 
+    @Test("receive playPause: tells the player to playPause")
+    func playpause() async {
+        await subject.receive(.playPause)
+        #expect(haptic.methodsCalled == ["impact()"])
+        #expect(player.methodsCalled == ["playPause()"])
+    }
 
     @Test("receive clear: tells the current playlist, player, and download to clear, sets the state, call popPlaylist")
     func clear() async {
@@ -491,6 +497,7 @@ struct PlaylistProcessorTests {
         )]
         subject.state.songs = songs
         await subject.receive(.clear)
+        #expect(haptic.methodsCalled == ["impact()"])
         #expect(playlist.methodsCalled == ["clear()"])
         #expect(player.methodsCalled == ["clear()"])
         await #expect(download.methodsCalled == ["clear()"])
@@ -503,6 +510,7 @@ struct PlaylistProcessorTests {
     func clearJukeboxMode() async {
         subject.state.jukeboxMode = true
         await subject.receive(.clear)
+        #expect(haptic.methodsCalled == ["impact()"])
         #expect(playlist.methodsCalled.isEmpty)
         #expect((await download.methodsCalled).isEmpty)
         #expect(coordinator.methodsCalled.isEmpty)

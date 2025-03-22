@@ -35,9 +35,9 @@ struct PlayerTests {
         #expect(subject.currentSongId == "4")
     }
 
-    @Test("adjustNowPlayingItemToCurrentItem: calls now playing info `display`, sets currentSongIdPublisher")
-    func adjust() {
-        subject.knownSongs["4"] = SubsonicSong(
+    @Test("currentSong: gets song via currentSongId from the known songs")
+    func currentSong() async throws {
+        let song = SubsonicSong(
             id: "4",
             title: "Title",
             album: "Album",
@@ -50,26 +50,19 @@ struct PlayerTests {
             duration: 100,
             contributors: nil
         )
+        subject.knownSongs["4"] = song
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
-        subject.adjustNowPlayingItemToCurrentItem()
-        #expect(nowPlayingInfo.methodsCalled == ["display(song:)"])
-        #expect(nowPlayingInfo.song == subject.knownSongs["4"]!)
-        #expect(subject.currentSongIdPublisher.value == "4")
-    }
-
-    @Test("adjustNowPlayingItemToCurrentItem: if current item is nil, calls clear, deactivates session, sets currentSongIdPublisher")
-    func adjustNil() {
+        #expect(subject.currentSong == song)
+        subject.knownSongs["4"] = nil
+        #expect(subject.currentSong == nil)
+        subject.knownSongs["4"] = song
         audioPlayer.currentItem = nil
-        subject.adjustNowPlayingItemToCurrentItem()
-        #expect(nowPlayingInfo.methodsCalled.contains("clear()"))
-        #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
-        #expect(audioSession.active == false)
-        #expect(subject.currentSongIdPublisher.value == nil)
+        #expect(subject.currentSong == nil)
     }
 
-    @Test("if the queue player changes current item, call now playing info display, sets currentSongIdPublisher")
-    func adjustWhenCurrentItemChanges() async {
-        let subject = Player(player: AVQueuePlayer())
+    @Test("if the queue player changes current item, calls now playing info `display` and `paused`, sets currentSongIdPublisher, activates")
+    func itemChanges() async {
+        let subject = Player(player: AVQueuePlayer()) // real player!
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
             title: "Title",
@@ -83,23 +76,39 @@ struct PlayerTests {
             duration: 100,
             contributors: nil
         )
-        let item = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        let url = Bundle(for: MockPlayer.self).url(forResource: "4", withExtension: "mp3")! // real song!
+        let item = AVPlayerItem(asset: AVURLAsset(url: url))
         subject.player.insert(item, after: nil)
         subject.player.play()
-        await #while(nowPlayingInfo.song == nil)
-        #expect(nowPlayingInfo.methodsCalled == ["display(song:)"])
+        try? await Task.sleep(for: .seconds(0.1)) // give it a chance to start, then test
+        #expect(nowPlayingInfo.methodsCalled == ["display(song:)", "playingAt(_:)"])
         #expect(nowPlayingInfo.song == subject.knownSongs["4"]!)
         #expect(subject.currentSongIdPublisher.value == "4")
+        #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
+        #expect(audioSession.active == true)
     }
 
     @Test("if the queue player changes current item to nil, calls clear, deactivates session, sets currentSongIdPublisher")
-    func adjustNilWhenCurrentItemChanges() async {
-        let subject = Player(player: AVQueuePlayer())
-        let item = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+    func itemChangesToNil() async {
+        let subject = Player(player: AVQueuePlayer()) // real player!
+        subject.knownSongs["4"] = SubsonicSong(
+            id: "4",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: 100,
+            contributors: nil
+        )
+        let url = Bundle(for: MockPlayer.self).url(forResource: "4", withExtension: "mp3")! // real song!
+        let item = AVPlayerItem(asset: AVURLAsset(url: url))
         subject.player.insert(item, after: nil)
-        subject.player.removeAllItems()
-        await #while(nowPlayingInfo.info[.title] != nil)
-        await #while(nowPlayingInfo.methodsCalled.isEmpty)
+        subject.player.play() // play the whole thing so it ends in good order
+        await #while(!nowPlayingInfo.methodsCalled.contains("clear()"))
         #expect(nowPlayingInfo.methodsCalled.contains("clear()"))
         #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
         #expect(audioSession.active == false)
@@ -123,12 +132,8 @@ struct PlayerTests {
         )
         let url = URL(string: "http://example.com")!
         subject.play(url: url, song: song)
-        #expect(audioPlayer.methodsCalled == ["removeAllItems()", "insert(_:after:)", "play()"])
+        #expect(audioPlayer.methodsCalled == ["removeAllItems()", "insert(_:after:)", "play()", "currentTime()"])
         #expect((audioPlayer.item?.asset as? AVURLAsset)?.url == url)
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
-        #expect(audioPlayer.after == nil)
-        #expect(audioPlayer.actionAtItemEnd == .advance)
         #expect(subject.knownSongs["1"] == song)
     }
 
@@ -148,10 +153,14 @@ struct PlayerTests {
             contributors: nil
         )
         let url = URL(string: "http://example.com")!
+        audioPlayer.time = 10
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/1.what")!))
         subject.play(url: url, song: song)
+        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.active == true)
         #expect(nowPlayingInfo.methodsCalled == ["display(song:)", "playingAt(_:)"])
         #expect(nowPlayingInfo.song == song)
-        #expect(nowPlayingInfo.time == 0)
+        #expect(nowPlayingInfo.time == 10)
         #expect(subject.currentSongIdPublisher.value == "1")
     }
 
@@ -182,11 +191,39 @@ struct PlayerTests {
     func doPlay() {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         audioPlayer.time = 30
-        subject.doPlay()
+        subject.doPlay(updateOnly: false)
         #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
         #expect(audioSession.active == true)
         #expect(audioPlayer.methodsCalled.contains("play()"))
         #expect(nowPlayingInfo.methodsCalled.contains("playingAt(_:)"))
+        #expect(nowPlayingInfo.time == 30)
+        #expect(subject.currentSongIdPublisher.value == "4")
+    }
+
+    @Test("doPlay: if update only true, activates audio session, doesn't call play, tells now playing info playing at current time")
+    func doPlayUpdateOnlyTrue() {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        audioPlayer.time = 30
+        audioPlayer.rate = 1
+        subject.doPlay(updateOnly: true) // *
+        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.active == true)
+        #expect(!audioPlayer.methodsCalled.contains("play()")) // *
+        #expect(nowPlayingInfo.methodsCalled.contains("playingAt(_:)"))
+        #expect(nowPlayingInfo.time == 30)
+        #expect(subject.currentSongIdPublisher.value == "4")
+    }
+
+    @Test("doPlay: when paused if update only true, activates audio session, doesn't call play, tells now playing info paused at current time")
+    func doPlayUpdateOnlyTruePaused() {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        audioPlayer.time = 30
+        audioPlayer.rate = 0 // *
+        subject.doPlay(updateOnly: true)
+        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.active == true)
+        #expect(!audioPlayer.methodsCalled.contains("play()")) // *
+        #expect(nowPlayingInfo.methodsCalled.contains("pausedAt(_:)")) // *
         #expect(nowPlayingInfo.time == 30)
         #expect(subject.currentSongIdPublisher.value == "4")
     }
@@ -200,36 +237,33 @@ struct PlayerTests {
         #expect(nowPlayingInfo.time == 30)
     }
 
-    @Test("primeThePump: if we are paused, tells now playing info to display song, play, and pause")
-    func primeThePump() {
-        let song = SubsonicSong(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )
-        subject.knownSongs["1"] = song
-        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/1.what")!))
+    @Test("playPause is like doPlay if rate is 0")
+    func playPause() {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         audioPlayer.time = 30
         audioPlayer.rate = 0
-        subject.primeThePump()
-        #expect(nowPlayingInfo.methodsCalled == ["display(song:)", "playingAt(_:)", "pausedAt(_:)"])
-        #expect(nowPlayingInfo.time == 30)
+        subject.playPause()
         #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
         #expect(audioSession.active == true)
-        #expect(audioPlayer.methodsCalled == ["play()", "currentTime()", "pause()", "currentTime()"])
-        #expect(subject.currentSongIdPublisher.value == "1")
+        #expect(audioPlayer.methodsCalled.contains("play()"))
+        #expect(nowPlayingInfo.methodsCalled.contains("playingAt(_:)"))
+        #expect(nowPlayingInfo.time == 30)
+        #expect(subject.currentSongIdPublisher.value == "4")
     }
 
-    @Test("primeThePump: if we are not paused, none of that happens")
-    func primeThePumpNotPaused() {
+    @Test("playPause is like doPause if rate is 1")
+    func playPauseRate1() {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        audioPlayer.time = 30
+        audioPlayer.rate = 1
+        subject.playPause()
+        #expect(audioPlayer.methodsCalled.contains("pause()"))
+        #expect(nowPlayingInfo.methodsCalled.contains("pausedAt(_:)"))
+        #expect(nowPlayingInfo.time == 30)
+    }
+
+    @Test("interruptionEnded: if we are playing, nothing happens")
+    func interruptionEndedRate1() {
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -247,26 +281,15 @@ struct PlayerTests {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/1.what")!))
         audioPlayer.time = 30
         audioPlayer.rate = 1
-        subject.primeThePump()
+        NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: nil, userInfo: [
+            AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.ended.rawValue
+        ])
         #expect(nowPlayingInfo.methodsCalled.isEmpty)
         #expect(audioSession.methodsCalled.isEmpty)
         #expect(audioPlayer.methodsCalled.isEmpty)
-        #expect(subject.currentSongIdPublisher.value == nil)
     }
 
-    @Test("primeThePump: if we are paused but no current item, none of that happens")
-    func primeThePumpNoCurrentItem() {
-        audioPlayer.currentItem = nil
-        audioPlayer.time = 30
-        audioPlayer.rate = 0
-        subject.primeThePump()
-        #expect(nowPlayingInfo.methodsCalled.isEmpty)
-        #expect(audioSession.methodsCalled.isEmpty)
-        #expect(audioPlayer.methodsCalled.isEmpty)
-        #expect(subject.currentSongIdPublisher.value == nil)
-    }
-
-    @Test("interruption ended is just like primeThePump() [because it calls it]")
+    @Test("interruptionEnded if we are paused, doPlay followed by doPause")
     func interruptionEnded() {
         let song = SubsonicSong(
             id: "1",
@@ -290,80 +313,10 @@ struct PlayerTests {
         ])
         #expect(nowPlayingInfo.methodsCalled == ["display(song:)", "playingAt(_:)", "pausedAt(_:)"])
         #expect(nowPlayingInfo.time == 30)
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.methodsCalled == ["setActive(_:options:)", "setActive(_:options:)"])
         #expect(audioSession.active == true)
         #expect(audioPlayer.methodsCalled == ["play()", "currentTime()", "pause()", "currentTime()"])
         #expect(subject.currentSongIdPublisher.value == "1")
-    }
-
-    @Test("interruption started does nothing")
-    func interruptionStarted() {
-        let song = SubsonicSong(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )
-        subject.knownSongs["1"] = song
-        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/1.what")!))
-        audioPlayer.time = 30
-        audioPlayer.rate = 0
-        NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: nil, userInfo: [
-            AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.began.rawValue
-        ])
-        #expect(nowPlayingInfo.methodsCalled.isEmpty)
-        #expect(audioSession.methodsCalled.isEmpty)
-        #expect(audioPlayer.methodsCalled.isEmpty)
-        #expect(subject.currentSongIdPublisher.value == nil)
-    }
-
-    @Test("interruption ended does nothing if not paused")
-    func interruptionEndedNotPaused() {
-        let song = SubsonicSong(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )
-        subject.knownSongs["1"] = song
-        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/1.what")!))
-        audioPlayer.time = 30
-        audioPlayer.rate = 1
-        NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: nil, userInfo: [
-            AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.ended.rawValue
-        ])
-        #expect(nowPlayingInfo.methodsCalled.isEmpty)
-        #expect(audioSession.methodsCalled.isEmpty)
-        #expect(audioPlayer.methodsCalled.isEmpty)
-        #expect(subject.currentSongIdPublisher.value == nil)
-    }
-
-    @Test("interruption ended does nothing if nil current item")
-    func interruptionEndedNilCurrentItem() {
-        audioPlayer.currentItem = nil
-        audioPlayer.time = 30
-        audioPlayer.rate = 0
-        NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: nil, userInfo: [
-            AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.ended.rawValue
-        ])
-        #expect(nowPlayingInfo.methodsCalled.isEmpty)
-        #expect(audioSession.methodsCalled.isEmpty)
-        #expect(audioPlayer.methodsCalled.isEmpty)
-        #expect(subject.currentSongIdPublisher.value == nil)
     }
 
     @Test("clear: call pause and removeAllItems, empties the known list, nilifies currentSongIdPublisher")
@@ -392,4 +345,42 @@ struct PlayerTests {
         #expect(subject.currentSongIdPublisher.value == nil)
     }
 
+    @Test("backgrounding: if rate is 0, sets audioSession inactive")
+    func backgrounding() {
+        audioPlayer.rate = 0
+        audioSession.active = true
+        subject.backgrounding()
+        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.active == false)
+    }
+
+    @Test("backgrounding: if rate is 1, does nothing")
+    func backgroundingRate1() {
+        audioPlayer.rate = 1
+        subject.backgrounding()
+        #expect(audioSession.methodsCalled.isEmpty)
+    }
+
+    @Test("foregrounding: if rate is 1, just like doPlay")
+    func foregroundingRate() {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        audioPlayer.time = 30
+        audioPlayer.rate = 1
+        subject.foregrounding()
+        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.active == true)
+        #expect(!audioPlayer.methodsCalled.contains("play()")) // *
+        #expect(nowPlayingInfo.methodsCalled.contains("playingAt(_:)"))
+        #expect(nowPlayingInfo.time == 30)
+        #expect(subject.currentSongIdPublisher.value == "4")
+    }
+
+    @Test("foregrounding: if rate is 0, does nothing")
+    func foregroundingRate0() {
+        audioPlayer.rate = 0
+        subject.foregrounding()
+        #expect(nowPlayingInfo.methodsCalled.isEmpty)
+        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(audioPlayer.methodsCalled.isEmpty)
+    }
 }

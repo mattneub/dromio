@@ -8,6 +8,8 @@ enum PlaylistAction: Equatable {
     case initialData
     /// The user tapped the jukebox button.
     case jukeboxButton
+    /// The user tapped the playpause button.
+    case playPause
     /// The user tapped a song.
     case tapped(SubsonicSong)
 }

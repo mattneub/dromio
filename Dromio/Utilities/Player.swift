@@ -13,6 +13,12 @@ protocol QueuePlayerType: AnyObject {
     func insert(_: AVPlayerItem, after: AVPlayerItem?)
     func currentTime() -> CMTime
     var rate: Float { get set }
+    func addPeriodicTimeObserver(
+        forInterval interval: CMTime,
+        queue: dispatch_queue_t?,
+        using block: @escaping @Sendable (CMTime) -> Void
+    ) -> Any
+    func removeTimeObserver(_ observer: Any)
 }
 
 extension AVQueuePlayer: QueuePlayerType {}
@@ -22,6 +28,7 @@ protocol PlayerType {
     var currentSongIdPublisher: CurrentValueSubject<String?, Never> { get }
     func play(url: URL, song: SubsonicSong)
     func playNext(url: URL, song: SubsonicSong)
+    func playPause()
     func clear()
     func backgrounding()
     func foregrounding()
@@ -47,6 +54,9 @@ final class Player: NSObject, PlayerType {
     /// starts or ends.
     var interruptionObservation: (any NSObjectProtocol)?
 
+    /// Observation of the player periodically while it has items.
+    var periodicObservation: Any?
+
     init(player: any QueuePlayerType) {
         self.player = player
         super.init()
@@ -63,9 +73,7 @@ final class Player: NSObject, PlayerType {
             }
         }
         interruptionObservation = NotificationCenter.default.addObserver(
-            forName: AVAudioSession.interruptionNotification,
-            object: nil,
-            queue: .main
+            forName: AVAudioSession.interruptionNotification, object: nil, queue: .main
         ) { [weak self] notification in
             var type: AVAudioSession.InterruptionType?
             if let info = notification.userInfo {
@@ -83,7 +91,11 @@ final class Player: NSObject, PlayerType {
                     unlessTesting {
                         logger.log("interruption ended")
                     }
-                    self?.primeThePump()
+                    if self?.player.rate == 0 {
+                        // "prime the pump" by activating session, signalling info center
+                        self?.doPlay(updateOnly: false)
+                        self?.doPause()
+                    }
                 case .none: break
                 case .some(_): break
                 }
@@ -93,15 +105,16 @@ final class Player: NSObject, PlayerType {
 
     deinit {
         let commandCenter = MPRemoteCommandCenter.shared()
-        commandCenter.togglePlayPauseCommand.removeTarget(self)
         commandCenter.playCommand.removeTarget(self)
         commandCenter.pauseCommand.removeTarget(self)
     }
 
+    /// Called when the player's current item changes.
     func adjustNowPlayingItemToCurrentItem() {
-        if let id = currentSongId, let song = knownSongs[id] {
-            services.nowPlayingInfo.display(song: song)
+        if currentSong != nil {
+            doPlay(updateOnly: true)
         } else if player.currentItem == nil {
+            removePeriodicObservation()
             services.nowPlayingInfo.clear()
             unlessTesting {
                 logger.log("deactivating session")
@@ -130,72 +143,103 @@ final class Player: NSObject, PlayerType {
         return nil
     }
 
+    /// Utility to obtain the current song, based on the current song id and the known songs.
+    var currentSong: SubsonicSong? {
+        if let id = currentSongId, let song = knownSongs[id] {
+            return song
+        }
+        return nil
+    }
+
+    
+    /// Stop playing, remove the existing queue, and create a new queue starting with the resource
+    /// at the given URL, and start playing.
+    /// - Parameters:
+    ///   - url: URL of the resource. May be local (file) or remote (http(s)).
+    ///   - song: SubsonicSong info associated with this URL.
     func play(url: URL, song: SubsonicSong) {
         logger.log("starting to play")
-        let item = AVPlayerItem(url: url)
+        removePeriodicObservation()
         player.removeAllItems()
-        player.insert(item, after: nil)
+        player.insert(AVPlayerItem(url: url), after: nil)
         unlessTesting {
             logger.log("activating session")
         }
-        try? services.audioSession.setActive(true, options: [])
         logger.log("playing! \(url, privacy: .public)")
-        player.play()
-        player.actionAtItemEnd = .advance
-        services.nowPlayingInfo.display(song: song)
-        services.nowPlayingInfo.playingAt(0)
-        knownSongs[song.id] = song
-        currentSongIdPublisher.send(song.id)
+        knownSongs[song.id] = song // order matters
+        doPlay(updateOnly: false)
     }
 
+    /// Without pausing (or playing), queue the resource at the given URL at the end of the
+    /// current queue.
+    /// - Parameters:
+    ///   - url: URL of the resource. May be local (file) or remote (http(s)).
+    ///   - song: SubsonicSong info associated with this URL.
     func playNext(url: URL, song: SubsonicSong) {
-        let item = AVPlayerItem(url: url)
-        player.insert(item, after: nil) // "nil" means "at the end" (oddly enough)
+        player.insert(AVPlayerItem(url: url), after: nil) // "nil" means "at the end" (oddly enough)
         knownSongs[song.id] = song
     }
 
+    /// Response to the remote command center saying "play".
     @objc func doPlay(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
         logger.log("doPlay")
-        doPlay()
+        doPlay(updateOnly: false)
         return .success
     }
 
-    func doPlay() {
+    /// Major workhorse. Assert our session; if we are not actually playing, play; update now
+    /// playing info; and update our current song publisher.
+    /// - Parameter updateOnly: Flag. If true, do all the updating, but don't actually play.
+    ///   If false, the caller means _really_ play.
+    func doPlay(updateOnly: Bool) {
         unlessTesting {
             logger.log("activating session")
         }
         try? services.audioSession.setActive(true, options: [])
-        player.play()
-        services.nowPlayingInfo.playingAt(player.currentTime().seconds)
+        if player.rate == 0 && !updateOnly {
+            player.play()
+            configurePeriodicObservation()
+        }
+        if let song = currentSong {
+            services.nowPlayingInfo.display(song: song)
+        }
+        print("player rate is", player.rate)
+        if player.rate == 0 {
+            services.nowPlayingInfo.pausedAt(player.currentTime().seconds)
+        } else {
+            services.nowPlayingInfo.playingAt(player.currentTime().seconds)
+        }
         currentSongIdPublisher.send(currentSongId)
     }
 
+    /// Response to the remote command center saying "pause".
     @objc func doPause(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
         logger.log("doPause")
         doPause()
         return .success
     }
 
+    /// Minor workhorse. Pause the queue player and update the now playing info center.
     func doPause() {
+        try? services.audioSession.setActive(true, options: [])
         player.pause()
         services.nowPlayingInfo.pausedAt(player.currentTime().seconds)
     }
 
-    // TODO: The big question is: do I need to "write down" the current item info outside of the queue player?
-    // And I think the answer is: not as long as I reassert the now playing item any time we foreground;
-    // but if I don't want to do that, then the app needs a "resume" button at least
-
-    func primeThePump() {
-        if player.rate == 0, let id = currentSongId, let song = knownSongs[id] { // i.e. we are _paused_
-            services.nowPlayingInfo.display(song: song)
-            // these calls will activate the session, set the `nowPlayingInfo` time to the player's current time,
-            // and make sure we do in fact take over the now playing info center
-            doPlay()
+    /// Public toggle, used by the playpause button in the playlist interface.
+    func playPause() {
+        if player.rate > 0 {
             doPause()
+        } else {
+            doPlay(updateOnly: false)
         }
     }
 
+    /// Tear down everything: stop playing and empty the queue, throw away the known songs,
+    /// remove our info from the now playing info center, deactivate the session, notify that
+    /// there is now no current song.
     func clear() {
+        removePeriodicObservation()
         player.pause()
         player.removeAllItems()
         knownSongs.removeAll()
@@ -207,9 +251,10 @@ final class Player: NSObject, PlayerType {
         currentSongIdPublisher.send(nil)
     }
 
+    /// We are advised to deactivate on backgrounding if not actively playing, to avoid
+    /// a confusing extra "interruption" notification later. So this method is called from
+    /// the scene delegate, and we do exactly that.
     func backgrounding() {
-        // we are advised to deactivate on backgrounding if not actively playing, to avoid
-        // a confusing extra "interruption" notification later
         if player.rate == 0 {
             unlessTesting {
                 logger.log("deactivating session")
@@ -218,7 +263,51 @@ final class Player: NSObject, PlayerType {
         }
     }
 
+    /// Called by the scene delegate. Just to be on the safe side, update all our info when we
+    /// return from the background, _if we are already playing._ If we are not already playing,
+    /// do nothing, because we don't want to grab the now playing info center and audio session
+    /// away from someone else who may have it. If the user wants to resume playing, that's what
+    /// the playpause button is for.
     func foregrounding() {
-        primeThePump()
+        if player.rate > 0 {
+            doPlay(updateOnly: true)
+        }
+    }
+}
+
+/*
+ I would really rather not have to do frequent periodic checking and updating, but occasionally
+ the now playing info just goes bonkers, so it seems like it might be necessary. Just in case,
+ I am sequestering them in this extension and putting them behind a sort of feature flag.
+ */
+extension Player {
+    static var usePeriodicObservation = false
+
+    func configurePeriodicObservation() {
+        guard Self.usePeriodicObservation else {
+            return
+        }
+        guard periodicObservation == nil else {
+            return
+        }
+        periodicObservation = player.addPeriodicTimeObserver(
+            forInterval: CMTime(value: 1, timescale: 2),
+            queue: .main
+        ) { [weak self] time in
+            MainActor.assumeIsolated {
+                self?.doPlay(updateOnly: true)
+            }
+        }
+    }
+
+    func removePeriodicObservation() {
+        guard Self.usePeriodicObservation else {
+            return
+        }
+        guard let periodicObservation else {
+            return
+        }
+        player.removeTimeObserver(periodicObservation)
+        self.periodicObservation = nil
     }
 }

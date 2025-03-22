@@ -36,4 +36,8 @@ final class MockPlayer: PlayerType {
         methodsCalled.append(#function)
     }
 
+    func playPause() {
+        methodsCalled.append(#function)
+    }
+
 }

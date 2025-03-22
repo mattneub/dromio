@@ -15,10 +15,12 @@ final class MockQueuePlayer: QueuePlayerType {
 
     func play() {
         methodsCalled.append(#function)
+        rate = 1
     }
 
     func pause() {
         methodsCalled.append(#function)
+        rate = 0
     }
 
     func removeAllItems() {
@@ -33,7 +35,16 @@ final class MockQueuePlayer: QueuePlayerType {
 
     func currentTime() -> CMTime {
         methodsCalled.append(#function)
-        let time = CMTime(seconds: self.time, preferredTimescale: CMTimeScale(1.0))
+        let time = CMTime(seconds: self.time, preferredTimescale: 1)
         return time
     }
+
+    func addPeriodicTimeObserver(forInterval interval: CMTime, queue: dispatch_queue_t?, using block: @escaping @Sendable (CMTime) -> Void) -> Any {
+        methodsCalled.append(#function)
+    }
+
+    func removeTimeObserver(_ observer: Any) {
+        methodsCalled.append(#function)
+    }
+
 }

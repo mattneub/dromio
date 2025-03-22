@@ -5,30 +5,39 @@ import UIKit
 @MainActor
 struct HapticTests {
     let subject = Haptic()
-    let mockGenerator = MockGenerator()
+    let mockNotificationGenerator = MockNotificationGenerator()
+    let mockImpactGenerator = MockImpactGenerator()
 
     init() {
-        subject.generator = mockGenerator
+        subject.notificationFeedbackGenerator = mockNotificationGenerator
+        subject.impactFeedbackGenerator = mockImpactGenerator
     }
 
     @Test("success: calls prepare, notificationOccurred with success")
     func success() {
         subject.success()
-        #expect(mockGenerator.methodsCalled[0] == "prepare()")
-        #expect(mockGenerator.methodsCalled[1] == "notificationOccurred(_:)")
-        #expect(mockGenerator.type == .success)
+        #expect(mockNotificationGenerator.methodsCalled[0] == "prepare()")
+        #expect(mockNotificationGenerator.methodsCalled[1] == "notificationOccurred(_:)")
+        #expect(mockNotificationGenerator.type == .success)
     }
 
     @Test("failure: calls notificationOccurred with error")
     func failure() {
         subject.failure()
-        #expect(mockGenerator.methodsCalled == ["notificationOccurred(_:)"])
-        #expect(mockGenerator.type == .error)
+        #expect(mockNotificationGenerator.methodsCalled == ["notificationOccurred(_:)"])
+        #expect(mockNotificationGenerator.type == .error)
+    }
+
+    @Test("impact: calls impact")
+    func impact() {
+        subject.impact()
+        #expect(mockImpactGenerator.methodsCalled == ["impactOccurred(intensity:)"])
+        #expect(mockImpactGenerator.intensity == 1)
     }
 }
 
 @MainActor
-final class MockGenerator: GeneratorType {
+final class MockNotificationGenerator: NotificationFeedbackGeneratorType {
     var methodsCalled = [String]()
     var type: UINotificationFeedbackGenerator.FeedbackType?
 
@@ -39,5 +48,16 @@ final class MockGenerator: GeneratorType {
     func notificationOccurred(_ type: UINotificationFeedbackGenerator.FeedbackType) {
         methodsCalled.append(#function)
         self.type = type
+    }
+}
+
+@MainActor
+final class MockImpactGenerator: ImpactFeedbackGeneratorType {
+    var methodsCalled = [String]()
+    var intensity: CGFloat?
+
+    func impactOccurred(intensity: CGFloat) {
+        methodsCalled.append(#function)
+        self.intensity = intensity
     }
 }
