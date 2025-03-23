@@ -1,3 +1,5 @@
+import Foundation
+
 /// Processor containing logic for the Ping view controller.
 ///
 @MainActor
@@ -19,10 +21,13 @@ final class PingProcessor: Processor {
         switch action {
         case .choices:
             state.status = .choices
+            services.player.clear()
         case .deleteServer:
             await deleteServer()
         case .doPing:
             await ping()
+        case .offlineMode:
+            await offlineMode()
         case .pickServer:
             await pickServer()
         case .reenterServerInfo:
@@ -88,7 +93,7 @@ final class PingProcessor: Processor {
     func pickServer() async {
         guard var servers = try? services.persistence.loadServers() else { return }
         guard servers.count > 0 else {
-            coordinator?.showAlert(title: "Nothing to choose between.", message: "Tap Enter Server Info if you want to add a server.")
+            coordinator?.showAlert(title: "No server to choose.", message: "Tap Enter Server Info if you want to add a server.")
             return
         }
 
@@ -110,10 +115,23 @@ final class PingProcessor: Processor {
             await receive(.doPing)
         }
     }
+
+    func offlineMode() async {
+        // intersect the current playlist with downloads
+        var intersection = [URL?]()
+        for song in services.currentPlaylist.list {
+            intersection.append(try? await services.download.downloadedURL(for: song))
+        }
+        guard !intersection.compactMap({$0}).isEmpty else {
+            coordinator?.showAlert(title: "No downloads to play.", message: "You can’t enter offline mode, because you have no downloaded playlist items.")
+            return
+        }
+        coordinator?.showPlaylist(state: PlaylistState(offlineMode: true))
+    }
 }
 
 extension PingProcessor: ServerDelegate {
-    func userEdited(serverInfo: ServerInfo) {
+    func userEdited(serverInfo: ServerInfo) async {
         var servers = (try? services.persistence.loadServers()) ?? []
         if let index = servers.firstIndex(where: { $0.id == serverInfo.id}) {
             servers.remove(at: index)
@@ -122,8 +140,8 @@ extension PingProcessor: ServerDelegate {
         try? services.persistence.save(servers: servers)
         services.urlMaker.currentServerInfo = serverInfo
         services.currentPlaylist.clear()
+        await services.download.clear()
         Task {
-            await services.download.clear()
             await receive(.doPing)
         }
     }

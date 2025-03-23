@@ -30,7 +30,7 @@ struct NowPlayingInfoTests {
         subject.display(song: SubsonicSong(id: "1", title: "title", album: nil, artist: "artist", displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: 3, contributors: nil))
         #expect(center.nowPlayingInfo?["title"] as? String == "title")
         #expect(center.nowPlayingInfo?["artist"] as? String == "artist")
-        #expect(center.nowPlayingInfo?["playbackDuration"] as? Int == 3)
+        #expect(center.nowPlayingInfo?["playbackDuration"] as? Double == 3)
     }
 
     @Test("playingAt: sets the center's time and rate")

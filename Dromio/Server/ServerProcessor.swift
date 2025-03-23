@@ -46,7 +46,7 @@ final class ServerProcessor: Processor {
                     password: state.password
                 )
                 coordinator?.dismissToPing()
-                delegate?.userEdited(serverInfo: serverInfo)
+                await delegate?.userEdited(serverInfo: serverInfo)
             } catch {
                 coordinator?.showAlert(title: "Error", message: error.issue)
             }
@@ -56,5 +56,5 @@ final class ServerProcessor: Processor {
 
 @MainActor
 protocol ServerDelegate: AnyObject {
-    func userEdited(serverInfo: ServerInfo)
+    func userEdited(serverInfo: ServerInfo) async
 }

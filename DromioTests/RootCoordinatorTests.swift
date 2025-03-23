@@ -171,8 +171,26 @@ struct RootCoordinatorTests {
         #expect(artistsViewController.view?.window == nil)
     }
 
-    @Test("showPlaylist: pushes playlist view controller, configures module")
+    @Test("showPlaylist: pushes playlist view controller onto base level, configures module")
     func showPlaylist() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let rootViewController = UIViewController()
+        let navigationController = UINavigationController(rootViewController: rootViewController)
+        makeWindow(viewController: navigationController)
+        subject.rootViewController = navigationController
+        // ok, here we go!
+        subject.showPlaylist(state: nil)
+        await #while(navigationController.children.count < 2)
+        let playlistViewController = try #require(navigationController.children[1] as? PlaylistViewController)
+        let playlistProcessor = try #require(subject.playlistProcessor as? PlaylistProcessor)
+        #expect(playlistViewController.processor === playlistProcessor)
+        #expect(playlistProcessor.presenter === playlistViewController)
+        #expect(playlistProcessor.coordinator === subject)
+    }
+
+    @Test("showPlaylist: pushes playlist view controller onto first level presented view controller, configures module")
+    func showPlaylistOneLevel() async throws {
         // fake minimal initial interface
         let subject = RootCoordinator()
         let rootViewController = UIViewController()
@@ -182,7 +200,7 @@ struct RootCoordinatorTests {
         rootViewController.present(presentedViewController, animated: false)
         await #while(rootViewController.presentedViewController == nil)
         // ok, here we go!
-        subject.showPlaylist()
+        subject.showPlaylist(state: nil)
         await #while(presentedViewController.children.count < 2)
         let playlistViewController = try #require(presentedViewController.children[1] as? PlaylistViewController)
         let playlistProcessor = try #require(subject.playlistProcessor as? PlaylistProcessor)
@@ -206,13 +224,28 @@ struct RootCoordinatorTests {
         let navigationController = try #require(subject.rootViewController?.presentedViewController?.presentedViewController as? UINavigationController)
         let _ = try #require(navigationController.children.first as? ArtistsViewController)
         // ok, here we go!
-        subject.showPlaylist()
+        subject.showPlaylist(state: nil)
         await #while(navigationController.children.count < 2)
         let playlistViewController = try #require(navigationController.children[1] as? PlaylistViewController)
         let playlistProcessor = try #require(subject.playlistProcessor as? PlaylistProcessor)
         #expect(playlistViewController.processor === playlistProcessor)
         #expect(playlistProcessor.presenter === playlistViewController)
         #expect(playlistProcessor.coordinator === subject)
+    }
+
+    @Test("showPlaylist: passes state, if not nil, on to playlist processor")
+    func showPlaylistState() async throws {
+        // fake minimal initial interface
+        let subject = RootCoordinator()
+        let rootViewController = UIViewController()
+        let navigationController = UINavigationController(rootViewController: rootViewController)
+        makeWindow(viewController: navigationController)
+        subject.rootViewController = navigationController
+        // ok, here we go!
+        subject.showPlaylist(state: .init(offlineMode: true))
+        await #while(navigationController.children.count < 2)
+        let playlistProcessor = try #require(subject.playlistProcessor as? PlaylistProcessor)
+        #expect(playlistProcessor.state.offlineMode == true)
     }
 
     @Test("popPlaylist: pops the playlist view controller")
@@ -226,7 +259,7 @@ struct RootCoordinatorTests {
         rootViewController.present(presentedViewController, animated: false)
         await #while(rootViewController.presentedViewController == nil)
         // still preparing
-        subject.showPlaylist()
+        subject.showPlaylist(state: nil)
         await #while(presentedViewController.children.count < 2)
         let playlistViewController = try #require(presentedViewController.children[1] as? PlaylistViewController)
         #expect(playlistViewController.navigationController != nil)

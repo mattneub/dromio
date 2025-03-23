@@ -38,7 +38,7 @@ final class AlbumProcessor: Processor {
             }
             await presenter?.receive(.deselectAll)
         case .showPlaylist:
-            coordinator?.showPlaylist()
+            coordinator?.showPlaylist(state: nil)
         }
     }
 }

@@ -230,13 +230,65 @@ struct PlaylistProcessorTests {
         )
     }
 
-    @Test("receive jukeboxButton: toggles state jukeboxMode")
+    @Test("receiveInitialData: if offline mode, filters out undownloaded songs, marks remaining songs downloaded")
+    func receiveInitialDataOfflineMode() async {
+        download.bools["1"] = true
+        download.bools["2"] = false
+        playlist.list = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        subject.noPresentation = true
+        subject.state.offlineMode = true
+        await subject.receive(.initialData)
+        #expect(
+            presenter.statesPresented.first?.songs == [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true
+            )]
+        )
+    }
+
+    @Test("receive jukeboxButton: toggles state jukeboxMode, call haptic")
     func receiveJukebox() async {
         #expect(!subject.state.jukeboxMode)
         await subject.receive(.jukeboxButton)
         #expect(subject.state.jukeboxMode)
+        #expect(haptic.methodsCalled == ["impact()"])
         await subject.receive(.jukeboxButton)
         #expect(!subject.state.jukeboxMode)
+        #expect(haptic.methodsCalled == ["impact()", "impact()"])
     }
 
     @Test("receive tapped: calls haptic, sends .deselectAll")

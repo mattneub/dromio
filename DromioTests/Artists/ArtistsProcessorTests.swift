@@ -91,7 +91,8 @@ struct ArtistsProcessorTests {
     func receiveShowPlaylist() async {
         await subject.receive(.showPlaylist)
         #expect(presenter.thingsReceived == [])
-        #expect(coordinator.methodsCalled.last == "showPlaylist()")
+        #expect(coordinator.methodsCalled.last == "showPlaylist(state:)")
+        #expect(coordinator.playlistState == nil)
     }
 
     @Test("receive showAlbums: for .allArtists sends no effect, tells coordinator to show albums with source artists")

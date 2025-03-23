@@ -21,17 +21,18 @@ struct PlaylistViewControllerTests {
         #expect(subject.dataSourceDelegate != nil)
         #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
         #expect(subject.tableView.estimatedRowHeight == 90)
-        #expect(subject.title == "Playlist")
+        #expect(subject.title == "Queue")
     }
 
     @Test("The table header view is correctly constructed")
     func tableHeaderViewAppearance() throws {
-        #expect(subject.tableHeaderView.backgroundColor == .tertiarySystemBackground)
+        #expect(subject.tableHeaderView.backgroundColor == .background)
         let button = try #require(subject.tableHeaderView.subviews.first as? UIButton)
         let configuration = try #require(button.configuration)
-        #expect(configuration.attributedTitle == AttributedString("Jukebox Mode: ", attributes: .init (
-            [.font: UIFont(name: "GillSans-Bold", size: 15) as Any],
-        )))
+        #expect(configuration.attributedTitle == AttributedString("Jukebox Mode: ", attributes: .init ([
+            .font: UIFont(name: "GillSans-Bold", size: 15) as Any,
+            .foregroundColor: UIColor.label,
+        ])))
         #expect(configuration.image == UIImage(systemName: "rectangle"))
         #expect(configuration.imagePlacement == .trailing)
         subject.tableHeaderView.bounds = CGRect(origin: .zero, size: .init(width: 600, height: 400))
@@ -118,26 +119,50 @@ struct PlaylistViewControllerTests {
         #expect(button.configuration?.image == UIImage(systemName: "rectangle"))
     }
 
-    @Test("present: sets visibility of the playpause button")
+    @Test("present: sets enablement of the playpause button")
     func presentPlaypauseButton() async throws {
         let items = try #require(subject.navigationItem.rightBarButtonItems)
         var state = PlaylistState()
         state.jukeboxMode = false
         state.currentSongId = nil
         subject.present(state)
-        #expect(items[1].isHidden)
+        #expect(!items[1].isEnabled)
         state.jukeboxMode = true
         state.currentSongId = nil
         subject.present(state)
-        #expect(items[1].isHidden)
+        #expect(!items[1].isEnabled)
         state.jukeboxMode = false
         state.currentSongId = "1"
         subject.present(state)
-        #expect(!items[1].isHidden)
+        #expect(items[1].isEnabled)
         state.jukeboxMode = true
         state.currentSongId = "1"
         subject.present(state)
-        #expect(items[1].isHidden)
+        #expect(!items[1].isEnabled)
+    }
+
+    @Test("present: sets enablement of clear button")
+    func presentClearButton() async throws {
+        let items = try #require(subject.navigationItem.rightBarButtonItems)
+        var state = PlaylistState()
+        state.offlineMode = false
+        subject.present(state)
+        #expect(items[0].isEnabled)
+        state.offlineMode = true
+        subject.present(state)
+        #expect(!items[0].isEnabled)
+    }
+
+    @Test("present: sets visibility of jukeboxButton")
+    func presentJukeboxButtonVisibility() async throws {
+        let button = try #require(subject.tableHeaderView.subviews.first as? UIButton)
+        var state = PlaylistState()
+        state.offlineMode = false
+        subject.present(state)
+        #expect(!button.isHidden)
+        state.offlineMode = true
+        subject.present(state)
+        #expect(button.isHidden)
     }
 
     @Test("receive deselectAll: tells the table view to select nil")

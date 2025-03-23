@@ -12,6 +12,7 @@
             <connections>
                 <outlet property="deleteServerButton" destination="vHJ-u8-kXz" id="2e6-L0-p3a"/>
                 <outlet property="failureLabel" destination="Mpo-fM-QrY" id="T3o-wH-boo"/>
+                <outlet property="offlineModeButton" destination="s7r-7V-AD6" id="8vA-sb-Ou9"/>
                 <outlet property="pickServerButton" destination="Fqj-F7-Fqc" id="3DB-3m-ttK"/>
                 <outlet property="pingingLabel" destination="1WM-wj-KSO" id="0CD-H9-PQg"/>
                 <outlet property="reenterButton" destination="uMr-C9-MHs" id="1Iz-QZ-Amk"/>
@@ -25,10 +26,10 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="baT-sF-97w" customClass="PingView" customModule="Dromio" customModuleProvider="target">
-                    <rect key="frame" x="16" y="248" width="408" height="400"/>
+                    <rect key="frame" x="16" y="154" width="408" height="400"/>
                     <subviews>
                         <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Failure!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mpo-fM-QrY">
-                            <rect key="frame" x="33" y="87.333333333333314" width="342" height="25.333333333333329"/>
+                            <rect key="frame" x="33" y="87.333333333333343" width="342" height="25.333333333333329"/>
                             <fontDescription key="fontDescription" name="GillSans" family="Gill Sans" pointSize="22"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
@@ -48,7 +49,7 @@
                             <nil key="highlightedColor"/>
                         </label>
                         <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Success!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NW3-C5-yms">
-                            <rect key="frame" x="167" y="87.333333333333314" width="74" height="25.333333333333329"/>
+                            <rect key="frame" x="167" y="87.333333333333343" width="74" height="25.333333333333329"/>
                             <fontDescription key="fontDescription" name="GillSans" family="Gill Sans" pointSize="22"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
@@ -69,6 +70,14 @@
                                 <action selector="doDeleteServerButton:" destination="-1" eventType="touchUpInside" id="78b-Ee-INS"/>
                             </connections>
                         </button>
+                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="s7r-7V-AD6">
+                            <rect key="frame" x="143" y="297.66666666666669" width="122.33333333333331" height="35"/>
+                            <state key="normal" title="Button"/>
+                            <buttonConfiguration key="configuration" style="plain" title="Offline Mode"/>
+                            <connections>
+                                <action selector="doOfflineModeButton:" destination="-1" eventType="touchUpInside" id="Smw-5W-v5h"/>
+                            </connections>
+                        </button>
                     </subviews>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
@@ -78,11 +87,13 @@
                         <constraint firstItem="Mpo-fM-QrY" firstAttribute="leading" secondItem="baT-sF-97w" secondAttribute="leading" constant="33" id="8iA-EG-lil"/>
                         <constraint firstItem="Mpo-fM-QrY" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="30" id="Cgp-Wb-cAb"/>
                         <constraint firstItem="Mpo-fM-QrY" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="DYI-E8-pOD"/>
+                        <constraint firstItem="s7r-7V-AD6" firstAttribute="top" secondItem="vHJ-u8-kXz" secondAttribute="bottom" constant="16" id="HdJ-ge-a0W"/>
                         <constraint firstItem="Fqj-F7-Fqc" firstAttribute="top" secondItem="uMr-C9-MHs" secondAttribute="bottom" constant="16" id="Ift-a1-x51"/>
                         <constraint firstItem="vHJ-u8-kXz" firstAttribute="top" secondItem="Fqj-F7-Fqc" secondAttribute="bottom" constant="16" id="P0m-M2-vKM"/>
                         <constraint firstItem="uMr-C9-MHs" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="Q3G-Kq-BdR"/>
                         <constraint firstItem="NW3-C5-yms" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="YbI-tr-ZYj"/>
                         <constraint firstItem="NW3-C5-yms" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="30" id="f65-TT-9Ot"/>
+                        <constraint firstItem="s7r-7V-AD6" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="hOY-vo-0v1"/>
                         <constraint firstItem="vHJ-u8-kXz" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="k9k-je-Ujh"/>
                         <constraint firstItem="uMr-C9-MHs" firstAttribute="top" secondItem="Mpo-fM-QrY" secondAttribute="bottom" constant="32" id="u50-Ec-FVE"/>
                         <constraint firstItem="Fqj-F7-Fqc" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="yib-eU-lRH"/>
@@ -105,7 +116,7 @@
             <constraints>
                 <constraint firstItem="baT-sF-97w" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="KL5-kb-mLU"/>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="baT-sF-97w" secondAttribute="trailing" constant="16" id="O0W-Ye-1Oy"/>
-                <constraint firstItem="baT-sF-97w" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="124" id="f4c-pr-Viq"/>
+                <constraint firstItem="baT-sF-97w" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="30" id="f4c-pr-Viq"/>
             </constraints>
             <point key="canvasLocation" x="129.54545454545456" y="8.1589958158995817"/>
         </view>

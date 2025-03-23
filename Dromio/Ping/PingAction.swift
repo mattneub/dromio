@@ -7,6 +7,8 @@ enum PingAction: Equatable {
     case deleteServer
     /// Ping the server, please.
     case doPing
+    /// The user would like to enter offline mode.
+    case offlineMode
     /// The user would like to pick a server.
     case pickServer
     /// The user would like to re-enter the server info.

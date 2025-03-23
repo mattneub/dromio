@@ -18,6 +18,7 @@ final class MockRootCoordinator: RootCoordinatorType {
     var options = [String]()
     var optionToReturn: String?
     var albumsState: AlbumsState?
+    var playlistState: PlaylistState?
     var delegate: (any ServerDelegate)?
 
     func createInitialInterface(window: UIWindow) {
@@ -56,8 +57,9 @@ final class MockRootCoordinator: RootCoordinatorType {
         albumsState = state
     }
 
-    func showPlaylist() {
+    func showPlaylist(state: PlaylistState?) {
         methodsCalled.append(#function)
+        self.playlistState = state
     }
 
     func popPlaylist() {

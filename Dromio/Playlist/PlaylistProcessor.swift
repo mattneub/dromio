@@ -45,15 +45,7 @@ final class PlaylistProcessor: Processor {
                 coordinator?.popPlaylist()
             }
         case .initialData:
-            // collection songs, mark downloaded-ness
-            noPresentation = true
-            state.songs = services.currentPlaylist.list
-            for song in state.songs {
-                if let _ = try? await services.download.downloadedURL(for: song) {
-                    noPresentation = true
-                    markDownloaded(song: song)
-                }
-            }
+            await configureSongs()
             presenter?.present(state)
             // set up pipelines, only once
             if downloadPipeline == nil, let presenter {
@@ -70,6 +62,7 @@ final class PlaylistProcessor: Processor {
                 }
             }
         case .jukeboxButton:
+            services.haptic.impact()
             state.jukeboxMode.toggle()
         case .playPause:
             services.haptic.impact()
@@ -122,6 +115,37 @@ final class PlaylistProcessor: Processor {
             }
             try await operation.start()
         }
+    }
+
+    // TODO: this is inefficient and inelegant
+    // but it is perfectly clear and correct which is why I haven't messed with it
+    private func configureSongs() async {
+        // collection songs, mark downloaded-ness
+        if state.offlineMode {
+            // if we are in offline mode, also filter _out_ those that are not downloaded
+            var songs = services.currentPlaylist.list
+            for index in songs.indices.reversed() {
+                let url = try? await services.download.downloadedURL(for: songs[index])
+                if url == nil {
+                    songs.remove(at: index)
+                } else {
+                    songs[index].downloaded = true
+                }
+            }
+            noPresentation = true
+            state.songs = songs
+        } else {
+            // in normal mode, just mark
+            noPresentation = true
+            state.songs = services.currentPlaylist.list
+            for song in state.songs {
+                if let _ = try? await services.download.downloadedURL(for: song) {
+                    noPresentation = true
+                    markDownloaded(song: song)
+                }
+            }
+        }
+        // no presentation took place during this method! it is up to the caller to present
     }
 
     private func markDownloaded(song: SubsonicSong) {

@@ -16,7 +16,7 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         dataSourceDelegate = PlaylistDataSourceDelegate(tableView: tableView)
         tableView.estimatedRowHeight = 90
-        title = "Playlist"
+        title = "Queue"
     }
 
     required init?(coder: NSCoder) {
@@ -25,13 +25,15 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
 
     lazy var tableHeaderView: UIView = {
         let tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
-        tableHeaderView.backgroundColor = .tertiarySystemBackground
+        tableHeaderView.backgroundColor = .background
         var config = UIButton.Configuration.plain()
-        config.attributedTitle = AttributedString("Jukebox Mode: ", attributes: .init (
-            [.font: UIFont(name: "GillSans-Bold", size: 15) as Any],
-        ))
+        config.attributedTitle = AttributedString("Jukebox Mode: ", attributes: .init ([
+            .font: UIFont(name: "GillSans-Bold", size: 15) as Any,
+            .foregroundColor: UIColor.label,
+        ]))
         config.image = UIImage(systemName: "rectangle")
         config.imagePlacement = .trailing
+        config.imageColorTransformer = .init { _ in .label }
         let button = UIButton(configuration: config, primaryAction: UIAction() {
             [weak self] _ in self?.doJukeboxButton()
         })
@@ -69,7 +71,13 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
             }
         }
         if let playPauseButton = navigationItem.rightBarButtonItems?[1] {
-            playPauseButton.isHidden = !state.showPlayPauseButton
+            playPauseButton.isEnabled = state.showPlayPauseButton
+        }
+        if let cancelButton = navigationItem.rightBarButtonItems?[0] {
+            cancelButton.isEnabled = state.showClearButtonAndJukeboxButton
+        }
+        tableView.tableHeaderView?.subviews.forEach {
+            $0.isHidden = !state.showClearButtonAndJukeboxButton
         }
     }
 

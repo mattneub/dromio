@@ -49,7 +49,7 @@ protocol RootCoordinatorType: AnyObject {
     func dismissArtists()
 
     /// Create the Playlist module and show the view controller.
-    func showPlaylist()
+    func showPlaylist(state: PlaylistState?)
 
     /// Pop the Playlist view controller.
     func popPlaylist()
@@ -162,10 +162,13 @@ final class RootCoordinator: RootCoordinatorType {
         (artistsProcessor?.presenter as? UIViewController)?.dismiss(animated: unlessTesting(true))
     }
 
-    func showPlaylist() {
+    func showPlaylist(state: PlaylistState?) {
         let playlistController = PlaylistViewController(nibName: nil, bundle: nil)
         let playlistProcessor = PlaylistProcessor()
         self.playlistProcessor = playlistProcessor
+        if let state {
+            playlistProcessor.state = state
+        }
         playlistProcessor.presenter = playlistController
         playlistController.processor = playlistProcessor
         playlistProcessor.coordinator = self

@@ -21,6 +21,7 @@ struct PingViewControllerTests {
         #expect(subject.reenterButton.isHidden)
         #expect(subject.pickServerButton.isHidden)
         #expect(subject.deleteServerButton.isHidden)
+        #expect(subject.offlineModeButton.isHidden)
     }
 
     @Test("viewIsAppearing: sends doPing to processor the first time, then choices")
@@ -44,6 +45,7 @@ struct PingViewControllerTests {
         #expect(subject.reenterButton.isHidden)
         #expect(subject.pickServerButton.isHidden)
         #expect(subject.deleteServerButton.isHidden)
+        #expect(subject.offlineModeButton.isHidden)
 
         subject.present(.init(status: .unknown))
         #expect(!subject.pingingLabel.isHidden)
@@ -52,6 +54,7 @@ struct PingViewControllerTests {
         #expect(subject.reenterButton.isHidden)
         #expect(subject.pickServerButton.isHidden)
         #expect(subject.deleteServerButton.isHidden)
+        #expect(subject.offlineModeButton.isHidden)
 
         subject.present(.init(status: .success))
         #expect(!subject.pingingLabel.isHidden)
@@ -60,6 +63,7 @@ struct PingViewControllerTests {
         #expect(subject.reenterButton.isHidden)
         #expect(subject.pickServerButton.isHidden)
         #expect(subject.deleteServerButton.isHidden)
+        #expect(subject.offlineModeButton.isHidden)
 
         subject.present(.init(status: .failure(message: "oops")))
         #expect(!subject.pingingLabel.isHidden)
@@ -69,6 +73,7 @@ struct PingViewControllerTests {
         #expect(!subject.reenterButton.isHidden)
         #expect(!subject.pickServerButton.isHidden)
         #expect(!subject.deleteServerButton.isHidden)
+        #expect(!subject.offlineModeButton.isHidden)
 
         subject.present(.init(status: .choices))
         #expect(subject.pingingLabel.isHidden)
@@ -77,6 +82,7 @@ struct PingViewControllerTests {
         #expect(!subject.reenterButton.isHidden)
         #expect(!subject.pickServerButton.isHidden)
         #expect(!subject.deleteServerButton.isHidden)
+        #expect(!subject.offlineModeButton.isHidden)
     }
 
     @Test("doReenterButton: sends processor reenterServerInfo")
@@ -86,17 +92,24 @@ struct PingViewControllerTests {
         #expect(processor.thingsReceived == [.reenterServerInfo])
     }
 
-    @Test("doPickServerButton: sends processor reenterServerInfo")
+    @Test("doPickServerButton: sends processor pickServer")
     func doPickServerButton() async {
         subject.doPickServerButton(UIButton())
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived == [.pickServer])
     }
 
-    @Test("doDeleteServerButton: sends processor reenterServerInfo")
+    @Test("doDeleteServerButton: sends processor deleteServer")
     func doDeleteServerButton() async {
         subject.doDeleteServerButton(UIButton())
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived == [.deleteServer])
+    }
+
+    @Test("doOfflineModeButton: sends processor offlineMode")
+    func doOfflineModeButton() async {
+        subject.doOfflineModeButton(UIButton())
+        await #while(processor.thingsReceived.isEmpty)
+        #expect(processor.thingsReceived == [.offlineMode])
     }
 }

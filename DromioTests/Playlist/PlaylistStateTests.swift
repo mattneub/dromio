@@ -3,6 +3,15 @@ import Testing
 
 @MainActor
 struct PlaylistStateTests {
+    @Test("logic of showClearAndJukebox is correct")
+    func showClearAndJukebox() {
+        var subject = PlaylistState()
+        subject.offlineMode = false
+        #expect(subject.showClearButtonAndJukeboxButton == true)
+        subject.offlineMode = true
+        #expect(subject.showClearButtonAndJukeboxButton == false)
+    }
+
     @Test("logic of show playpause is correct")
     func showPlayPause() {
         var subject = PlaylistState()

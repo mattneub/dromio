@@ -23,6 +23,9 @@ class PingViewController: UIViewController, ReceiverPresenter {
     /// Button that lets the user delete a server.
     @IBOutlet var deleteServerButton: UIButton!
 
+    /// Button that lets the user enter offline mode.
+    @IBOutlet var offlineModeButton: UIButton!
+
     var firstTime = true
 
     override func viewIsAppearing(_ animated: Bool) {
@@ -44,6 +47,7 @@ class PingViewController: UIViewController, ReceiverPresenter {
         reenterButton.isHidden = true
         pickServerButton.isHidden = true
         deleteServerButton.isHidden = true
+        offlineModeButton.isHidden = true
         switch state.status {
         case .empty: break
         case .unknown:
@@ -58,10 +62,12 @@ class PingViewController: UIViewController, ReceiverPresenter {
             reenterButton.isHidden = false
             pickServerButton.isHidden = false
             deleteServerButton.isHidden = false
+            offlineModeButton.isHidden = false
         case .choices:
             reenterButton.isHidden = false
             pickServerButton.isHidden = false
             deleteServerButton.isHidden = false
+            offlineModeButton.isHidden = false
         }
     }
 
@@ -80,6 +86,12 @@ class PingViewController: UIViewController, ReceiverPresenter {
     @IBAction func doDeleteServerButton (_ sender: UIButton) {
         Task {
             await processor?.receive(.deleteServer)
+        }
+    }
+
+    @IBAction func doOfflineModeButton (_ sender: UIButton) {
+        Task {
+            await processor?.receive(.offlineMode)
         }
     }
 

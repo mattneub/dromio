@@ -13,6 +13,8 @@ struct PingProcessorTests {
     let persistence = MockPersistence()
     let download = MockDownload()
     let currentPlaylist = MockPlaylist()
+    let haptic = MockHaptic()
+    let player = MockPlayer()
 
     init() {
         services.requestMaker = requestMaker
@@ -20,6 +22,8 @@ struct PingProcessorTests {
         services.persistence = persistence
         services.currentPlaylist = currentPlaylist
         services.download = download
+        services.haptic = haptic
+        services.player = player
         subject.presenter = presenter
         subject.coordinator = coordinator
         requestMaker.user = .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: true)
@@ -32,10 +36,11 @@ struct PingProcessorTests {
         #expect(presenter.statePresented?.status == .success)
     }
 
-    @Test("receive choices: sets the status to choices")
+    @Test("receive choices: sets the status to choices, clears the player")
     func receiveChoices() async {
         await subject.receive(.choices)
         #expect(subject.state.status == .choices)
+        #expect(player.methodsCalled == ["clear()"])
     }
 
     @Test("receive deleteServer: if no servers, calls coordinator showAlert")
@@ -180,11 +185,34 @@ struct PingProcessorTests {
         #expect(coordinator.methodsCalled.isEmpty)
     }
 
+    @Test("receive offlineMode: intersects current playlist with downloads, balks with alert if empty")
+    func offlineModePlaylistAndDownloads() async {
+        currentPlaylist.list = [
+            .init(id: "1", title: "1", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
+        ]
+        download.bools["2"] = true
+        await subject.receive(.offlineMode)
+        #expect(coordinator.methodsCalled == ["showAlert(title:message:)"])
+        #expect(coordinator.title == "No downloads to play.")
+        #expect(coordinator.message == "You can’t enter offline mode, because you have no downloaded playlist items.")
+    }
+
+    @Test("receive offlineMode: if all is well, calls showPlaylist with state offlinemode")
+    func offlineMode() async {
+        currentPlaylist.list = [
+            .init(id: "1", title: "1", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
+        ]
+        download.bools["1"] = true
+        await subject.receive(.offlineMode)
+        #expect(coordinator.methodsCalled == ["showPlaylist(state:)"])
+        #expect(coordinator.playlistState == .init(offlineMode: true))
+    }
+
     @Test("receive pickServer: if no servers, calls showAlert and stops")
     func pickServerNoServer() async {
         await subject.receive(.pickServer)
         #expect(coordinator.methodsCalled == ["showAlert(title:message:)"])
-        #expect(coordinator.title == "Nothing to choose between.")
+        #expect(coordinator.title == "No server to choose.")
         #expect(coordinator.message == "Tap Enter Server Info if you want to add a server.")
     }
 
@@ -239,7 +267,7 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         let newServer = ServerInfo(scheme: "http", host: "hhh", port: 1, username: "uuu", password: "p", version: "v")
-        subject.userEdited(serverInfo: newServer)
+        await subject.userEdited(serverInfo: newServer)
         #expect(persistence.methodsCalled.last == "save(servers:)")
         #expect(persistence.servers == [
             ServerInfo(scheme: "http", host: "hhh", port: 1, username: "uuu", password: "p", version: "v"),
@@ -260,7 +288,7 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         let newServer = ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "pp", version: "v")
-        subject.userEdited(serverInfo: newServer)
+        await subject.userEdited(serverInfo: newServer)
         #expect(persistence.methodsCalled.last == "save(servers:)")
         #expect(persistence.servers == [
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "pp", version: "v"),

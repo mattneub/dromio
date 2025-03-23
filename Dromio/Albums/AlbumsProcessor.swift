@@ -69,7 +69,7 @@ final class AlbumsProcessor: Processor {
             }
             coordinator?.showAlbum(albumId: id, title: album.name)
         case .showPlaylist:
-            coordinator?.showPlaylist()
+            coordinator?.showPlaylist(state: nil)
         case .viewDidAppear:
             await presenter?.receive(.setUpSearcher)
         }

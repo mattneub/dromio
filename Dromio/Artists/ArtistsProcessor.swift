@@ -64,7 +64,7 @@ final class ArtistsProcessor: Processor {
                 )
             }
         case .showPlaylist:
-            coordinator?.showPlaylist()
+            coordinator?.showPlaylist(state: nil)
         case .viewDidAppear:
             await presenter?.receive(.setUpSearcher)
         }

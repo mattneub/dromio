@@ -226,7 +226,8 @@ struct AlbumsProcessorTests {
     func showPlaylist() async {
         await subject.receive(.showPlaylist)
         #expect(presenter.thingsReceived.isEmpty)
-        #expect(coordinator.methodsCalled.last == "showPlaylist()")
+        #expect(coordinator.methodsCalled.last == "showPlaylist(state:)")
+        #expect(coordinator.playlistState == nil)
     }
 
     @Test("receive viewDidAppear: sends `setUpSearcher` effect")
