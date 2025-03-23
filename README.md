@@ -42,9 +42,9 @@ If you are on the Artists or Composers screen, tap an Artist or Composer to see 
 
 If you are on an Albums screen, tap an Album to see the tracks on that albums.
 
-If you are an an Album Tracks screen, tap a track to append it to the Queue. _Nothing will appear to happen_ at this point.
+If you are on an Album Tracks screen, tap a track to append it to the Queue. _Nothing will appear to happen_ at this point.
 
-But, on any screen, tap the “list” button at the top right to see the Queue. On the Queue screen, tap a track to begin listening to the Queue, starting with the track you tapped. Download progress is displayed; a downloaded track is fully marked in yellow.
+But, on any screen, tap the “list” button at the top right to see the Queue. The tracks that you have tapped are here! On the Queue screen, tap a track to begin listening to the Queue, starting with the track you tapped. Download progress is displayed; a downloaded track is fully marked in yellow.
 
 ### About the Queue Screen
 
