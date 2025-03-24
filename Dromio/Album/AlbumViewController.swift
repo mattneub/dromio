@@ -16,6 +16,7 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         dataSourceDelegate = AlbumDataSourceDelegate(tableView: tableView)
         let item = UIBarButtonItem(title: nil, image: UIImage(systemName: "list.bullet"), target: self, action: #selector(showPlaylist))
+        item.isSymbolAnimationEnabled = true
         navigationItem.rightBarButtonItem = item
         tableView.estimatedRowHeight = 90
     }
@@ -39,6 +40,8 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
 
     func receive(_ effect: AlbumEffect) {
         switch effect {
+        case .animatePlaylist:
+            navigationItem.rightBarButtonItem?.addSymbolEffect(.bounce, options: .nonRepeating)
         case .deselectAll:
             tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
         }

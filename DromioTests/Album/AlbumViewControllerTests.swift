@@ -68,6 +68,11 @@ struct AlbumViewControllerTests {
         #expect(mockDataSourceDelegate.state == state)
     }
 
+    @Test("receive animatePlaylist: tells the playlist bar button item to animate")
+    func receiveAnimatePlaylist() throws {
+        // I don't see how to test this: you can't ask a bar button item whether it has a symbol effect
+    }
+
     @Test("receive deselectAll: tells the table view to select nil")
     func receiveDeselectAll() {
         subject.tableView.selectRow(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .none)

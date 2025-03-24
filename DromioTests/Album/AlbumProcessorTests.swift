@@ -61,7 +61,7 @@ struct AlbumProcessorTests {
         )
     }
 
-    @Test("receive tapped: appends to current playlist, calls haptic success, sends deselectAll effect")
+    @Test("receive tapped: appends to current playlist, calls haptic success, sends animatePlaylist and deselectAll effect")
     func receiveTapped() async {
         let song = SubsonicSong(
             id: "1",
@@ -80,10 +80,10 @@ struct AlbumProcessorTests {
         #expect(playlist.methodsCalled == ["append(_:)"])
         #expect(haptic.methodsCalled == ["success()"])
         await #while(presenter.thingsReceived.isEmpty)
-        #expect(presenter.thingsReceived == [.deselectAll])
+        #expect(presenter.thingsReceived == [.animatePlaylist, .deselectAll])
     }
 
-    @Test("receive tapped: receiving error from append calls haptic failure, sends deselectAll effect")
+    @Test("receive tapped: receiving error from append calls haptic failure, sends no animatePlaylist, sends deselectAll effect")
     func receiveTappedFailure() async {
         let song = SubsonicSong(
             id: "1",

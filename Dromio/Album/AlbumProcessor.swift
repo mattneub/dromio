@@ -30,6 +30,7 @@ final class AlbumProcessor: Processor {
             do {
                 try services.currentPlaylist.append(song)
                 services.haptic.success()
+                await presenter?.receive(.animatePlaylist)
             } catch {
                 services.haptic.failure()
             }
