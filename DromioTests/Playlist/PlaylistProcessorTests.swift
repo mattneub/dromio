@@ -82,7 +82,8 @@ struct PlaylistProcessorTests {
             contributors: nil
         )]
         #expect(subject.downloadPipeline == nil)
-        #expect(subject.playerPipeline == nil)
+        #expect(subject.playerCurrentSongIdPipeline == nil)
+        #expect(subject.playerStatePipeline == nil)
         await subject.receive(.initialData)
         #expect(
             presenter.statePresented?.songs == [.init(
@@ -101,12 +102,33 @@ struct PlaylistProcessorTests {
             )]
         )
         #expect(subject.downloadPipeline != nil)
-        #expect(subject.playerPipeline != nil)
+        #expect(subject.playerCurrentSongIdPipeline != nil)
+        #expect(subject.playerStatePipeline != nil)
         networker.progress.send((id: "2", fraction: 0.5))
-        await #while(presenter.thingsReceived.isEmpty)
-        #expect(presenter.thingsReceived[0] == .progress("2", 0.5))
+        await #while(!presenter.thingsReceived.contains(.progress("2", 0.5)))
+        #expect(presenter.thingsReceived.contains(.progress("2", 0.5)))
         player.currentSongIdPublisher.send("10")
         #expect(subject.state.currentSongId == "10")
+        player.playerStatePublisher.send(.playing)
+        await #while(!presenter.thingsReceived.contains(.playerState(.playing)))
+        #expect(presenter.thingsReceived.contains(.playerState(.playing)))
+    }
+
+    @Test("receive initialData: current song id and player state pipelines remove duplicates")
+    func removeDuplicates() async {
+        await subject.receive(.initialData)
+        await #while(presenter.statesPresented.isEmpty)
+        presenter.statesPresented = []
+        player.currentSongIdPublisher.send("10")
+        player.currentSongIdPublisher.send("10")
+        await #while(presenter.statesPresented.isEmpty)
+        #expect(presenter.statesPresented.count == 1)
+        await #while(presenter.thingsReceived.isEmpty)
+        presenter.thingsReceived = []
+        player.playerStatePublisher.send(.playing)
+        player.playerStatePublisher.send(.playing)
+        await #while(presenter.thingsReceived.isEmpty)
+        #expect(presenter.thingsReceived.count == 1)
     }
 
     @Test("receive initialData: if the Download says this song is downloaded, marks it as downloaded in the state")

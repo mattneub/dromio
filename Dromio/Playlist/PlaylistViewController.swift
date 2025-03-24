@@ -52,6 +52,8 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         view.backgroundColor = .background
         let clearItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "clear.fill"), target: self, action: #selector(doClear))
         let pauseItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "playpause.fill"), target: self, action: #selector(doPlayPause))
+        pauseItem.width = 40
+        pauseItem.isSymbolAnimationEnabled = true
         navigationItem.rightBarButtonItems = [clearItem, pauseItem]
         Task {
             await processor?.receive(.initialData)
@@ -85,6 +87,20 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         switch effect {
         case .deselectAll:
             tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
+        case .playerState(let playerState):
+            if let playPauseButton = navigationItem.rightBarButtonItems?[1] {
+                switch playerState {
+                case .empty:
+                    let image = UIImage(systemName: "playpause.fill")!
+                    playPauseButton.setSymbolImage(image, contentTransition: .replace.offUp)
+                case .paused:
+                    let image = UIImage(systemName: "play.fill")!
+                    playPauseButton.setSymbolImage(image, contentTransition: .replace.offUp)
+                case .playing:
+                    let image = UIImage(systemName: "pause.fill")!
+                    playPauseButton.setSymbolImage(image, contentTransition: .replace.offUp)
+                }
+            }
         case .progress(let id, let progress):
             await dataSourceDelegate?.receive(.progress(id, progress))
         }

@@ -26,7 +26,10 @@ final class PlaylistProcessor: Processor {
     var downloadPipeline: AnyCancellable?
 
     /// Pipeline subscribing to Player's `currentSongId`, so we can display what's playing.
-    var playerPipeline: AnyCancellable?
+    var playerCurrentSongIdPipeline: AnyCancellable?
+
+    /// Pipeline subscribing to Player's `playerState`, so we can display response to change of state.
+    var playerStatePipeline: AnyCancellable?
 
     func receive(_ action: PlaylistAction) async {
         switch action {
@@ -47,20 +50,7 @@ final class PlaylistProcessor: Processor {
         case .initialData:
             await configureSongs()
             presenter?.present(state)
-            // set up pipelines, only once
-            if downloadPipeline == nil, let presenter {
-                downloadPipeline = services.networker.progress.sink { [weak presenter] pair in
-                    Task {
-                        await presenter?.receive(.progress(pair.id, pair.fraction))
-                    }
-                }
-            }
-            if playerPipeline == nil {
-                playerPipeline = services.player.currentSongIdPublisher.sink { [weak self] songId in
-                    logger.log("playlist processor setting current item to \(songId ?? "nil", privacy: .public)")
-                    self?.state.currentSongId = songId
-                }
-            }
+            setUpPipelines()
         case .jukeboxButton:
             services.haptic.impact()
             state.jukeboxMode.toggle()
@@ -169,5 +159,28 @@ final class PlaylistProcessor: Processor {
         dump(status)
         status = try await services.requestMaker.jukebox(action: .clear)
         dump(status)
+    }
+
+    private func setUpPipelines() {
+        // set up pipelines, only once
+        if downloadPipeline == nil, let presenter {
+            downloadPipeline = services.networker.progress.sink { [weak presenter] pair in
+                Task {
+                    await presenter?.receive(.progress(pair.id, pair.fraction))
+                }
+            }
+        }
+        if playerCurrentSongIdPipeline == nil {
+            playerCurrentSongIdPipeline = services.player.currentSongIdPublisher.removeDuplicates().sink { [weak self] songId in
+                self?.state.currentSongId = songId
+            }
+        }
+        if playerStatePipeline == nil {
+            playerStatePipeline = services.player.playerStatePublisher.removeDuplicates().sink { [weak presenter] playerState in
+                Task {
+                    await presenter?.receive(.playerState(playerState))
+                }
+            }
+        }
     }
 }

@@ -26,6 +26,7 @@ extension AVQueuePlayer: QueuePlayerType {}
 @MainActor
 protocol PlayerType {
     var currentSongIdPublisher: CurrentValueSubject<String?, Never> { get }
+    var playerStatePublisher: CurrentValueSubject<Player.PlayerState, Never> { get }
     func play(url: URL, song: SubsonicSong)
     func playNext(url: URL, song: SubsonicSong)
     func playPause()
@@ -44,6 +45,9 @@ final class Player: NSObject, PlayerType {
 
     /// Public publisher of the current item. He who has ears to hear, let him hear.
     var currentSongIdPublisher = CurrentValueSubject<String?, Never>(nil)
+
+    /// Public publisher of the current player state.
+    var playerStatePublisher = CurrentValueSubject<PlayerState, Never>(.empty)
 
     /// List of all songs we've ever been handed, accessed by song id. Thus, if we know the id
     /// of a song, we know its title and artist. But if a song is in the queue, we have its URL.
@@ -120,6 +124,7 @@ final class Player: NSObject, PlayerType {
                 logger.log("deactivating session")
             }
             try? services.audioSession.setActive(false, options: [])
+            playerStatePublisher.send(.empty)
         }
         currentSongIdPublisher.send(currentSongId)
     }
@@ -151,7 +156,6 @@ final class Player: NSObject, PlayerType {
         return nil
     }
 
-    
     /// Stop playing, remove the existing queue, and create a new queue starting with the resource
     /// at the given URL, and start playing.
     /// - Parameters:
@@ -206,8 +210,10 @@ final class Player: NSObject, PlayerType {
         print("player rate is", player.rate)
         if player.rate == 0 {
             services.nowPlayingInfo.pausedAt(player.currentTime().seconds)
+            playerStatePublisher.send(.paused)
         } else {
             services.nowPlayingInfo.playingAt(player.currentTime().seconds)
+            playerStatePublisher.send(.playing)
         }
         currentSongIdPublisher.send(currentSongId)
     }
@@ -224,6 +230,7 @@ final class Player: NSObject, PlayerType {
         try? services.audioSession.setActive(true, options: [])
         player.pause()
         services.nowPlayingInfo.pausedAt(player.currentTime().seconds)
+        playerStatePublisher.send(.paused)
     }
 
     /// Public toggle, used by the playpause button in the playlist interface.
@@ -249,6 +256,7 @@ final class Player: NSObject, PlayerType {
         }
         try? services.audioSession.setActive(false, options: [])
         currentSongIdPublisher.send(nil)
+        playerStatePublisher.send(.empty)
     }
 
     /// We are advised to deactivate on backgrounding if not actively playing, to avoid
@@ -272,6 +280,13 @@ final class Player: NSObject, PlayerType {
         if player.rate > 0 {
             doPlay(updateOnly: true)
         }
+    }
+
+    /// Enum describing the state of the player.
+    enum PlayerState: Equatable {
+        case empty
+        case playing
+        case paused
     }
 }
 

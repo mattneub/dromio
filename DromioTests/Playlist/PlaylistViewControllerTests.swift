@@ -81,6 +81,8 @@ struct PlaylistViewControllerTests {
         #expect(playpauseButtonItem.image == UIImage(systemName: "playpause.fill"))
         #expect(playpauseButtonItem.target === subject)
         #expect(playpauseButtonItem.action == #selector(subject.doPlayPause))
+        #expect(playpauseButtonItem.width == 40)
+        #expect(playpauseButtonItem.isSymbolAnimationEnabled == true)
     }
 
     @Test("present: presents to the data source")
@@ -171,6 +173,21 @@ struct PlaylistViewControllerTests {
         #expect(subject.tableView.indexPathForSelectedRow != nil)
         await subject.receive(.deselectAll)
         #expect(subject.tableView.indexPathForSelectedRow == nil)
+    }
+
+    @Test("receive playerState: sets the symbol image of the second right bar button item")
+    func receivePlayerState() async throws {
+        subject.loadViewIfNeeded()
+        let button = try #require(subject.navigationItem.rightBarButtonItems?[1])
+        await subject.receive(.playerState(.playing))
+        await #while(button.image == UIImage(systemName: "playpause.fill"))
+        #expect(button.image == UIImage(systemName: "pause.fill"))
+        await subject.receive(.playerState(.paused))
+        await #while(button.image == UIImage(systemName: "pause.fill"))
+        #expect(button.image == UIImage(systemName: "play.fill"))
+        await subject.receive(.playerState(.empty))
+        await #while(button.image == UIImage(systemName: "play.fill"))
+        #expect(button.image == UIImage(systemName: "playpause.fill"))
     }
 
     @Test("receive progress: passes it to the datasource")

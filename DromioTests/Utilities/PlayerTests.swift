@@ -88,9 +88,10 @@ struct PlayerTests {
         #expect(audioSession.active == true)
     }
 
-    @Test("if the queue player changes current item to nil, calls clear, deactivates session, sets currentSongIdPublisher")
+    @Test("if the queue player changes current item to nil, calls clear, deactivates session, sets playerState and currentSongIdPublisher")
     func itemChangesToNil() async {
         let subject = Player(player: AVQueuePlayer()) // real player!
+        subject.playerStatePublisher.value = .playing
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
             title: "Title",
@@ -113,6 +114,7 @@ struct PlayerTests {
         #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
         #expect(audioSession.active == false)
         #expect(subject.currentSongIdPublisher.value == nil)
+        #expect(subject.playerStatePublisher.value == .empty)
     }
 
     @Test("play(url:song:) calls removeAllItems, calls insertAfter nil, sets category active, calls play, sets action to advance, adds to known songs")
@@ -137,7 +139,7 @@ struct PlayerTests {
         #expect(subject.knownSongs["1"] == song)
     }
 
-    @Test("play(url:song:) configures now playing info, sets current item publisher")
+    @Test("play(url:song:) configures now playing info, sets player state and current item publisher")
     func playNowPlayingInfo() {
         let song = SubsonicSong(
             id: "1",
@@ -162,6 +164,7 @@ struct PlayerTests {
         #expect(nowPlayingInfo.song == song)
         #expect(nowPlayingInfo.time == 10)
         #expect(subject.currentSongIdPublisher.value == "1")
+        #expect(subject.playerStatePublisher.value == .playing)
     }
 
     @Test("playNext(url:song:) calls insertAfter nil, adds to known songs")
@@ -198,6 +201,7 @@ struct PlayerTests {
         #expect(nowPlayingInfo.methodsCalled.contains("playingAt(_:)"))
         #expect(nowPlayingInfo.time == 30)
         #expect(subject.currentSongIdPublisher.value == "4")
+        #expect(subject.playerStatePublisher.value == .playing)
     }
 
     @Test("doPlay: if update only true, activates audio session, doesn't call play, tells now playing info playing at current time")
@@ -212,6 +216,7 @@ struct PlayerTests {
         #expect(nowPlayingInfo.methodsCalled.contains("playingAt(_:)"))
         #expect(nowPlayingInfo.time == 30)
         #expect(subject.currentSongIdPublisher.value == "4")
+        #expect(subject.playerStatePublisher.value == .playing)
     }
 
     @Test("doPlay: when paused if update only true, activates audio session, doesn't call play, tells now playing info paused at current time")
@@ -226,15 +231,17 @@ struct PlayerTests {
         #expect(nowPlayingInfo.methodsCalled.contains("pausedAt(_:)")) // *
         #expect(nowPlayingInfo.time == 30)
         #expect(subject.currentSongIdPublisher.value == "4")
+        #expect(subject.playerStatePublisher.value == .paused)
     }
 
-    @Test("doPause: calls pause, tell now playing info paused at current time")
+    @Test("doPause: calls pause, tell now playing info paused at current time, sends player state")
     func doPause() {
         audioPlayer.time = 30
         subject.doPause()
         #expect(audioPlayer.methodsCalled.contains("pause()"))
         #expect(nowPlayingInfo.methodsCalled.contains("pausedAt(_:)"))
         #expect(nowPlayingInfo.time == 30)
+        #expect(subject.playerStatePublisher.value == .paused)
     }
 
     @Test("playPause is like doPlay if rate is 0")
@@ -317,11 +324,13 @@ struct PlayerTests {
         #expect(audioSession.active == true)
         #expect(audioPlayer.methodsCalled == ["play()", "currentTime()", "pause()", "currentTime()"])
         #expect(subject.currentSongIdPublisher.value == "1")
+        #expect(subject.playerStatePublisher.value == .paused)
     }
 
     @Test("clear: call pause and removeAllItems, empties the known list, nilifies currentSongIdPublisher")
     func clear() {
         subject.currentSongIdPublisher.value = "10"
+        subject.playerStatePublisher.value = .playing
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -343,6 +352,7 @@ struct PlayerTests {
         #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
         #expect(audioSession.active == false)
         #expect(subject.currentSongIdPublisher.value == nil)
+        #expect(subject.playerStatePublisher.value == .empty)
     }
 
     @Test("backgrounding: if rate is 0, sets audioSession inactive")
@@ -373,6 +383,7 @@ struct PlayerTests {
         #expect(nowPlayingInfo.methodsCalled.contains("playingAt(_:)"))
         #expect(nowPlayingInfo.time == 30)
         #expect(subject.currentSongIdPublisher.value == "4")
+        #expect(subject.playerStatePublisher.value == .playing)
     }
 
     @Test("foregrounding: if rate is 0, does nothing")
@@ -382,5 +393,6 @@ struct PlayerTests {
         #expect(nowPlayingInfo.methodsCalled.isEmpty)
         #expect(audioSession.methodsCalled.isEmpty)
         #expect(audioPlayer.methodsCalled.isEmpty)
+        #expect(subject.playerStatePublisher.value == .empty)
     }
 }
