@@ -25,4 +25,8 @@ actor MockDownload: DownloadType {
         else { return nil }
     }
 
+    func isDownloaded(song: SubsonicSong) -> Bool {
+        return bools[song.id] ?? false
+    }
+
 }

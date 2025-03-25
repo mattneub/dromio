@@ -222,4 +222,54 @@ final class DownloadTests { // class, because we have cleanup to perform after e
         )
         #expect(try await subject.downloadedURL(for: song) == nil)
     }
+
+    @Test("isDownloaded: behaves as expected")
+    func isDownloaded() async throws {
+        let subject = Download()
+        let url = await subject.downloadsDirectory()
+        let file = url.appendingPathComponent("1.mp3")
+        try "howdy".write(to: file, atomically: true, encoding: .utf8)
+        var song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: "mp3",
+            duration: nil,
+            contributors: nil
+        )
+        #expect(try await subject.isDownloaded(song: song) == true)
+        song = SubsonicSong(
+            id: "2", // wrong id
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: "mp3",
+            duration: nil,
+            contributors: nil
+        )
+        #expect(try await subject.isDownloaded(song: song) == false)
+        song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: "m4a", // wrong suffix
+            duration: nil,
+            contributors: nil
+        )
+        #expect(try await subject.isDownloaded(song: song) == false)
+    }
 }

@@ -98,7 +98,7 @@ struct PlaylistProcessorTests {
                 suffix: nil,
                 duration: nil,
                 contributors: nil,
-                downloaded: nil
+                downloaded: false
             )]
         )
         #expect(subject.downloadPipeline != nil)
@@ -189,7 +189,7 @@ struct PlaylistProcessorTests {
                 suffix: nil,
                 duration: nil,
                 contributors: nil,
-                downloaded: nil
+                downloaded: false
             )]
         )
     }

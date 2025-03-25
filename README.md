@@ -50,7 +50,7 @@ But, on any screen, tap the “list” button at the top right to see the Queue.
 
 The Queue screen is not yet editable, so all you can do at this point is play the queue you’ve created in the order you’ve appended to it, or just delete the queue and start over. An editable queue will come in a future version of the app.
 
-Once Dromio has started playing, the currently playing track is marked with a “note” icon in the Queue, and the “playpause” button is enabled, allowing you to pause and resume play. You can get more details about what is playing by using the iPhone’s built-in Now Playing Info center (in, for example, the Control Center).
+Once Dromio has started playing, the currently playing track is marked with a “note” icon in the Queue, and the “playpause” button is enabled, allowing you to pause and resume play. You can get more details about what is playing by using the iPhone’s built-in Now Playing Info center (in, for example, the Control Center). *Playback of a queue consisting of multiple tracks is gapless.*
 
 The “x” button at the top right clears the queue and erases the downloads. It also navigates back out of the Queue screen, because if the queue is empty, there is nothing you can do in this screen.
 

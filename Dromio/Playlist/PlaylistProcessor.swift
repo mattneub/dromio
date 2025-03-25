@@ -48,7 +48,7 @@ final class PlaylistProcessor: Processor {
                 coordinator?.popPlaylist()
             }
         case .initialData:
-            await configureSongs()
+            try? await configureSongs()
             presenter?.present(state)
             setUpPipelines()
         case .jukeboxButton:
@@ -107,45 +107,50 @@ final class PlaylistProcessor: Processor {
         }
     }
 
-    // TODO: this is inefficient and inelegant
-    // but it is perfectly clear and correct which is why I haven't messed with it
-    private func configureSongs() async {
-        // collection songs, mark downloaded-ness
+    /// Set `state.songs` based on the current playlist and what has been downloaded. This method
+    /// promises not to generate any presentation of the state to the presenter; if the caller wants
+    /// to present after calling this method, that is up to the caller.
+    private func configureSongs() async throws {
+        let sequence = SimpleAsyncSequence(array: services.currentPlaylist.list)
+        var songs = [SubsonicSong]()
         if state.offlineMode {
-            // if we are in offline mode, also filter _out_ those that are not downloaded
-            var songs = services.currentPlaylist.list
-            for index in songs.indices.reversed() {
-                let url = try? await services.download.downloadedURL(for: songs[index])
-                if url == nil {
-                    songs.remove(at: index)
-                } else {
-                    songs[index].downloaded = true
-                }
+            // in offline mode, _filter out_ those that songs are not downloaded, and mark
+            // as downloaded _all_ that remain
+            let result = sequence.filter {
+                await services.download.isDownloaded(song: $0)
+            }.map {
+                var song = $0
+                song.downloaded = true
+                return song
             }
-            noPresentation = true
-            state.songs = songs
+            songs = try await result.array()
         } else {
-            // in normal mode, just mark
-            noPresentation = true
-            state.songs = services.currentPlaylist.list
-            for song in state.songs {
-                if let _ = try? await services.download.downloadedURL(for: song) {
-                    noPresentation = true
-                    markDownloaded(song: song)
-                }
+            // in normal mode, use _all_ the songs. and mark as downloaded only those that _are_ downloaded
+            let result = SimpleAsyncSequence(array: services.currentPlaylist.list).map {
+                var song = $0
+                song.downloaded = await services.download.isDownloaded(song: song)
+                return song
             }
+            songs = try await result.array()
         }
+        noPresentation = true
+        state.songs = songs
         // no presentation took place during this method! it is up to the caller to present
     }
 
+    /// Given a song, mark it as downloaded in `state.songs`. This is O(1) but so what?
+    /// - Parameter song: The song.
     private func markDownloaded(song: SubsonicSong) {
         if let index = state.songs.firstIndex(where: { $0.id == song.id }) {
             state.songs[index].downloaded = true
         }
     }
-
+    
+    /// Given a sequence of songs, tell the jukebox to play them in order.
+    /// - Parameter sequence: The sequence of songs.
     private func playOnJukebox(sequence: [SubsonicSong]) async throws {
         try await stopAndClearJukebox()
+        // TODO: we are not actually using the status returned for anything
         for song in sequence {
             let status = try await services.requestMaker.jukebox(action: .add, songId: song.id)
             dump(status)
@@ -154,16 +159,19 @@ final class PlaylistProcessor: Processor {
         dump(status)
     }
 
+    /// Tell the jukebox to stop playing and to empty its queue.
     private func stopAndClearJukebox() async throws {
+        // TODO: we are not actually using the status returned for anything
         var status = try await services.requestMaker.jukebox(action: .stop)
         dump(status)
         status = try await services.requestMaker.jukebox(action: .clear)
         dump(status)
     }
 
+    /// Configure our pipelines, just once. Called from `receive(.initialData)`. If it were to be called
+    /// a second time, nothing would happen.
     private func setUpPipelines() {
-        // set up pipelines, only once
-        if downloadPipeline == nil, let presenter {
+        if downloadPipeline == nil {
             downloadPipeline = services.networker.progress.sink { [weak presenter] pair in
                 Task {
                     await presenter?.receive(.progress(pair.id, pair.fraction))

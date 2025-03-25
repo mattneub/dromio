@@ -10,6 +10,7 @@ protocol DownloadType: Actor {
     func download(song: SubsonicSong) async throws -> URL
     func clear()
     func downloadedURL(for song: SubsonicSong) throws -> URL?
+    func isDownloaded(song: SubsonicSong) -> Bool
 }
 
 /// Actor responsible for requesting and maintaining our downloaded songs.
@@ -101,5 +102,18 @@ actor Download: DownloadType {
             }
         }
         return nil
+    }
+
+    /// Simplified wrapper for `downloadedURL` when all we _really_ want to know is whether the
+    /// song has been downloaded (i.e. we don't actually need its URL).
+    /// - Parameter song: The song.
+    /// - Returns: A Bool. If there's a problem, returns `false`.
+    /// 
+    func isDownloaded(song: SubsonicSong) -> Bool {
+        do {
+            return try downloadedURL(for: song) != nil
+        } catch {
+            return false
+        }
     }
 }
