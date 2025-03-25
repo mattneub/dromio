@@ -18,7 +18,7 @@ actor MockDownload: DownloadType {
         methodsCalled.append(#function)
     }
 
-    func downloadedURL(for song: Dromio.SubsonicSong) throws -> URL? {
+    func downloadedURL(for song: SubsonicSong) throws -> URL? {
         methodsCalled.append(#function)
         self.song = song
         if bools[song.id] == true { return URL(string: "file://yoho")! }

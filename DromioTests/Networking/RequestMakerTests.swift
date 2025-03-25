@@ -1036,4 +1036,15 @@ struct RequestMakerTests {
         }
     }
 
+    @Test("scrobble: calls url maker with action scrobble and additional id")
+    func scrobble() async throws {
+        try await subject.scrobble(songId: "4")
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "scrobble")
+        let expectedAdditional: KeyValuePairs = ["id": "4"]
+        let additional = try #require(urlMaker.additional)
+        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
+        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+    }
 }

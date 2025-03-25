@@ -15,6 +15,7 @@ protocol RequestMakerType: Sendable {
     func download(songId: String) async throws -> URL
     func stream(songId: String) async throws -> URL
     func jukebox(action: JukeboxAction, songId: String?) async throws -> JukeboxStatus?
+    func scrobble(songId: String) async throws
 }
 
 extension RequestMakerType {
@@ -274,6 +275,14 @@ final class RequestMaker: RequestMakerType {
             dump(error)
         }
         return jsonResponse.subsonicResponse.jukeboxStatus
+    }
+
+    func scrobble(songId: String) async throws {
+        let url = try services.urlMaker.urlFor(
+            action: "scrobble",
+            additional: ["id": songId]
+        )
+        _ = try await services.networker.performRequest(url: url)
     }
 }
 

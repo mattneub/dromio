@@ -173,6 +173,11 @@ final class PlaylistProcessor: Processor {
         if playerCurrentSongIdPipeline == nil {
             playerCurrentSongIdPipeline = services.player.currentSongIdPublisher.removeDuplicates().sink { [weak self] songId in
                 self?.state.currentSongId = songId
+                Task {
+                    if let songId {
+                        try? await services.requestMaker.scrobble(songId: songId)
+                    }
+                }
             }
         }
         if playerStatePipeline == nil {

@@ -111,11 +111,16 @@ final class MockRequestMaker: RequestMakerType {
         return streamURL
     }
 
-    func jukebox(action: JukeboxAction, songId: String?) async throws -> Dromio.JukeboxStatus? {
+    func jukebox(action: JukeboxAction, songId: String?) async throws -> JukeboxStatus? {
         methodsCalled.append(#function)
         actions.append(action)
         songIds.append(songId)
         return nil
+    }
+
+    func scrobble(songId: String) async throws {
+        methodsCalled.append(#function)
+        self.songId = songId
     }
 
 }
