@@ -8,6 +8,7 @@ enum PlaylistError: Error {
 protocol PlaylistType: Sendable {
     var list: [SubsonicSong] { get set }
     func append(_ song: SubsonicSong) throws
+    func delete(song: SubsonicSong)
     func clear()
 }
 
@@ -15,6 +16,7 @@ protocol PlaylistType: Sendable {
 final class Playlist: PlaylistType {
     let persistenceKey: PersistenceKey
 
+    /// Source of truth for playlist contents.
     var list: [SubsonicSong] {
         get {
             (try? services.persistence.loadSongList(key: persistenceKey)) ?? []
@@ -35,6 +37,15 @@ final class Playlist: PlaylistType {
             throw PlaylistError.songAlreadyInList
         }
         list.append(song)
+    }
+    
+    /// Delete the given song from the list.
+    /// - Parameter song: The song.
+    func delete(song: SubsonicSong) {
+        guard let index = list.firstIndex(where: { $0.id == song.id }) else {
+            return
+        }
+        list.remove(at: index)
     }
 
     /// Clear the list.

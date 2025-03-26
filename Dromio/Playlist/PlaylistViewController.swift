@@ -23,25 +23,39 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         fatalError("init(coder:) has not been implemented")
     }
 
-    lazy var tableHeaderView: UIView = {
-        let tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
-        tableHeaderView.backgroundColor = .background
+    lazy var jukeboxButton: UIButton = {
         var config = UIButton.Configuration.plain()
+        let button = UIButton(configuration: config, primaryAction: UIAction() {
+            [weak self] _ in self?.doJukeboxButton()
+        })
         config.attributedTitle = AttributedString("Jukebox Mode: ", attributes: .init ([
             .font: UIFont(name: "GillSans-Bold", size: 15) as Any,
             .foregroundColor: UIColor.label,
         ]))
+        config.titleTextAttributesTransformer = .init({ [weak button] container in
+            guard let button else { return container }
+            var container = container
+            container.foregroundColor = button.isEnabled ? UIColor.label : UIColor.systemGray
+            return container
+        })
         config.image = UIImage(systemName: "rectangle")
         config.imagePlacement = .trailing
-        config.imageColorTransformer = .init { _ in .label }
-        let button = UIButton(configuration: config, primaryAction: UIAction() {
-            [weak self] _ in self?.doJukeboxButton()
+        config.imageColorTransformer = .init({ [weak button] _ in
+            guard let button else { return .label }
+            return button.isEnabled ? .label : .systemGray
         })
-        tableHeaderView.addSubview(button)
+        button.configuration = config
         button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+
+    lazy var tableHeaderView: UIView = {
+        let tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
+        tableHeaderView.backgroundColor = .background
+        tableHeaderView.addSubview(jukeboxButton)
         NSLayoutConstraint.activate([
-            button.centerXAnchor.constraint(equalTo: tableHeaderView.centerXAnchor),
-            button.centerYAnchor.constraint(equalTo: tableHeaderView.centerYAnchor),
+            jukeboxButton.centerXAnchor.constraint(equalTo: tableHeaderView.centerXAnchor),
+            jukeboxButton.centerYAnchor.constraint(equalTo: tableHeaderView.centerYAnchor),
         ])
         return tableHeaderView
     }()
@@ -65,12 +79,10 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
 
     func present(_ state: PlaylistState) {
         dataSourceDelegate?.present(state)
-        if let jukeboxButton = tableView.tableHeaderView?.subviews(ofType: UIButton.self).first {
-            jukeboxButton.configuration?.image = if state.jukeboxMode {
-                UIImage(systemName: "checkmark.rectangle")
-            } else {
-                UIImage(systemName: "rectangle")
-            }
+        jukeboxButton.configuration?.image = if state.jukeboxMode {
+            UIImage(systemName: "checkmark.rectangle")
+        } else {
+            UIImage(systemName: "rectangle")
         }
         if let playPauseButton = navigationItem.rightBarButtonItems?[1] {
             playPauseButton.isEnabled = state.showPlayPauseButton
@@ -78,9 +90,7 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         if let cancelButton = navigationItem.rightBarButtonItems?[0] {
             cancelButton.isEnabled = state.showClearButtonAndJukeboxButton
         }
-        tableView.tableHeaderView?.subviews.forEach {
-            $0.isHidden = !state.showClearButtonAndJukeboxButton
-        }
+        jukeboxButton.isEnabled = state.showClearButtonAndJukeboxButton
     }
 
     func receive(_ effect: PlaylistEffect) async {

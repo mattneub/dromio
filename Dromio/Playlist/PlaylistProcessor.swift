@@ -22,6 +22,14 @@ final class PlaylistProcessor: Processor {
         }
     }
 
+    /// Utility method that makes it easier to perform / batch state changes without presentation.
+    func withoutPresentation(execute: (inout PlaylistState) -> Void) {
+        var stateCopy = state
+        execute(&stateCopy)
+        noPresentation = true
+        state = stateCopy
+    }
+
     /// Pipeline subscribing to Download's `progress` during a download, so we can report progress.
     var downloadPipeline: AnyCancellable?
 
@@ -47,6 +55,28 @@ final class PlaylistProcessor: Processor {
                 }
                 coordinator?.popPlaylist()
             }
+        case .delete(let row):
+            guard row < state.songs.count else { return }
+            let song = state.songs[row]
+            services.player.clear()
+            do {
+                try await services.download.delete(song: song)
+                services.currentPlaylist.delete(song: song)
+                try await configureSongs()
+                withoutPresentation { state in
+                    state.animate = true
+                }
+                presenter?.present(state)
+                withoutPresentation { state in
+                    state.animate = false
+                }
+                if state.songs.isEmpty && !state.jukeboxMode {
+                    try? await unlessTesting {
+                        try? await Task.sleep(for: .seconds(0.3))
+                    }
+                    coordinator?.popPlaylist()
+                }
+            } catch {}
         case .initialData:
             try? await configureSongs()
             presenter?.present(state)
@@ -133,8 +163,9 @@ final class PlaylistProcessor: Processor {
             }
             songs = try await result.array()
         }
-        noPresentation = true
-        state.songs = songs
+        withoutPresentation { state in
+            state.songs = songs
+        }
         // no presentation took place during this method! it is up to the caller to present
     }
 

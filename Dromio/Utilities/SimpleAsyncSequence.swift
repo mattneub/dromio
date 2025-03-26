@@ -13,11 +13,7 @@ struct SimpleAsyncSequence<T: Sendable>: AsyncSequence, AsyncIteratorProtocol, S
 
 extension AsyncSequence where Element: Sendable {
     func array() async throws -> [Element] {
-        var result = [Element]()
-        for try await item in self {
-            result.append(item)
-        }
-        return result
+        try await reduce(into: []) { $0.append($1) }
     }
 }
 

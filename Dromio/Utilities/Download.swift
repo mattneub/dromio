@@ -9,6 +9,7 @@ enum DownloadError: Error {
 protocol DownloadType: Actor {
     func download(song: SubsonicSong) async throws -> URL
     func clear()
+    func delete(song: SubsonicSong) throws
     func downloadedURL(for song: SubsonicSong) throws -> URL?
     func isDownloaded(song: SubsonicSong) -> Bool
 }
@@ -63,6 +64,14 @@ actor Download: DownloadType {
             throw DownloadError.noSuffix
         }
         return song.id + "." + suffix
+    }
+    
+    /// Delete the given song's downloaded data.
+    /// - Parameter song: The song.
+    func delete(song: SubsonicSong) throws {
+        guard let url = try downloadedURL(for: song) else { return }
+        let fileManager = FileManager.default
+        try fileManager.removeItem(at: url)
     }
 
     /// Remove all downloaded songs, both in the downloads directory and in the temp directory.

@@ -242,7 +242,7 @@ final class DownloadTests { // class, because we have cleanup to perform after e
             duration: nil,
             contributors: nil
         )
-        #expect(try await subject.isDownloaded(song: song) == true)
+        #expect(await subject.isDownloaded(song: song) == true)
         song = SubsonicSong(
             id: "2", // wrong id
             title: "Title",
@@ -256,7 +256,7 @@ final class DownloadTests { // class, because we have cleanup to perform after e
             duration: nil,
             contributors: nil
         )
-        #expect(try await subject.isDownloaded(song: song) == false)
+        #expect(await subject.isDownloaded(song: song) == false)
         song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -270,6 +270,49 @@ final class DownloadTests { // class, because we have cleanup to perform after e
             duration: nil,
             contributors: nil
         )
-        #expect(try await subject.isDownloaded(song: song) == false)
+        #expect(await subject.isDownloaded(song: song) == false)
+    }
+
+    @Test("delete: deletes the given song's file; if there is no such file, no harm done")
+    func delete() async throws {
+        let subject = Download()
+        let url = await subject.downloadsDirectory()
+        let file = url.appendingPathComponent("2.mp3")
+        try "howdy".write(to: file, atomically: true, encoding: .utf8)
+        #expect(try file.checkResourceIsReachable())
+        var song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: "mp3",
+            duration: nil,
+            contributors: nil
+        )
+        await(try subject.delete(song: song))
+        #expect(try file.checkResourceIsReachable())
+        song = SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: "mp3",
+            duration: nil,
+            contributors: nil
+        )
+        await(try subject.delete(song: song))
+        #expect {
+            try file.checkResourceIsReachable()
+        } throws: { _ in
+            true
+        }
     }
 }

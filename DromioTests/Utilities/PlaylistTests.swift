@@ -89,6 +89,39 @@ struct PlaylistTests {
         }
     }
 
+    @Test("delete: removes the given song from the list")
+    func delete() {
+        let song1 = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        let song2 = SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        subject.list = [song1, song2]
+        subject.delete(song: song2)
+        #expect(subject.list == [song1])
+    }
+
     @Test("clear: empties the list")
     func clear() {
         let song1 = SubsonicSong(

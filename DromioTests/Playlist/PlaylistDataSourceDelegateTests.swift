@@ -50,8 +50,8 @@ struct PlaylistDataSourceDelegateTests {
         #expect(thermometerView.progress == 0.5)
     }
 
-    @Test("present: datasource reflects `songs`")
-    func presentWithDataDatasourceItems() async {
+    @Test("present: datasource reflects `songs`", arguments: [true, false])
+    func presentWithDataDatasourceItems(animate: Bool) async {
         var state = PlaylistState()
         state.songs = [.init(
             id: "1",
@@ -66,6 +66,7 @@ struct PlaylistDataSourceDelegateTests {
             duration: nil,
             contributors: nil
         )]
+        state.animate = animate
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
@@ -73,8 +74,8 @@ struct PlaylistDataSourceDelegateTests {
         #expect(snapshot.itemIdentifiers.first == "1")
     }
 
-    @Test("present: cells are correctly populated")
-    func presentWithDataCell() async throws {
+    @Test("present: cells are correctly populated", arguments: [true, false])
+    func presentWithDataCell(animate: Bool) async throws {
         makeWindow(view: tableView)
         var state = PlaylistState()
         state.songs = [.init(
@@ -90,6 +91,7 @@ struct PlaylistDataSourceDelegateTests {
             duration: nil,
             contributors: nil
         )]
+        state.animate = animate
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
@@ -116,8 +118,8 @@ struct PlaylistDataSourceDelegateTests {
         #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .systemGray3)
     }
 
-    @Test("present: state currentSongId is passed to configuration")
-    func presentWithCurrentItemCell() async throws {
+    @Test("present: state currentSongId is passed to configuration", arguments: [true, false])
+    func presentWithCurrentItemCell(animate: Bool) async throws {
         makeWindow(view: tableView)
         var state = PlaylistState()
         state.songs = [.init(
@@ -134,6 +136,7 @@ struct PlaylistDataSourceDelegateTests {
             contributors: nil
         )]
         state.currentSongId = "10"
+        state.animate = animate
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
@@ -157,8 +160,8 @@ struct PlaylistDataSourceDelegateTests {
         #expect(thermometerView.progress == 0)
     }
 
-    @Test("present: if a song's `downloaded` is true, its cell thermometer view gets a `progress` of 1")
-    func presentWithDataDownloaded() async throws {
+    @Test("present: if a song's `downloaded` is true, its cell thermometer view gets a `progress` of 1", arguments: [true, false])
+    func presentWithDataDownloaded(animate: Bool) async throws {
         makeWindow(view: tableView)
         var state = PlaylistState()
         state.songs = [.init(
@@ -175,6 +178,7 @@ struct PlaylistDataSourceDelegateTests {
             contributors: nil,
             downloaded: true
         )]
+        state.animate = animate
         subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
@@ -221,5 +225,25 @@ struct PlaylistDataSourceDelegateTests {
         subject.tableView(tableView, didSelectRowAt: IndexPath(row: 0, section: 0))
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.contains(.tapped(song)))
+    }
+
+    @Test("trailingSwipeActions: delete button, calls processor delete with specified row")
+    func trailing() async throws {
+        let configuration = subject.tableView(tableView, trailingSwipeActionsConfigurationForRowAt: IndexPath(row: 1, section: 0))
+        let realConfiguration = try #require(configuration)
+        #expect(realConfiguration.actions.count == 1)
+        #expect(realConfiguration.actions[0].image == UIImage(systemName: "trash"))
+        #expect(realConfiguration.actions[0].style == .destructive)
+        #expect(realConfiguration.actions[0].title == nil)
+        #expect(realConfiguration.performsFirstActionWithFullSwipe == true)
+        var resultOK: Bool?
+        realConfiguration.actions[0].handler(
+            UIContextualAction(),
+            UIView(),
+            { ok in resultOK = ok}
+        )
+        #expect(resultOK == true)
+        await #while(processor.thingsReceived.isEmpty)
+        #expect(processor.thingsReceived.last == .delete(1))
     }
 }

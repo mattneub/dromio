@@ -66,6 +66,29 @@ struct PlaylistProcessorTests {
         #expect(subject.noPresentation == false)
     }
 
+    @Test("mutating the state with `withoutPresentation` doesn't present the state")
+    func stateWithoutPresentation() {
+        let songs = [SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        subject.withoutPresentation { state in
+            state.songs = songs
+        }
+        #expect(subject.state.songs == songs)
+        #expect(presenter.statePresented == nil)
+        #expect(subject.noPresentation == false)
+    }
+
     @Test("receive initialData: sets state `songs`, sets pipelines, pipelines work")
     func receiveInitialData() async {
         playlist.list = [SubsonicSong(
@@ -223,6 +246,7 @@ struct PlaylistProcessorTests {
             duration: nil,
             contributors: nil
         )]
+        #expect(presenter.statesPresented.count == 0)
         await subject.receive(.initialData)
         #expect(
             presenter.statesPresented.first?.songs == [.init(
@@ -255,7 +279,7 @@ struct PlaylistProcessorTests {
         )
     }
 
-    @Test("receiveInitialData: if offline mode, filters out undownloaded songs, marks remaining songs downloaded")
+    @Test("receive initialData: if offline mode, filters out undownloaded songs, marks remaining songs downloaded")
     func receiveInitialDataOfflineMode() async {
         download.bools["1"] = true
         download.bools["2"] = false
@@ -289,6 +313,355 @@ struct PlaylistProcessorTests {
         await subject.receive(.initialData)
         #expect(
             presenter.statesPresented.first?.songs == [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true
+            )]
+        )
+    }
+
+    @Test("receive delete: clears player, tells download and current playlist to delete song, presents with state animate true")
+    func receiveDelete() async {
+        subject.state.songs = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        await subject.receive(.delete(1))
+        #expect(player.methodsCalled.last == "clear()")
+        #expect(await download.methodsCalled.last == "delete(song:)")
+        #expect(await download.song?.id == "2")
+        #expect(playlist.methodsCalled.last == "delete(song:)")
+        #expect(playlist.song?.id == "2")
+        #expect(presenter.statePresented?.animate == true)
+        #expect(subject.state.animate == false)
+    }
+
+    @Test("receive delete: sets state `songs` from current playlist")
+    func receiveDeleteSongs() async {
+        subject.state.songs = [SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        playlist.list = [SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        await subject.receive(.delete(0))
+        #expect(
+            presenter.statePresented?.songs == [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: false
+            )]
+        )
+        #expect(presenter.statePresented?.animate == true)
+        #expect(subject.state.animate == false)
+    }
+
+    @Test("receive delete: bad row, does nothing")
+    func receiveDeleteBadRow() async {
+        subject.state.songs = [SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        playlist.list = [SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        await subject.receive(.delete(2))
+        #expect(
+            presenter.statePresented?.songs == [.init(
+                id: "2",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: nil
+            )]
+        )
+        #expect(player.methodsCalled.isEmpty)
+        #expect(playlist.methodsCalled.isEmpty)
+    }
+
+    @Test("receive delete: if the Download says this song is downloaded, marks it as downloaded in the state")
+    func receiveDeleteDownloaded() async {
+        subject.state.songs = [
+            .init(
+                id: "3",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil
+            )
+        ]
+        download.bools["1"] = true
+        playlist.list = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        await subject.receive(.delete(0))
+        #expect(
+            subject.state.songs == [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true // *
+            ), .init(
+                id: "2",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: false
+            )]
+        )
+    }
+
+    @Test("receive delete: presents only once while looping thru downloads")
+    func receiveDeleteDownloadedOnePresentation() async {
+        subject.noPresentation = true
+        subject.state.songs = [SubsonicSong(
+            id: "3",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        download.bools["1"] = true
+        download.bools["2"] = true
+        playlist.list = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        await subject.receive(.delete(0))
+        #expect(presenter.statesPresented.count == 1)
+        #expect(
+            presenter.statesPresented.first?.songs == [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true // *
+            ), .init(
+                id: "2",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true // * got them both in one presentation
+            )]
+        )
+    }
+
+    @Test("receive delete: if offline mode, filters out undownloaded songs, marks remaining songs downloaded")
+    func receiveDeleteOfflineMode() async {
+        subject.state.songs = [SubsonicSong(
+            id: "3",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        download.bools["1"] = true
+        download.bools["2"] = false
+        playlist.list = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        subject.noPresentation = true
+        subject.state.offlineMode = true
+        await subject.receive(.delete(0))
+        #expect(
+            presenter.statePresented?.songs == [.init(
                 id: "1",
                 title: "Title",
                 album: "Album",

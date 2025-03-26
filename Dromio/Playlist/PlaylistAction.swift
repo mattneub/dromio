@@ -4,6 +4,8 @@ import Foundation
 enum PlaylistAction: Equatable {
     /// Clear the list.
     case clear
+    /// Delete the list entry at the given row.
+    case delete(Int)
     /// The view controller is ready for its data.
     case initialData
     /// The user tapped the jukebox button.

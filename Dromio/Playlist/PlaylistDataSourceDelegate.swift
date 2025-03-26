@@ -43,7 +43,11 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         data = state.songs
         currentSongId = state.currentSongId
         Task {
-            await updateTableView()
+            if state.animate {
+                await animateUpdateTableView()
+            } else {
+                await updateTableView()
+            }
         }
     }
 
@@ -103,6 +107,18 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         await datasource.applySnapshotUsingReloadData(snapshot)
     }
 
+    /// Method called by `present` to bring the table into line with the data when slide animation
+    /// is wanted.
+    func animateUpdateTableView() async {
+        var snapshot = datasource.snapshot()
+        snapshot.deleteAllItems() // despite the name, this deletes the section too
+        snapshot.appendSections(["Dummy"])
+        snapshot.appendItems(data.map {$0.id})
+        // an `id` _was_ change, otherwise we wouldn't be here; animate that change
+        datasource.defaultRowAnimation = .right
+        await datasource.apply(snapshot, animatingDifferences: unlessTesting(true))
+    }
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let identifier = datasource.itemIdentifier(for: indexPath) else {
             return
@@ -113,5 +129,24 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         Task {
             await processor?.receive(.tapped(song))
         }
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive, title: nil) { [weak self] action, view, completion in
+            completion(true)
+            Task {
+                try? await unlessTesting {
+                    try? await Task.sleep(for: .seconds(0.3))
+                }
+                await self?.processor?.receive(.delete(indexPath.row))
+            }
+        }
+        deleteAction.image = UIImage(systemName: "trash")
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        configuration.performsFirstActionWithFullSwipe = true
+        return configuration
     }
 }

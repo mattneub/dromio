@@ -24,17 +24,32 @@ struct PlaylistViewControllerTests {
         #expect(subject.title == "Queue")
     }
 
-    @Test("The table header view is correctly constructed")
-    func tableHeaderViewAppearance() throws {
-        #expect(subject.tableHeaderView.backgroundColor == .background)
-        let button = try #require(subject.tableHeaderView.subviews.first as? UIButton)
+    @Test("The jukebox button is correctly configured")
+    func jukeboxButton() async throws {
+        let button = subject.jukeboxButton
+        let viewController = UIViewController()
+        viewController.view.addSubview(button)
+        makeWindow(viewController: viewController)
         let configuration = try #require(button.configuration)
         #expect(configuration.attributedTitle == AttributedString("Jukebox Mode: ", attributes: .init ([
             .font: UIFont(name: "GillSans-Bold", size: 15) as Any,
             .foregroundColor: UIColor.label,
         ])))
+        #expect(button.titleLabel?.textColor == .label)
         #expect(configuration.image == UIImage(systemName: "rectangle"))
+        #expect(button.imageView?.tintColor == .label)
         #expect(configuration.imagePlacement == .trailing)
+        button.isEnabled = false
+        await #while(button.imageView?.tintColor == .label)
+        #expect(button.imageView?.tintColor == .systemGray)
+        #expect(button.titleLabel?.textColor == .systemGray)
+    }
+
+    @Test("The table header view is correctly constructed")
+    func tableHeaderViewAppearance() throws {
+        #expect(subject.tableHeaderView.backgroundColor == .background)
+        let button = try #require(subject.tableHeaderView.subviews.first as? UIButton)
+        #expect(button === subject.jukeboxButton)
         subject.tableHeaderView.bounds = CGRect(origin: .zero, size: .init(width: 600, height: 400))
         assertSnapshot(of: subject.tableHeaderView, as: .image)
     }
@@ -157,14 +172,14 @@ struct PlaylistViewControllerTests {
 
     @Test("present: sets visibility of jukeboxButton")
     func presentJukeboxButtonVisibility() async throws {
-        let button = try #require(subject.tableHeaderView.subviews.first as? UIButton)
+        let button = subject.jukeboxButton
         var state = PlaylistState()
         state.offlineMode = false
         subject.present(state)
-        #expect(!button.isHidden)
+        #expect(button.isEnabled)
         state.offlineMode = true
         subject.present(state)
-        #expect(button.isHidden)
+        #expect(!button.isEnabled)
     }
 
     @Test("receive deselectAll: tells the table view to select nil")
