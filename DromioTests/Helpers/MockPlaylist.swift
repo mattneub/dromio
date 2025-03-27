@@ -7,6 +7,8 @@ final class MockPlaylist: PlaylistType {
     var methodsCalled = [String]()
     var errorToThrow: (any Error)?
     var song: SubsonicSong?
+    var fromRow: Int?
+    var toRow: Int?
 
     func append(_ song: SubsonicSong) throws {
         methodsCalled.append(#function)
@@ -16,9 +18,20 @@ final class MockPlaylist: PlaylistType {
         list.append(song)
     }
 
+    func setList(_ songs: [SubsonicSong]) {
+        methodsCalled.append(#function)
+        self.list = songs
+    }
+
     func delete(song: Dromio.SubsonicSong) {
         methodsCalled.append(#function)
         self.song = song
+    }
+
+    func move(from fromRow: Int, to toRow: Int) {
+        methodsCalled.append(#function)
+        self.fromRow = fromRow
+        self.toRow = toRow
     }
 
     func clear() {

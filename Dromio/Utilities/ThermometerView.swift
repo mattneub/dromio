@@ -1,6 +1,14 @@
 import UIKit
 
 final class ThermometerView: UIView {
+    static var thermometerFillColor = UIColor { traitCollection in
+        if traitCollection.userInterfaceStyle == .light {
+            UIColor(red: 1, green: 0.939, blue: 0.5, alpha: 1)
+        } else {
+            UIColor(red: 0.915, green: 0.768, blue: 0.039, alpha: 1)
+        }
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         isOpaque = false
@@ -18,7 +26,7 @@ final class ThermometerView: UIView {
     }
 
     override func draw(_ rect: CGRect) {
-        UIColor.systemYellow.setFill()
+        Self.thermometerFillColor.setFill()
         let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: progress * rect.width, height: rect.height))
         path.fill()
     }

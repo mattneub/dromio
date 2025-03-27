@@ -76,6 +76,12 @@ final class Player: NSObject, PlayerType {
                 await self?.adjustNowPlayingItemToCurrentItem()
             }
         }
+        // TODO: observe rate changes too!
+        /*
+         "To observe this player behavior," [i.e. the user disconnects headphones],
+         "key-value observe the player’s rate property so that you can update your user interface
+         as the player pauses playback.
+         */
         interruptionObservation = NotificationCenter.default.addObserver(
             forName: AVAudioSession.interruptionNotification, object: nil, queue: .main
         ) { [weak self] notification in

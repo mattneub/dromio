@@ -89,9 +89,9 @@ struct PlaylistProcessorTests {
         #expect(subject.noPresentation == false)
     }
 
-    @Test("receive initialData: sets state `songs`, sets pipelines, pipelines work")
-    func receiveInitialData() async {
-        playlist.list = [SubsonicSong(
+    @Test("receive clear: tells the current playlist, player, and download to clear, sets the state, call popPlaylist")
+    func clear() async {
+        let songs = [SubsonicSong(
             id: "1",
             title: "Title",
             album: "Album",
@@ -104,229 +104,27 @@ struct PlaylistProcessorTests {
             duration: nil,
             contributors: nil
         )]
-        #expect(subject.downloadPipeline == nil)
-        #expect(subject.playerCurrentSongIdPipeline == nil)
-        #expect(subject.playerStatePipeline == nil)
-        await subject.receive(.initialData)
-        #expect(
-            presenter.statePresented?.songs == [.init(
-                id: "1",
-                title: "Title",
-                album: "Album",
-                artist: "Artist",
-                displayComposer: "Me",
-                track: 1,
-                year: 1970,
-                albumId: "2",
-                suffix: nil,
-                duration: nil,
-                contributors: nil,
-                downloaded: false
-            )]
-        )
-        #expect(subject.downloadPipeline != nil)
-        #expect(subject.playerCurrentSongIdPipeline != nil)
-        #expect(subject.playerStatePipeline != nil)
-        networker.progress.send((id: "2", fraction: 0.5))
-        await #while(!presenter.thingsReceived.contains(.progress("2", 0.5)))
-        #expect(presenter.thingsReceived.contains(.progress("2", 0.5)))
-        player.currentSongIdPublisher.send("10")
-        #expect(subject.state.currentSongId == "10")
-        await #while(requestMaker.methodsCalled.isEmpty)
-        #expect(requestMaker.methodsCalled.contains("scrobble(songId:)"))
-        #expect(requestMaker.songId == "10")
-        player.playerStatePublisher.send(.playing)
-        await #while(!presenter.thingsReceived.contains(.playerState(.playing)))
-        #expect(presenter.thingsReceived.contains(.playerState(.playing)))
+        subject.state.songs = songs
+        await subject.receive(.clear)
+        #expect(haptic.methodsCalled == ["impact()"])
+        #expect(playlist.methodsCalled == ["clear()"])
+        #expect(player.methodsCalled == ["clear()"])
+        await #expect(download.methodsCalled == ["clear()"])
+        #expect(subject.state.songs.isEmpty)
+        await #while(coordinator.methodsCalled.isEmpty)
+        #expect(coordinator.methodsCalled == ["popPlaylist()"])
     }
 
-    @Test("receive initialData: current song id and player state pipelines remove duplicates")
-    func removeDuplicates() async {
-        await subject.receive(.initialData)
-        await #while(presenter.statesPresented.isEmpty)
-        presenter.statesPresented = []
-        player.currentSongIdPublisher.send("10")
-        player.currentSongIdPublisher.send("10")
-        await #while(presenter.statesPresented.isEmpty)
-        #expect(presenter.statesPresented.count == 1)
-        await #while(presenter.thingsReceived.isEmpty)
-        presenter.thingsReceived = []
-        player.playerStatePublisher.send(.playing)
-        player.playerStatePublisher.send(.playing)
-        await #while(presenter.thingsReceived.isEmpty)
-        #expect(presenter.thingsReceived.count == 1)
-    }
-
-    @Test("receive initialData: if the Download says this song is downloaded, marks it as downloaded in the state")
-    func receiveInitialDataDownloaded() async {
-        download.bools["1"] = true
-        playlist.list = [.init(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        ), .init(
-            id: "2",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )]
-        await subject.receive(.initialData)
-        #expect(
-            subject.state.songs == [.init(
-                id: "1",
-                title: "Title",
-                album: "Album",
-                artist: "Artist",
-                displayComposer: "Me",
-                track: 1,
-                year: 1970,
-                albumId: "2",
-                suffix: nil,
-                duration: nil,
-                contributors: nil,
-                downloaded: true // *
-            ), .init(
-                id: "2",
-                title: "Title",
-                album: "Album",
-                artist: "Artist",
-                displayComposer: "Me",
-                track: 1,
-                year: 1970,
-                albumId: "2",
-                suffix: nil,
-                duration: nil,
-                contributors: nil,
-                downloaded: false
-            )]
-        )
-    }
-
-    @Test("receive initialData: presents only once while looping thru downloads")
-    func receiveInitialDataDownloadedOnePresentation() async {
-        download.bools["1"] = true
-        download.bools["2"] = true
-        playlist.list = [.init(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        ), .init(
-            id: "2",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )]
-        #expect(presenter.statesPresented.count == 0)
-        await subject.receive(.initialData)
-        #expect(
-            presenter.statesPresented.first?.songs == [.init(
-                id: "1",
-                title: "Title",
-                album: "Album",
-                artist: "Artist",
-                displayComposer: "Me",
-                track: 1,
-                year: 1970,
-                albumId: "2",
-                suffix: nil,
-                duration: nil,
-                contributors: nil,
-                downloaded: true // *
-            ), .init(
-                id: "2",
-                title: "Title",
-                album: "Album",
-                artist: "Artist",
-                displayComposer: "Me",
-                track: 1,
-                year: 1970,
-                albumId: "2",
-                suffix: nil,
-                duration: nil,
-                contributors: nil,
-                downloaded: true // * got them both in one presentation
-            )]
-        )
-    }
-
-    @Test("receive initialData: if offline mode, filters out undownloaded songs, marks remaining songs downloaded")
-    func receiveInitialDataOfflineMode() async {
-        download.bools["1"] = true
-        download.bools["2"] = false
-        playlist.list = [.init(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        ), .init(
-            id: "2",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )]
-        subject.noPresentation = true
-        subject.state.offlineMode = true
-        await subject.receive(.initialData)
-        #expect(
-            presenter.statesPresented.first?.songs == [.init(
-                id: "1",
-                title: "Title",
-                album: "Album",
-                artist: "Artist",
-                displayComposer: "Me",
-                track: 1,
-                year: 1970,
-                albumId: "2",
-                suffix: nil,
-                duration: nil,
-                contributors: nil,
-                downloaded: true
-            )]
-        )
+    @Test("receive clear: in jukebox mode tells request maker to send jukebox control stop and clear")
+    func clearJukeboxMode() async {
+        subject.state.jukeboxMode = true
+        await subject.receive(.clear)
+        #expect(haptic.methodsCalled == ["impact()"])
+        #expect(playlist.methodsCalled.isEmpty)
+        #expect((await download.methodsCalled).isEmpty)
+        #expect(coordinator.methodsCalled.isEmpty)
+        #expect(requestMaker.methodsCalled == ["jukebox(action:songId:)", "jukebox(action:songId:)"])
+        #expect(requestMaker.actions == [.stop, .clear])
     }
 
     @Test("receive delete: clears player, tells download and current playlist to delete song, presents with state animate true")
@@ -457,7 +255,7 @@ struct PlaylistProcessorTests {
                 suffix: nil,
                 duration: nil,
                 contributors: nil,
-                downloaded: nil
+                downloaded: false
             )]
         )
         #expect(player.methodsCalled.isEmpty)
@@ -678,6 +476,266 @@ struct PlaylistProcessorTests {
         )
     }
 
+    @Test("receive editButton: clears player, toggle state editMode; if turned editMode off, presents twice")
+    func editButton() async throws {
+        await subject.receive(.editButton)
+        #expect(subject.state.editMode == true)
+        #expect(presenter.statesPresented.count == 1)
+        #expect(presenter.statesPresented[0].updateTableView == false)
+        presenter.statesPresented = []
+        await subject.receive(.editButton)
+        #expect(subject.state.editMode == false)
+        #expect(presenter.statesPresented.count == 2)
+        #expect(presenter.statesPresented[0].updateTableView == false)
+        #expect(presenter.statesPresented[1].updateTableView == true)
+    }
+
+    @Test("receive initialData: sets state `songs`, sets pipelines, pipelines work")
+    func receiveInitialData() async {
+        playlist.list = [SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        #expect(subject.downloadPipeline == nil)
+        #expect(subject.playerCurrentSongIdPipeline == nil)
+        #expect(subject.playerStatePipeline == nil)
+        await subject.receive(.initialData)
+        #expect(
+            presenter.statePresented?.songs == [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: false
+            )]
+        )
+        #expect(subject.downloadPipeline != nil)
+        #expect(subject.playerCurrentSongIdPipeline != nil)
+        #expect(subject.playerStatePipeline != nil)
+        networker.progress.send((id: "2", fraction: 0.5))
+        await #while(!presenter.thingsReceived.contains(.progress("2", 0.5)))
+        #expect(presenter.thingsReceived.contains(.progress("2", 0.5)))
+        player.currentSongIdPublisher.send("10")
+        #expect(subject.state.currentSongId == "10")
+        await #while(requestMaker.methodsCalled.isEmpty)
+        #expect(requestMaker.methodsCalled.contains("scrobble(songId:)"))
+        #expect(requestMaker.songId == "10")
+        player.playerStatePublisher.send(.playing)
+        await #while(!presenter.thingsReceived.contains(.playerState(.playing)))
+        #expect(presenter.thingsReceived.contains(.playerState(.playing)))
+        #expect(playlist.methodsCalled.contains("setList(_:)"))
+        #expect(playlist.list == subject.state.songs) // still in sync
+    }
+
+    @Test("receive initialData: current song id and player state pipelines remove duplicates")
+    func removeDuplicates() async {
+        await subject.receive(.initialData)
+        await #while(presenter.statesPresented.isEmpty)
+        presenter.statesPresented = []
+        player.currentSongIdPublisher.send("10")
+        player.currentSongIdPublisher.send("10")
+        await #while(presenter.statesPresented.isEmpty)
+        #expect(presenter.statesPresented.count == 1)
+        await #while(presenter.thingsReceived.isEmpty)
+        presenter.thingsReceived = []
+        player.playerStatePublisher.send(.playing)
+        player.playerStatePublisher.send(.playing)
+        await #while(presenter.thingsReceived.isEmpty)
+        #expect(presenter.thingsReceived.count == 1)
+    }
+
+    @Test("receive initialData: if the Download says this song is downloaded, marks it as downloaded in the state")
+    func receiveInitialDataDownloaded() async {
+        download.bools["1"] = true
+        playlist.list = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        await subject.receive(.initialData)
+        #expect(
+            subject.state.songs == [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true // *
+            ), .init(
+                id: "2",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: false
+            )]
+        )
+        #expect(playlist.methodsCalled.contains("setList(_:)"))
+        #expect(playlist.list == subject.state.songs) // still in sync
+    }
+
+    @Test("receive initialData: presents only once while looping thru downloads")
+    func receiveInitialDataDownloadedOnePresentation() async {
+        download.bools["1"] = true
+        download.bools["2"] = true
+        playlist.list = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        #expect(presenter.statesPresented.count == 0)
+        await subject.receive(.initialData)
+        #expect(
+            presenter.statesPresented.first?.songs == [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true // *
+            ), .init(
+                id: "2",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true // * got them both in one presentation
+            )]
+        )
+    }
+
+    @Test("receive initialData: if offline mode, filters out undownloaded songs, marks remaining songs downloaded")
+    func receiveInitialDataOfflineMode() async {
+        download.bools["1"] = true
+        download.bools["2"] = false
+        playlist.list = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        subject.noPresentation = true
+        subject.state.offlineMode = true
+        await subject.receive(.initialData)
+        #expect(
+            presenter.statesPresented.first?.songs == [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil,
+                downloaded: true
+            )]
+        )
+        #expect(playlist.methodsCalled.contains("setList(_:)"))
+        #expect(playlist.list == subject.state.songs) // still in sync
+    }
+
     @Test("receive jukeboxButton: toggles state jukeboxMode, call haptic")
     func receiveJukebox() async {
         #expect(!subject.state.jukeboxMode)
@@ -687,6 +745,71 @@ struct PlaylistProcessorTests {
         await subject.receive(.jukeboxButton)
         #expect(!subject.state.jukeboxMode)
         #expect(haptic.methodsCalled == ["impact()", "impact()"])
+    }
+
+    @Test("receive move: tells playlist to move, does move as specified")
+    func move() async throws {
+        subject.state.songs = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        await subject.receive(.move(from: 1, to: 0))
+        #expect(playlist.methodsCalled == ["move(from:to:)"])
+        #expect(playlist.fromRow == 1)
+        #expect(playlist.toRow == 0)
+        #expect(subject.state.songs == [.init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )])
+    }
+
+    @Test("receive playPause: tells the player to playPause")
+    func playpause() async {
+        await subject.receive(.playPause)
+        #expect(haptic.methodsCalled == ["impact()"])
+        #expect(player.methodsCalled == ["playPause()"])
     }
 
     @Test("receive tapped: calls haptic, sends .deselectAll")
@@ -825,6 +948,57 @@ struct PlaylistProcessorTests {
         #expect(subject.state.songs.filter { $0.downloaded == true }.count == 3)
     }
 
+    @Test("receive tapped: if all in sequence already downloaded, no presentation")
+    func receiveTappedDownloadAndPlayNoStreamNoPresentation() async {
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil,
+            downloaded: true
+        )
+        let song2 = SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil,
+            downloaded: true
+        )
+        let song3 = SubsonicSong(
+            id: "3",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil,
+            downloaded: true
+        )
+        download.bools = ["1": true, "2": true, "3": false]
+        subject.state.songs = [song, song2, song3]
+        presenter.statePresented = nil
+        await subject.receive(.tapped(song))
+        #expect(presenter.statePresented == nil)
+    }
+
     @Test("receive tapped: doesn't proceed further if song is not in state")
     func receiveTappedNoSequence() async {
         let song = SubsonicSong(
@@ -921,50 +1095,5 @@ struct PlaylistProcessorTests {
         #expect(requestMaker.methodsCalled == ["jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)"])
         #expect(requestMaker.actions == [.stop, .clear, .add, .add, .add, .start])
         #expect(requestMaker.songIds == [nil, nil, "1", "2", "3", nil])
-    }
-
-    @Test("receive playPause: tells the player to playPause")
-    func playpause() async {
-        await subject.receive(.playPause)
-        #expect(haptic.methodsCalled == ["impact()"])
-        #expect(player.methodsCalled == ["playPause()"])
-    }
-
-    @Test("receive clear: tells the current playlist, player, and download to clear, sets the state, call popPlaylist")
-    func clear() async {
-        let songs = [SubsonicSong(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )]
-        subject.state.songs = songs
-        await subject.receive(.clear)
-        #expect(haptic.methodsCalled == ["impact()"])
-        #expect(playlist.methodsCalled == ["clear()"])
-        #expect(player.methodsCalled == ["clear()"])
-        await #expect(download.methodsCalled == ["clear()"])
-        #expect(subject.state.songs.isEmpty)
-        await #while(coordinator.methodsCalled.isEmpty)
-        #expect(coordinator.methodsCalled == ["popPlaylist()"])
-    }
-
-    @Test("receive clear: in jukebox mode tells request maker to send jukebox control stop and clear")
-    func clearJukeboxMode() async {
-        subject.state.jukeboxMode = true
-        await subject.receive(.clear)
-        #expect(haptic.methodsCalled == ["impact()"])
-        #expect(playlist.methodsCalled.isEmpty)
-        #expect((await download.methodsCalled).isEmpty)
-        #expect(coordinator.methodsCalled.isEmpty)
-        #expect(requestMaker.methodsCalled == ["jukebox(action:songId:)", "jukebox(action:songId:)"])
-        #expect(requestMaker.actions == [.stop, .clear])
     }
 }

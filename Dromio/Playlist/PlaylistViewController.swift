@@ -69,6 +69,9 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         pauseItem.width = 40
         pauseItem.isSymbolAnimationEnabled = true
         navigationItem.rightBarButtonItems = [clearItem, pauseItem]
+        let scissorsItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "scissors"), target: self, action: #selector(doEdit))
+        navigationItem.leftBarButtonItem = scissorsItem
+        navigationItem.leftItemsSupplementBackButton = true
         Task {
             await processor?.receive(.initialData)
         }
@@ -78,11 +81,17 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     }
 
     func present(_ state: PlaylistState) {
-        dataSourceDelegate?.present(state)
         jukeboxButton.configuration?.image = if state.jukeboxMode {
             UIImage(systemName: "checkmark.rectangle")
         } else {
             UIImage(systemName: "rectangle")
+        }
+        if let editButton = navigationItem.leftBarButtonItem {
+            editButton.image = if state.editMode {
+                UIImage(systemName: "checkmark")
+            } else {
+                UIImage(systemName: "scissors")
+            }
         }
         if let playPauseButton = navigationItem.rightBarButtonItems?[1] {
             playPauseButton.isEnabled = state.showPlayPauseButton
@@ -91,6 +100,14 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
             cancelButton.isEnabled = state.showClearButtonAndJukeboxButton
         }
         jukeboxButton.isEnabled = state.showClearButtonAndJukeboxButton
+        if isEditing != state.editMode {
+            setEditing(state.editMode, animated: unlessTesting(true))
+            UIView.performWithoutAnimation {
+                self.tableView?.beginUpdates()
+                self.tableView?.endUpdates()
+            }
+        }
+        dataSourceDelegate?.present(state)
     }
 
     func receive(_ effect: PlaylistEffect) async {
@@ -131,6 +148,12 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     @objc func doJukeboxButton() {
         Task {
             await processor?.receive(.jukeboxButton)
+        }
+    }
+
+    @objc func doEdit() {
+        Task {
+            await processor?.receive(.editButton)
         }
     }
 }

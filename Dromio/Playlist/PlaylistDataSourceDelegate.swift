@@ -42,11 +42,13 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
     func present(_ state: PlaylistState) {
         data = state.songs
         currentSongId = state.currentSongId
-        Task {
-            if state.animate {
-                await animateUpdateTableView()
-            } else {
-                await updateTableView()
+        if state.updateTableView {
+            Task {
+                if state.animate {
+                    await animateUpdateTableView()
+                } else {
+                    await updateTableView()
+                }
             }
         }
     }
@@ -61,7 +63,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
     var currentSongId: String?
 
     /// Type of the diffable data source.
-    typealias Datasource = UITableViewDiffableDataSource<String, String>
+    typealias Datasource = PlaylistDataSource
 
     /// Retain the diffable data source.
     var datasource: Datasource!
@@ -90,10 +92,20 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         cell.contentConfiguration = PlaylistCellContentConfiguration(song: song, currentSongId: currentSongId)
-        cell.configureBackground()
         if let contentView = cell.contentView as? PlaylistCellContentView {
-            contentView.thermometer.progress = song.downloaded == true ? 1 : 0
+            contentView.thermometer.progress = song.downloaded ? 1 : 0
+            contentView.thermometer.isHidden = song.downloaded
         }
+        var backgroundConfiguration = UIBackgroundConfiguration.listCell()
+        backgroundConfiguration.backgroundColorTransformer = UIConfigurationColorTransformer { [weak cell] color in
+            guard let cell else { return .background }
+            if cell.isSelected || cell.isHighlighted {
+                return .systemGray3
+            } else {
+                return song.downloaded ? ThermometerView.thermometerFillColor : .background
+            }
+        }
+        cell.backgroundConfiguration = backgroundConfiguration
         return cell
     }
 
@@ -148,5 +160,32 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
         configuration.performsFirstActionWithFullSwipe = true
         return configuration
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        moveRowAt sourceIndexPath: IndexPath,
+        to destinationIndexPath: IndexPath
+    ) {
+        Task {
+            await processor?.receive(
+                .move(from: sourceIndexPath.row, to: destinationIndexPath.row)
+            )
+        }
+    }
+
+}
+
+final class PlaylistDataSource: UITableViewDiffableDataSource<String, String> {
+    override func tableView(
+        _ tableView: UITableView,
+        moveRowAt sourceIndexPath: IndexPath,
+        to destinationIndexPath: IndexPath
+    ) {
+        (tableView.delegate as? PlaylistDataSourceDelegate)?.tableView(
+            tableView,
+            moveRowAt: sourceIndexPath,
+            to: destinationIndexPath
+        )
     }
 }

@@ -100,6 +100,16 @@ struct PlaylistViewControllerTests {
         #expect(playpauseButtonItem.isSymbolAnimationEnabled == true)
     }
 
+    @Test("viewDidLoad: creates the left bar button item")
+    func viewDidLoadLeft() async throws {
+        subject.loadViewIfNeeded()
+        let editButton = try #require(subject.navigationItem.leftBarButtonItem)
+        #expect(editButton.image == UIImage(systemName: "scissors"))
+        #expect(editButton.target === subject)
+        #expect(editButton.action == #selector(subject.doEdit))
+        #expect(subject.navigationItem.leftItemsSupplementBackButton == true)
+    }
+
     @Test("present: presents to the data source")
     func present() {
         let state = PlaylistState(
@@ -134,6 +144,17 @@ struct PlaylistViewControllerTests {
         state = PlaylistState(jukeboxMode: false, songs: [])
         subject.present(state)
         #expect(button.configuration?.image == UIImage(systemName: "rectangle"))
+    }
+
+    @Test("present: sets the image of the edit button")
+    func presentEditButton() async throws {
+        let editButton = try #require(subject.navigationItem.leftBarButtonItem)
+        var state = PlaylistState(editMode: true)
+        subject.present(state)
+        #expect(editButton.image == UIImage(systemName: "checkmark"))
+        state.editMode = false
+        subject.present(state)
+        #expect(editButton.image == UIImage(systemName: "scissors"))
     }
 
     @Test("present: sets enablement of the playpause button")
@@ -180,6 +201,16 @@ struct PlaylistViewControllerTests {
         state.offlineMode = true
         subject.present(state)
         #expect(!button.isEnabled)
+    }
+
+    @Test("present: edit mode sets subject edit mode")
+    func presentEditMode() {
+        var state = PlaylistState(editMode: true)
+        subject.present(state)
+        #expect(subject.isEditing)
+        state.editMode = false
+        subject.present(state)
+        #expect(!subject.isEditing)
     }
 
     @Test("receive deselectAll: tells the table view to select nil")
@@ -231,5 +262,12 @@ struct PlaylistViewControllerTests {
         button.performPrimaryAction()
         await #while(processor.thingsReceived.last != .jukeboxButton)
         #expect(processor.thingsReceived.last == .jukeboxButton)
+    }
+
+    @Test("doEdit: sends .editButton to the processor")
+    func doEdit() async {
+        subject.doEdit()
+        await #while(processor.thingsReceived.isEmpty)
+        #expect(processor.thingsReceived.last == .editButton)
     }
 }

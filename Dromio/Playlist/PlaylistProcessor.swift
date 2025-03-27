@@ -77,13 +77,40 @@ final class PlaylistProcessor: Processor {
                     coordinator?.popPlaylist()
                 }
             } catch {}
+        case .editButton:
+            services.player.clear()
+            withoutPresentation { state in
+                state.updateTableView = false
+            }
+            state.editMode.toggle()
+            withoutPresentation { state in
+                state.updateTableView = true
+            }
+            if !state.editMode {
+                // present, thus cleaning up the datasource's data which may have become stale while editing
+                try? await unlessTesting {
+                    try? await Task.sleep(for: .seconds(0.5))
+                }
+                presenter?.present(state)
+            }
         case .initialData:
             try? await configureSongs()
             presenter?.present(state)
             setUpPipelines()
+            services.currentPlaylist.setList(state.songs) // they must always be in sync, and we may have just filtered the list
         case .jukeboxButton:
             services.haptic.impact()
             state.jukeboxMode.toggle()
+        case .move(let fromRow, let toRow):
+            services.currentPlaylist.move(from: fromRow, to: toRow)
+            withoutPresentation { state in
+                var songs = state.songs
+                guard fromRow < songs.count else { return }
+                guard toRow < songs.count else { return }
+                let song = songs.remove(at: fromRow)
+                songs.insert(song, at: toRow)
+                state.songs = songs
+            }
         case .playPause:
             services.haptic.impact()
             services.player.playPause()
@@ -94,7 +121,9 @@ final class PlaylistProcessor: Processor {
             }
             services.haptic.success()
             Task { // don't let this delay also delay the start of playing
-                try? await Task.sleep(for: .seconds(unlessTesting(0.3)))
+                try? await unlessTesting {
+                    try? await Task.sleep(for: .seconds(0.3))
+                }
                 await presenter?.receive(.deselectAll)
             }
             if state.jukeboxMode {
@@ -173,7 +202,9 @@ final class PlaylistProcessor: Processor {
     /// - Parameter song: The song.
     private func markDownloaded(song: SubsonicSong) {
         if let index = state.songs.firstIndex(where: { $0.id == song.id }) {
-            state.songs[index].downloaded = true
+            if !state.songs[index].downloaded { // do not present unnecessarily
+                state.songs[index].downloaded = true
+            }
         }
     }
     

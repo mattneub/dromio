@@ -16,7 +16,21 @@ struct SubsonicSong: Codable, Equatable, Sendable {
     let contributors: [Contributor]?
     // Lots of other stuff I'm ignoring for now...
     // This, however, is internal to the app:
-    var downloaded: Bool?
+    var downloaded: Bool = false
+    // Because of that one internal property, I am forced to add a CodingKeys enum! Sheesh.
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case album
+        case artist
+        case displayComposer
+        case track
+        case year
+        case albumId
+        case suffix
+        case duration
+        case contributors
+    }
 }
 
 struct Contributor: Codable, Equatable, Sendable {

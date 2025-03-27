@@ -74,7 +74,7 @@ struct PersistenceTests {
             suffix: nil,
             duration: 100,
             contributors: nil,
-            downloaded: nil
+            downloaded: false
         )
         let result = try subject.loadSongList(key: .currentPlaylist)
         #expect(defaults.key == "currentPlaylist")
