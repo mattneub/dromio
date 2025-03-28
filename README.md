@@ -62,7 +62,7 @@ In this screenshot, the first track has been tapped; it is playing and has finis
 
 Dromio is now working satisfactorily; otherwise, I would not be releasing it. I have a few future features in mind:
 
-* The Queue needs to be editable: we need to be able to rearrange the tracks or delete individual tracks.
+* ~~The Queue needs to be editable: we need to be able to rearrange the tracks or delete individual tracks.~~ [DONE]
 * In the Queue, it would be nice to be able to ask to see a track displayed within its album.
 * In the Queue, in Jukebox Mode, the only operative commands are `clear` and `start` — you can start playing the queue, and you can kill the whole queue, and that’s all. It would be nice to make the playpause button operative in Jukebox Mode so that the playing can be paused and resumed.
 * ~~In the Queue, we are not scrobbling when a track is played. This means that a played track’s album is not being added to Navidrome’s list of recent albums. It would be nice to scrobble.~~ [DONE]
