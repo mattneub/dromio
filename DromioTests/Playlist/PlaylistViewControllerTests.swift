@@ -51,7 +51,7 @@ struct PlaylistViewControllerTests {
         let button = try #require(subject.tableHeaderView.subviews.first as? UIButton)
         #expect(button === subject.jukeboxButton)
         subject.tableHeaderView.bounds = CGRect(origin: .zero, size: .init(width: 600, height: 400))
-        assertSnapshot(of: subject.tableHeaderView, as: .image)
+        assertSnapshot(of: subject.tableHeaderView, as: .image(traits: .init(userInterfaceStyle: .light)))
     }
 
     @Test("table header view is created only iff user has jukebox role")
@@ -96,7 +96,7 @@ struct PlaylistViewControllerTests {
         #expect(playpauseButtonItem.image == UIImage(systemName: "playpause.fill"))
         #expect(playpauseButtonItem.target === subject)
         #expect(playpauseButtonItem.action == #selector(subject.doPlayPause))
-        #expect(playpauseButtonItem.width == 40)
+        #expect(playpauseButtonItem.width == 58)
         #expect(playpauseButtonItem.isSymbolAnimationEnabled == true)
     }
 

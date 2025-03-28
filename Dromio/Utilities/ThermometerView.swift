@@ -5,7 +5,7 @@ final class ThermometerView: UIView {
         if traitCollection.userInterfaceStyle == .light {
             UIColor(red: 1, green: 0.939, blue: 0.5, alpha: 1)
         } else {
-            UIColor(red: 0.915, green: 0.768, blue: 0.039, alpha: 1)
+            UIColor(red: 0.538, green: 0.273, blue: 0.039, alpha: 1)
         }
     }
 

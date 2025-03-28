@@ -66,7 +66,7 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         view.backgroundColor = .background
         let clearItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "clear.fill"), target: self, action: #selector(doClear))
         let pauseItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "playpause.fill"), target: self, action: #selector(doPlayPause))
-        pauseItem.width = 40
+        pauseItem.width = 58
         pauseItem.isSymbolAnimationEnabled = true
         navigationItem.rightBarButtonItems = [clearItem, pauseItem]
         let scissorsItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "scissors"), target: self, action: #selector(doEdit))
@@ -119,7 +119,7 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
                 switch playerState {
                 case .empty:
                     let image = UIImage(systemName: "playpause.fill")!
-                    playPauseButton.setSymbolImage(image, contentTransition: .replace.offUp)
+                    playPauseButton.image = image
                 case .paused:
                     let image = UIImage(systemName: "play.fill")!
                     playPauseButton.setSymbolImage(image, contentTransition: .replace.offUp)
