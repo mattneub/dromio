@@ -60,8 +60,9 @@ struct PlayerTests {
         #expect(subject.currentSong == nil)
     }
 
-    @Test("if the queue player changes current item, calls now playing info `display` and `paused`, sets currentSongIdPublisher, activates")
+    @Test("if the queue player changes current item, calls now playing info `display` and `playing`, sets playerState and currentSongIdPublisher, activates")
     func itemChanges() async {
+        subject.playerStatePublisher.value = .empty
         let subject = Player(player: AVQueuePlayer()) // real player!
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
@@ -81,11 +82,13 @@ struct PlayerTests {
         subject.player.insert(item, after: nil)
         subject.player.play()
         try? await Task.sleep(for: .seconds(0.1)) // give it a chance to start, then test
-        #expect(nowPlayingInfo.methodsCalled == ["display(song:)", "playingAt(_:)"])
+        #expect(nowPlayingInfo.methodsCalled.contains("display(song:)"))
+        #expect(nowPlayingInfo.methodsCalled.last == "playingAt(_:)")
         #expect(nowPlayingInfo.song == subject.knownSongs["4"]!)
         #expect(subject.currentSongIdPublisher.value == "4")
         #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
         #expect(audioSession.active == true)
+        #expect(subject.playerStatePublisher.value == .playing)
     }
 
     @Test("if the queue player changes current item to nil, calls clear, deactivates session, sets playerState and currentSongIdPublisher")
@@ -115,6 +118,39 @@ struct PlayerTests {
         #expect(audioSession.active == false)
         #expect(subject.currentSongIdPublisher.value == nil)
         #expect(subject.playerStatePublisher.value == .empty)
+    }
+
+    @Test("if the queue player changes rate to 0, calls now playing info `display` and `playing`, sets playerState and currentSongIdPublisher, activates")
+    func rateChangesToZero() async {
+        let subject = Player(player: AVQueuePlayer()) // real player!
+        subject.playerStatePublisher.value = .playing
+        subject.knownSongs["4"] = SubsonicSong(
+            id: "4",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: 100,
+            contributors: nil
+        )
+        let url = Bundle(for: MockPlayer.self).url(forResource: "4", withExtension: "mp3")! // real song!
+        let item = AVPlayerItem(asset: AVURLAsset(url: url))
+        subject.player.insert(item, after: nil)
+        subject.player.play()
+        try? await Task.sleep(for: .seconds(0.1)) // give it a chance to start, then test
+        subject.player.rate = 0
+        try? await Task.sleep(for: .seconds(0.1))
+        #expect(nowPlayingInfo.methodsCalled.contains("display(song:)"))
+        #expect(nowPlayingInfo.methodsCalled.last == "pausedAt(_:)")
+        #expect(nowPlayingInfo.song == subject.knownSongs["4"]!)
+        #expect(subject.currentSongIdPublisher.value == "4")
+        #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
+        #expect(audioSession.active == true)
+        #expect(subject.playerStatePublisher.value == .paused)
     }
 
     @Test("play(url:song:) calls removeAllItems, calls insertAfter nil, sets category active, calls play, sets action to advance, adds to known songs")

@@ -43,6 +43,13 @@ final class Player: NSObject, PlayerType {
     /// Observation of the queue player's current item, so we are notified when it changes.
     var queuePlayerCurrentItemObservation: NSKeyValueObservation?
 
+    /// Observation of the queue player's rate, so we are notified when it changes. We need this
+    /// for the edge case where the user removes an earphones route while we are playing. The
+    /// docs specifically call this out: "To observe this player behavior," [i.e. the user disconnects headphones],
+    /// "key-value observe the player’s rate property so that you can update your user interface
+    /// as the player pauses playback.
+    var queuePlayerRateObservation: NSKeyValueObservation?
+
     /// Public publisher of the current item. He who has ears to hear, let him hear.
     var currentSongIdPublisher = CurrentValueSubject<String?, Never>(nil)
 
@@ -76,12 +83,12 @@ final class Player: NSObject, PlayerType {
                 await self?.adjustNowPlayingItemToCurrentItem()
             }
         }
-        // TODO: observe rate changes too!
-        /*
-         "To observe this player behavior," [i.e. the user disconnects headphones],
-         "key-value observe the player’s rate property so that you can update your user interface
-         as the player pauses playback.
-         */
+        queuePlayerRateObservation = (player as? AVPlayer)?.observe(\.rate, options: [.new]) { [weak self] _, item in
+            Task {
+                logger.log("rate change: \(String(describing: item.newValue), privacy: .public)")
+                await self?.adjustNowPlayingItemToCurrentItem()
+            }
+        }
         interruptionObservation = NotificationCenter.default.addObserver(
             forName: AVAudioSession.interruptionNotification, object: nil, queue: .main
         ) { [weak self] notification in
