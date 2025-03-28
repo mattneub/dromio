@@ -532,6 +532,7 @@ struct PlaylistProcessorTests {
         await #while(!presenter.thingsReceived.contains(.progress("2", 0.5)))
         #expect(presenter.thingsReceived.contains(.progress("2", 0.5)))
         player.currentSongIdPublisher.send("10")
+        await #while(subject.state.currentSongId != "10")
         #expect(subject.state.currentSongId == "10")
         await #while(requestMaker.methodsCalled.isEmpty)
         #expect(requestMaker.methodsCalled.contains("scrobble(songId:)"))
@@ -547,11 +548,11 @@ struct PlaylistProcessorTests {
     func removeDuplicates() async {
         await subject.receive(.initialData)
         await #while(presenter.statesPresented.isEmpty)
-        presenter.statesPresented = []
         player.currentSongIdPublisher.send("10")
         player.currentSongIdPublisher.send("10")
-        await #while(presenter.statesPresented.isEmpty)
-        #expect(presenter.statesPresented.count == 1)
+        try? await Task.sleep(for: .seconds(0.2))
+        let relevantStates = presenter.statesPresented.filter { $0.currentSongId == "10" }
+        #expect(relevantStates.count == 1)
         await #while(presenter.thingsReceived.isEmpty)
         presenter.thingsReceived = []
         player.playerStatePublisher.send(.playing)
