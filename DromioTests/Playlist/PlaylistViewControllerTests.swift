@@ -132,6 +132,29 @@ struct PlaylistViewControllerTests {
         #expect(mockDataSourceDelegate.state == state)
     }
 
+    @Test("present: if the table view has a selection, does _not_ present to the data source, but stores instead")
+    func presentWithSelection() {
+        subject.tableView.selectRow(at: .init(row: 0, section: 0), animated: false, scrollPosition: .none)
+        let state = PlaylistState(
+            songs: [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil
+            )]
+        )
+        subject.present(state)
+        #expect(mockDataSourceDelegate.state == nil)
+        #expect(subject.postponedState == state)
+    }
+
     @Test("present: sets the image of the jukebox button in the table view header")
     func presentJukeboxButton() async throws {
         userHasJukeboxRole = true
@@ -219,6 +242,31 @@ struct PlaylistViewControllerTests {
         #expect(subject.tableView.indexPathForSelectedRow != nil)
         await subject.receive(.deselectAll)
         #expect(subject.tableView.indexPathForSelectedRow == nil)
+    }
+
+    @Test("receive deselectAll: if there is a postponed state, presents it to the datasource")
+    func receiveDeselectAllWithPostponedState() async {
+        subject.tableView.selectRow(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .none)
+        #expect(subject.tableView.indexPathForSelectedRow != nil)
+        let state = PlaylistState(
+            songs: [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil
+            )]
+        )
+        subject.postponedState = state
+        await subject.receive(.deselectAll)
+        #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
+        #expect(mockDataSourceDelegate.state == state)
     }
 
     @Test("receive playerState: sets the symbol image of the second right bar button item")

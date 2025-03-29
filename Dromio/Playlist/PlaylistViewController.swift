@@ -60,6 +60,10 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         return tableHeaderView
     }()
 
+    /// Temporary holding tank for any state that arrives while the table view has a selection; we
+    /// don't want to present when it does, because that will cancel the selection.
+    var postponedState: PlaylistState?
+
     override func viewDidLoad() {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
@@ -107,13 +111,21 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
                 self.tableView?.endUpdates()
             }
         }
-        dataSourceDelegate?.present(state)
+        if tableView.indexPathForSelectedRow == nil {
+            dataSourceDelegate?.present(state)
+        } else { // if there is currently a selection, postpone presentation until there isn't
+            self.postponedState = state
+        }
     }
 
     func receive(_ effect: PlaylistEffect) async {
         switch effect {
         case .deselectAll:
             tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
+            if let state = postponedState {
+                dataSourceDelegate?.present(state)
+                postponedState = nil
+            }
         case .playerState(let playerState):
             if let playPauseButton = navigationItem.rightBarButtonItems?[1] {
                 switch playerState {

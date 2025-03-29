@@ -242,11 +242,8 @@ final class PlaylistProcessor: Processor {
         }
         if playerCurrentSongIdPipeline == nil {
             playerCurrentSongIdPipeline = services.player.currentSongIdPublisher.removeDuplicates().sink { [weak self] songId in
+                self?.state.currentSongId = songId
                 Task {
-                    try? await unlessTesting {
-                        try? await Task.sleep(for: .seconds(0.4)) // TODO: But I think we can be cleverer about this
-                    }
-                    self?.state.currentSongId = songId
                     if let songId {
                         try? await services.requestMaker.scrobble(songId: songId)
                     }
