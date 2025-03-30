@@ -196,11 +196,11 @@ final class RootCoordinator: RootCoordinatorType {
         await withCheckedContinuation { continuation in
             let alert = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
             for option in options {
-                alert.addAction(AlertAction(title: option, style: .default, handler: { action in
+                alert.addAction(UIAlertAction(title: option, style: .default, handler: { action in
                     continuation.resume(returning: action.title)
                 }))
             }
-            alert.addAction(AlertAction(title: "Cancel", style: .cancel, handler: { _ in
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
                 continuation.resume(returning: nil)
             }))
             rootViewController?.present(alert, animated: unlessTesting(true))

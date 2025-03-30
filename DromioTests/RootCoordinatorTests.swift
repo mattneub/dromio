@@ -311,9 +311,11 @@ struct RootCoordinatorTests {
         #expect(alert.actions[1].title == "ho")
         #expect(alert.actions[2].title == "Cancel")
         #expect(alert.preferredStyle == .actionSheet)
-        // TODO: there must be a way to test that `showActionSheet` returns the expected result when the handler runs
+        // test that `showActionSheet` returns the tapped button's title to the caller
+        alert.tapButton(atIndex: 0)
+        await #while(result == nil)
+        #expect(result == "hey")
     }
-
 }
 
 @MainActor
