@@ -1,7 +1,5 @@
 import UIKit
 
-// TODO: Work out how to test this, presumably by mocking the application
-
 /// Class that encapsulates the boilerplate needed to ask for an extra 30 seconds (or so) of time
 /// just in case the app goes into the background while we are doing some time-consuming operation
 /// that we don't want interrupted if we can help it.
@@ -12,6 +10,8 @@ final class BackgroundTaskOperation<T: Sendable> {
 
     /// Optionally, what to do if the operation is interrupted.
     private let cleanup: (@Sendable () async throws -> ())?
+
+    private let application: any ApplicationType
 
     /// The identifier handed to us by the system; to be used in order to signal to the system
     /// that the operation is over, or that we understand we have been interrupted. Basically this
@@ -28,33 +28,36 @@ final class BackgroundTaskOperation<T: Sendable> {
     ///       soon as the operation started, the operation will probably be interrupted by
     ///       the system.
     ///   - cleanup: Optionally, what to do if the operation is interrupted.
+    ///   - application: The application, typed through a protocol for testing purposes.
     init(
         whatToDo: @Sendable @escaping () async throws -> T,
-        cleanup: (@Sendable () async throws -> ())? = nil
+        cleanup: (@Sendable () async throws -> ())? = nil,
+        application: ApplicationType = UIApplication.shared
     ) {
         self.whatToDo = whatToDo
         self.cleanup = cleanup
+        self.application = application
     }
 
     /// Begin the time-consuming operation.
     /// - Returns: The value returned by the `whatToDo` function.
     func start() async throws -> T {
-        bti = UIApplication.shared.beginBackgroundTask {
+        bti = application.beginBackgroundTask { [weak self] in
             Task { @MainActor in
-                try? await self.cleanup?()
-                UIApplication.shared.endBackgroundTask(self.bti)
+                try? await self?.cleanup?()
+                self?.application.endBackgroundTask(self?.bti ?? .invalid)
             }
         }
         do {
             guard bti != .invalid else { throw NSError(domain: "what", code: 0) }
             let result = try await whatToDo()
-            UIApplication.shared.endBackgroundTask(bti)
+            application.endBackgroundTask(bti)
             return result
         } catch {
             Task { @MainActor in
                 try await self.cleanup?()
             }
-            UIApplication.shared.endBackgroundTask(self.bti)
+            application.endBackgroundTask(self.bti)
             throw error
         }
     }
