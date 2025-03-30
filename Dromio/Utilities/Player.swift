@@ -40,6 +40,11 @@ final class Player: NSObject, PlayerType {
     /// The _real_ player.
     let player: any QueuePlayerType
 
+    /// Function that obtains a reference to the remote command center. In this way we can be
+    /// handed this function on initialization by the app or (with a mock) by the tests,
+    /// without keeping a reference to the command center itself.
+    var commandCenterMaker: (@Sendable () -> any RemoteCommandCenterType)?
+
     /// Observation of the queue player's current item, so we are notified when it changes.
     var queuePlayerCurrentItemObservation: NSKeyValueObservation?
 
@@ -68,14 +73,15 @@ final class Player: NSObject, PlayerType {
     /// Observation of the player periodically while it has items.
     var periodicObservation: Any?
 
-    init(player: any QueuePlayerType) {
+    init(player: any QueuePlayerType, commandCenterMaker: @Sendable @escaping () -> any RemoteCommandCenterType) {
         self.player = player
+        self.commandCenterMaker = commandCenterMaker
         super.init()
         // configure the command center
-        let commandCenter = MPRemoteCommandCenter.shared()
-        commandCenter.playCommand.addTarget(self, action: #selector(doPlay(_:)))
-        commandCenter.pauseCommand.addTarget(self, action: #selector(doPause(_:)))
-        commandCenter.changePlaybackPositionCommand.isEnabled = false
+        let commandCenter = self.commandCenterMaker?()
+        commandCenter?.play.addTarget(self, action: #selector(doPlay(_:)))
+        commandCenter?.pause.addTarget(self, action: #selector(doPause(_:)))
+        commandCenter?.changePlaybackPosition.isEnabled = false
         // prepare our various observations
         queuePlayerCurrentItemObservation = (player as? AVPlayer)?.observe(\.currentItem, options: [.new]) { [weak self] _, item in
             Task {
@@ -121,9 +127,9 @@ final class Player: NSObject, PlayerType {
     }
 
     deinit {
-        let commandCenter = MPRemoteCommandCenter.shared()
-        commandCenter.playCommand.removeTarget(self)
-        commandCenter.pauseCommand.removeTarget(self)
+        let commandCenter = commandCenterMaker?()
+        commandCenter?.play.removeTarget(self)
+        commandCenter?.pause.removeTarget(self)
     }
 
     /// Called when the player's current item changes.

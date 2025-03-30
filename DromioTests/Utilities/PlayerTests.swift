@@ -10,12 +10,35 @@ struct PlayerTests {
     let audioPlayer = MockQueuePlayer()
     let audioSession = MockAudioSession()
     let nowPlayingInfo = MockNowPlayingInfo()
+    var commandCenter: MockRemoteCommandCenter!
 
     init() {
-        subject = Player(player: audioPlayer)
+        let commandCenter = MockRemoteCommandCenter()
+        subject = Player(player: audioPlayer, commandCenterMaker: { commandCenter })
+        self.commandCenter = commandCenter
         services.audioSession = audioSession
         services.nowPlayingInfo = nowPlayingInfo
         services.player = MockPlayer() // because otherwise two players exists, messing up our notification/observation tests
+    }
+
+    @Test("initializer: sets up remote command center, deinit: tears it down")
+    func initializer() async throws {
+        let commandCenter = MockRemoteCommandCenter()
+        var subject: Player? = Player(player: audioPlayer, commandCenterMaker: { commandCenter })
+        let play = try #require(commandCenter.play as? MockCommand)
+        #expect(play.methodsCalled.contains("addTarget(_:action:)"))
+        #expect(play.target is Player)
+        #expect(play.action == #selector(subject!.doPlay(_:)))
+        let pause = try #require(commandCenter.pause as? MockCommand)
+        #expect(pause.methodsCalled.contains("addTarget(_:action:)"))
+        #expect(pause.target is Player)
+        #expect(pause.action == #selector(subject!.doPause(_:)))
+        let change = try #require(commandCenter.changePlaybackPosition as? MockCommand)
+        #expect(change.isEnabled == false)
+        subject = nil
+        await #while(!play.methodsCalled.contains("removeTarget(_:)"))
+        #expect(play.methodsCalled.contains("removeTarget(_:)"))
+        #expect(pause.methodsCalled.contains("removeTarget(_:)"))
     }
 
     @Test("currentSongId: munges current item URL when it is a file URL")
@@ -63,7 +86,7 @@ struct PlayerTests {
     @Test("if the queue player changes current item, calls now playing info `display` and `playing`, sets playerState and currentSongIdPublisher, activates")
     func itemChanges() async {
         subject.playerStatePublisher.value = .empty
-        let subject = Player(player: AVQueuePlayer()) // real player!
+        let subject = Player(player: AVQueuePlayer(), commandCenterMaker: { commandCenter }) // real player!
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
             title: "Title",
@@ -93,7 +116,7 @@ struct PlayerTests {
 
     @Test("if the queue player changes current item to nil, calls clear, deactivates session, sets playerState and currentSongIdPublisher")
     func itemChangesToNil() async {
-        let subject = Player(player: AVQueuePlayer()) // real player!
+        let subject = Player(player: AVQueuePlayer(), commandCenterMaker: { commandCenter }) // real player!
         subject.playerStatePublisher.value = .playing
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
@@ -122,7 +145,7 @@ struct PlayerTests {
 
     @Test("if the queue player changes rate to 0, calls now playing info `display` and `playing`, sets playerState and currentSongIdPublisher, activates")
     func rateChangesToZero() async {
-        let subject = Player(player: AVQueuePlayer()) // real player!
+        let subject = Player(player: AVQueuePlayer(), commandCenterMaker: { commandCenter }) // real player!
         subject.playerStatePublisher.value = .playing
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
@@ -307,6 +330,8 @@ struct PlayerTests {
 
     @Test("interruptionEnded: if we are playing, nothing happens")
     func interruptionEndedRate1() {
+        #expect(nowPlayingInfo.methodsCalled.isEmpty)
+        #expect(audioSession.methodsCalled.isEmpty)
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -334,6 +359,8 @@ struct PlayerTests {
 
     @Test("interruptionEnded if we are paused, doPlay followed by doPause")
     func interruptionEnded() {
+        #expect(nowPlayingInfo.methodsCalled.isEmpty)
+        #expect(audioSession.methodsCalled.isEmpty)
         let song = SubsonicSong(
             id: "1",
             title: "Title",
