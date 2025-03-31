@@ -149,18 +149,20 @@ final class PlaylistProcessor: Processor {
         } else if let url = try? await services.requestMaker.stream(songId: song.id) {
             services.player.play(url: url, song: song)
         }
-        let operation = BackgroundTaskOperation<Void> { @MainActor [weak self] in
+        let operation = services.backgroundTaskOperationMaker.make { @MainActor [weak self] in
             _ = try await services.download.download(song: song) // if already downloaded, no harm done
             self?.markDownloaded(song: song)
+            return ()
         }
         try await operation.start()
         // remainder, download and queue
         while !sequence.isEmpty {
             let song = sequence.removeFirst()
-            let operation = BackgroundTaskOperation<Void> { @MainActor [weak self] in
+            let operation = services.backgroundTaskOperationMaker.make { @MainActor [weak self] in
                 let url = try await services.download.download(song: song)
                 services.player.playNext(url: url, song: song)
                 self?.markDownloaded(song: song)
+                return ()
             }
             try await operation.start()
         }

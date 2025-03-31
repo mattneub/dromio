@@ -813,7 +813,7 @@ struct PlaylistProcessorTests {
         #expect(player.methodsCalled == ["playPause()"])
     }
 
-    @Test("receive tapped: calls haptic, sends .deselectAll")
+    @Test("receive tapped: calls haptic, sends .deselectAll", .mockBackgroundTask)
     func receiveTapped() async {
         let song = SubsonicSong(
             id: "1",
@@ -848,8 +848,8 @@ struct PlaylistProcessorTests {
         #expect(presenter.thingsReceived[0] == .deselectAll)
     }
 
-    @Test("receive tapped: calls stream, play, download for the first; download, playNext for the rest; marks songs downloaded")
-    func receiveTappedDownloadAndPlay() async {
+    @Test("receive tapped: calls stream, play, download for the first; download, playNext for the rest; marks songs downloaded", .mockBackgroundTask)
+    func receiveTappedDownloadAndPlay() async throws {
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -896,10 +896,11 @@ struct PlaylistProcessorTests {
         #expect(player.methodsCalled == ["play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
         #expect(player.urls.map { $0.scheme } == ["http", "file", "file"])
         #expect(subject.state.songs.filter { $0.downloaded == true }.count == 3)
+        #expect(try operatedOnBackgroundTask() == 3)
     }
 
-    @Test("receive tapped: if first is already downloaded, calls play, download for the first; download, playNext for the rest")
-    func receiveTappedDownloadAndPlayNoStream() async {
+    @Test("receive tapped: if first is already downloaded, calls play, download for the first; download, playNext for the rest", .mockBackgroundTask)
+    func receiveTappedDownloadAndPlayNoStream() async throws {
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -947,9 +948,10 @@ struct PlaylistProcessorTests {
         #expect(player.methodsCalled == ["play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
         #expect(player.urls.map { $0.scheme } == ["file", "file", "file"])
         #expect(subject.state.songs.filter { $0.downloaded == true }.count == 3)
+        #expect(try operatedOnBackgroundTask() == 3)
     }
 
-    @Test("receive tapped: if all in sequence already downloaded, no presentation")
+    @Test("receive tapped: if all in sequence already downloaded, no presentation", .mockBackgroundTask)
     func receiveTappedDownloadAndPlayNoStreamNoPresentation() async {
         let song = SubsonicSong(
             id: "1",
@@ -1000,8 +1002,8 @@ struct PlaylistProcessorTests {
         #expect(presenter.statePresented == nil)
     }
 
-    @Test("receive tapped: doesn't proceed further if song is not in state")
-    func receiveTappedNoSequence() async {
+    @Test("receive tapped: doesn't proceed further if song is not in state", .mockBackgroundTask)
+    func receiveTappedNoSequence() async throws {
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -1047,9 +1049,11 @@ struct PlaylistProcessorTests {
         #expect(requestMaker.methodsCalled.isEmpty)
         await #expect(download.methodsCalled.isEmpty)
         #expect(player.methodsCalled.isEmpty)
+        let mockBackgroundTaskOperationMaker = try #require(services.backgroundTaskOperationMaker as? MockBackgroundTaskOperationMaker)
+        #expect(mockBackgroundTaskOperationMaker.mockBackgroundTaskOperation == nil)
     }
 
-    @Test("receive tapped: in jukebox mode tells the jukebox stop, clear, add each song, start")
+    @Test("receive tapped: in jukebox mode tells the jukebox stop, clear, add each song, start", .mockBackgroundTask)
     func receiveTappedJukeboxMode() async {
         let song = SubsonicSong(
             id: "1",
@@ -1096,5 +1100,14 @@ struct PlaylistProcessorTests {
         #expect(requestMaker.methodsCalled == ["jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)", "jukebox(action:songId:)"])
         #expect(requestMaker.actions == [.stop, .clear, .add, .add, .add, .start])
         #expect(requestMaker.songIds == [nil, nil, "1", "2", "3", nil])
+    }
+
+    func operatedOnBackgroundTask() throws -> Int {
+        let mockBackgroundTaskOperationMaker = try #require(services.backgroundTaskOperationMaker as? MockBackgroundTaskOperationMaker)
+        let mockBackgroundTaskOperation = try #require(
+            mockBackgroundTaskOperationMaker.mockBackgroundTaskOperation as? MockBackgroundTaskOperation<Void>
+        )
+        #expect(mockBackgroundTaskOperation.methodsCalled == ["start()"])
+        return mockBackgroundTaskOperationMaker.timesCalled
     }
 }

@@ -58,7 +58,7 @@ final class Networker: NetworkerType {
         // Perform the download inside background task boilerplate, in hopes of being allowed to
         // complete it even if the user puts the app into the background as we begin. If the
         // system times us out before the download completes, cancel the download in good order.
-        let operation = BackgroundTaskOperation { [weak self] in
+        let operation = services.backgroundTaskOperationMaker.make { [weak self] in
             guard let self else { fatalError("oop") }
             logger.log("download started")
             let (url, response) = try await self.session.download(for: request, delegate: DownloadDelegate())

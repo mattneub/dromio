@@ -5,7 +5,7 @@ import Testing
 import WaitWhile
 
 @MainActor
-class NetworkerTests {
+struct NetworkerTests {
     let subject = Networker(session: NetworkerTests.session)
 
     static var session: URLSession = {
@@ -13,12 +13,6 @@ class NetworkerTests {
         configuration.protocolClasses = [MockURLProtocol.self]
         return URLSession(configuration: configuration)
     }()
-
-    deinit {
-        Task { @MainActor in
-            MockURLProtocol.requestHandler = nil
-        }
-    }
 
     @Test("performRequest: throws if response is not HTTPURLResponse")
     func performRequestWrongResponseType() async throws {
@@ -68,7 +62,7 @@ class NetworkerTests {
         #expect(result == data)
     }
 
-    @Test("performDownloadRequest: throws if response is not HTTPURLResponse")
+    @Test("performDownloadRequest: throws if response is not HTTPURLResponse", .mockBackgroundTask)
     func performDownloadRequestWrongResponseType() async throws {
         MockURLProtocol.requestHandler = { request in
             return (URLResponse(), Data())
@@ -79,9 +73,10 @@ class NetworkerTests {
             let error = try #require(error as? NetworkerError)
             return error == .message("We received a non-HTTPURLResponse.")
         }
+        #expect(try operatedOnBackgroundTask() == 1)
     }
 
-    @Test("performDownloadRequest: throws if response status code is not 200")
+    @Test("performDownloadRequest: throws if response status code is not 200", .mockBackgroundTask)
     func performDownloadRequestWrongResponseStatusCode() async throws {
         MockURLProtocol.requestHandler = { request in
             let response = HTTPURLResponse(
@@ -98,9 +93,10 @@ class NetworkerTests {
             let error = try #require(error as? NetworkerError)
             return error == .message("We got a status code 400.")
         }
+        #expect(try operatedOnBackgroundTask() == 1)
     }
 
-    @Test("performDownloadRequest: returns url if all is well, url contains data")
+    @Test("performDownloadRequest: returns url if all is well, url contains data", .mockBackgroundTask)
     func performDownloadRequestReturnsURL() async throws {
         let data = "howdy".data(using: .utf8)
         MockURLProtocol.requestHandler = { request in
@@ -115,16 +111,25 @@ class NetworkerTests {
         let url = try await subject.performDownloadRequest(url: URL(string: "https://www.example.com")!)
         let resultData = try Data(contentsOf: url)
         #expect(resultData == data)
+        #expect(try operatedOnBackgroundTask() == 1)
     }
-
-    var pipeline: AnyCancellable?
 
     @Test("progress: sends value to passthru subject")
     func progress() async throws {
+        var pipeline: AnyCancellable?
         var result: (id: String, fraction: Double?)?
         pipeline = subject.progress.sink { result = $0 }
         subject.progress(id: "1", fraction: 0.5)
         #expect(result?.id == "1")
         #expect(result?.fraction == 0.5)
+    }
+
+    func operatedOnBackgroundTask() throws -> Int {
+        let mockBackgroundTaskOperationMaker = try #require(services.backgroundTaskOperationMaker as? MockBackgroundTaskOperationMaker)
+        let mockBackgroundTaskOperation = try #require(
+            mockBackgroundTaskOperationMaker.mockBackgroundTaskOperation as? MockBackgroundTaskOperation<(URL, URLResponse)>
+        )
+        #expect(mockBackgroundTaskOperation.methodsCalled == ["start()"])
+        return mockBackgroundTaskOperationMaker.timesCalled
     }
 }

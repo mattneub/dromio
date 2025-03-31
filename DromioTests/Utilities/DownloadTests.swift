@@ -2,34 +2,13 @@
 import Testing
 import Foundation
 
+@Suite("download tests", .fileCleanup)
 @MainActor
-final class DownloadTests { // class, because we have cleanup to perform after each test
+struct DownloadTests {
     let requestMaker = MockRequestMaker()
 
     init() {
         services.requestMaker = requestMaker
-    }
-
-    deinit {
-        let fileManager = FileManager.default
-        do {
-            let contents: [URL] = (try? fileManager.contentsOfDirectory(
-                at: URL.cachesDirectory,
-                includingPropertiesForKeys: []
-            )) ?? []
-            for url in contents {
-                try? fileManager.removeItem(at: url)
-            }
-        }
-        do {
-            let contents: [URL] = (try? fileManager.contentsOfDirectory(
-                at: URL.temporaryDirectory,
-                includingPropertiesForKeys: []
-            )) ?? []
-            for url in contents {
-                try? fileManager.removeItem(at: url)
-            }
-        }
     }
 
     @Test("downloadsDirectory is Caches")

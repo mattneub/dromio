@@ -7,6 +7,7 @@ import MediaPlayer
 @MainActor
 struct Services {
     var audioSession: AudioSessionType = AVAudioSession.sharedInstance()
+    var backgroundTaskOperationMaker: BackgroundTaskOperationMakerType = BackgroundTaskOperationMaker()
     var currentPlaylist: PlaylistType = Playlist()
     var download: DownloadType = Download()
     var haptic: HapticType = Haptic()
