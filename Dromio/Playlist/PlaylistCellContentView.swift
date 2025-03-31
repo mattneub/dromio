@@ -71,7 +71,9 @@ struct PlaylistCellContentConfiguration: UIContentConfiguration, Equatable {
                 .time(pattern: $0 >= 3600 ? .hourMinuteSecond : .minuteSecond)
             )
         } ?? ""
-        self.composer = song.displayComposer.ensureNoBreakSpace
+        let composer = song.displayComposer ?? ""
+        let year = song.year.ensureNoBreakSpace
+        self.composer = (composer.isEmpty ? "" : composer + " ") + year
         self.nowPlaying = currentSongId == song.id
     }
 

@@ -49,7 +49,7 @@ struct PlaylistCellContentConfigurationTests {
         let subject = PlaylistCellContentView(configuration)
         let loadedView = try #require(subject.subviews.first)
         var labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
-        #expect(Set(labelTexts) == Set(["Title", "2:00", "Album", "Artist", "Me"]))
+        #expect(Set(labelTexts) == Set(["Title", "2:00", "Album", "Artist", "Me 1970"]))
         var imageView = loadedView.subviews.filter { $0 is UIImageView }.first!
         #expect(imageView.isHidden)
         let configuration2 = PlaylistCellContentConfiguration(song: SubsonicSong(
@@ -67,7 +67,7 @@ struct PlaylistCellContentConfigurationTests {
         ), currentSongId: "2")
         subject.configuration = configuration2
         labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
-        #expect(Set(labelTexts) == Set(["Title", "3:20:00", "Album", " ", " "]))
+        #expect(Set(labelTexts) == Set(["Title", "3:20:00", "Album", "1970", " "]))
         imageView = loadedView.subviews.filter { $0 is UIImageView }.first!
         #expect(!imageView.isHidden)
     }
