@@ -4,7 +4,7 @@ import UIKit
 /// How the actual type does this is an internal implementation detail; the only absolute
 /// requirement is that the initializer must set the table view's `dataSource` and `delegate`.
 ///
-@MainActor protocol DataSourceDelegate<ProcessorAction, State, Received>: NSObjectProtocol, ReceiverPresenter {
+@MainActor protocol DataSourceDelegate<ProcessorAction, State, Received>: NSObjectProtocol, AsyncReceiverPresenter {
     associatedtype ProcessorAction
 
     /// Processor to whom to send any action messages.
@@ -18,7 +18,7 @@ import UIKit
     init(tableView: UITableView)
 }
 
-@MainActor protocol SearchHandler: UISearchResultsUpdating, UISearchControllerDelegate {}
+@MainActor protocol SearchHandler: UISearchResultsUpdating, UISearchControllerDelegate, Sendable {}
 
 /// Variety of protocol `DataSourceDelegate` that is also a search controller updater and delegate.
 ///

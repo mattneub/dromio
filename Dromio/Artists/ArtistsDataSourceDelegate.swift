@@ -103,8 +103,10 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
             snapshot.appendItems(section.rows.map {$0.id})
         }
         await datasource.apply(snapshot, animatingDifferences: false)
-        self.tableView?.beginUpdates()
-        self.tableView?.endUpdates()
+        if self.tableView?.window != nil {
+            self.tableView?.beginUpdates()
+            self.tableView?.endUpdates()
+        }
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

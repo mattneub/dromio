@@ -106,13 +106,17 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         jukeboxButton.isEnabled = state.showClearButtonAndJukeboxButton
         if isEditing != state.editMode {
             setEditing(state.editMode, animated: unlessTesting(true))
-            UIView.performWithoutAnimation {
-                self.tableView?.beginUpdates()
-                self.tableView?.endUpdates()
+            if self.tableView.window != nil {
+                UIView.performWithoutAnimation {
+                    self.tableView?.beginUpdates()
+                    self.tableView?.endUpdates()
+                }
             }
         }
         if tableView.indexPathForSelectedRow == nil {
-            dataSourceDelegate?.present(state)
+            Task {
+                await dataSourceDelegate?.present(state)
+            }
         } else { // if there is currently a selection, postpone presentation until there isn't
             self.postponedState = state
         }
@@ -123,8 +127,10 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         case .deselectAll:
             tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
             if let state = postponedState {
-                dataSourceDelegate?.present(state)
-                postponedState = nil
+                Task {
+                    await dataSourceDelegate?.present(state)
+                    postponedState = nil
+                }
             }
         case .playerState(let playerState):
             if let playPauseButton = navigationItem.rightBarButtonItems?[1] {

@@ -2,37 +2,51 @@ import Foundation
 
 /// Processor containing logic for the AlbumsViewController.
 @MainActor
-final class AlbumsProcessor: Processor {
+final class AlbumsProcessor: AsyncProcessor {
     /// Reference to the coordinator, set by coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
 
     /// Reference to the view controller, set by coordinator on creation.
-    weak var presenter: (any ReceiverPresenter<AlbumsEffect, AlbumsState>)?
+    weak var presenter: (any AsyncReceiverPresenter<AlbumsEffect, AlbumsState>)?
 
-    /// State to be presented to the presenter; mutating it presents.
-    var state: AlbumsState = AlbumsState() {
-        didSet {
-            presenter?.present(state)
-        }
-    }
+    // TODO: Trying a new experiment here; _all_ presentation is manual.
+    /// State to be presented to the presenter.
+    var state: AlbumsState = AlbumsState()
 
     func receive(_ action: AlbumsAction) async {
         switch action {
         case .allAlbums:
             do {
+                state.animateSpinner = true
+                await presenter?.present(state)
                 await presenter?.receive(.tearDownSearcher)
                 let albums = try await caches.fetch(\.albumsList) {
                     try await services.requestMaker.getAlbumList()
                 }
                 state.listType = .allAlbums
                 state.albums = albums
+                await presenter?.present(state)
+                await presenter?.receive(.setUpSearcher)
+                await presenter?.receive(.scrollToZero)
+                state.animateSpinner = false
+                await presenter?.present(state)
             } catch {
                 logger.log("\(error.localizedDescription, privacy: .public)")
+                state.animateSpinner = false
+                await presenter?.present(state)
             }
         case .artists:
-            await presenter?.receive(.tearDownSearcher)
             coordinator?.showArtists()
         case .initialData:
+            guard !state.hasInitialData else { // do this only the very first time
+                return
+            }
+            state.hasInitialData = true
+            state.animateSpinner = true
+            await presenter?.present(state)
+            try? await unlessTesting {
+                try? await Task.sleep(for: .seconds(0.4))
+            }
             // how we fetch the initial data depends on what "mode" of albums this is
             switch state.listType {
             case .allAlbums:
@@ -47,19 +61,36 @@ final class AlbumsProcessor: Processor {
                         let songs = try await services.requestMaker.getSongsBySearch(query: name)
                         state.albums = albumsForComposer(songs: songs, id: id)
                     }
+                    await presenter?.receive(.setUpSearcher)
+                    await presenter?.receive(.scrollToZero)
+                    state.animateSpinner = false
+                    await presenter?.present(state)
                 } catch {
                     logger.log("\(error.localizedDescription, privacy: .public)")
+                    state.animateSpinner = false
+                    await presenter?.present(state)
                 }
             default: break
             }
         case .randomAlbums:
             do {
+                state.animateSpinner = true
+                await presenter?.present(state)
                 await presenter?.receive(.tearDownSearcher)
+                try? await unlessTesting {
+                    try? await Task.sleep(for: .seconds(0.4))
+                }
                 let albums = try await services.requestMaker.getAlbumsRandom()
                 state.listType = .randomAlbums
                 state.albums = albums
+                await presenter?.present(state)
+                await presenter?.receive(.scrollToZero)
+                state.animateSpinner = false
+                await presenter?.present(state)
             } catch {
                 logger.log("\(error.localizedDescription, privacy: .public)")
+                state.animateSpinner = false
+                await presenter?.present(state)
             }
         case .server:
             coordinator?.dismissToPing()
@@ -70,8 +101,6 @@ final class AlbumsProcessor: Processor {
             coordinator?.showAlbum(albumId: id, title: album.name)
         case .showPlaylist:
             coordinator?.showPlaylist(state: nil)
-        case .viewDidAppear:
-            await presenter?.receive(.setUpSearcher)
         }
     }
     

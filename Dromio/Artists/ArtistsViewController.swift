@@ -74,7 +74,7 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
     func receive(_ effect: ArtistsEffect) async {
         switch effect {
         case .setUpSearcher:
-            await searcher.setUpSearcher(navigationItem: navigationItem, updater: dataSourceDelegate)
+            await searcher.setUpSearcher(navigationItem: navigationItem, tableView: tableView, updater: dataSourceDelegate)
         case .tearDownSearcher:
             await searcher.tearDownSearcher(navigationItem: navigationItem, tableView: tableView)
         }
@@ -88,11 +88,13 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         }
 
         Task {
-            await searcher.setUpSearcher(navigationItem: navigationItem, updater: dataSourceDelegate)
+            await searcher.setUpSearcher(navigationItem: navigationItem, tableView: tableView, updater: dataSourceDelegate)
         }
 
         navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
-        dataSourceDelegate?.present(state)
+        Task {
+            await dataSourceDelegate?.present(state)
+        }
     }
 
     private func menu(for listType: ArtistsState.ListType) -> UIMenu {

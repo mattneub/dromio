@@ -22,11 +22,9 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
         tableView.delegate = self
     }
 
-    func present(_ state: AlbumsState) {
+    func present(_ state: AlbumsState) async {
         datasource?.listType = state.listType
-        Task {
-            await updateTableView(data: state.albums)
-        }
+        await updateTableView(data: state.albums)
     }
 
     // MARK: - Table view contents
@@ -105,8 +103,10 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
             snapshot.appendItems(section.rows.map {$0.id})
         }
         await datasource.apply(snapshot, animatingDifferences: false)
-        self.tableView?.beginUpdates()
-        self.tableView?.endUpdates()
+        if self.tableView?.window != nil {
+            self.tableView?.beginUpdates()
+            self.tableView?.endUpdates()
+        }
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

@@ -72,7 +72,7 @@ struct ArtistsViewControllerTests {
     @Test("receive setUpSearcher: calls searcher setUpSearcher")
     func setUpSearcher() async {
         await subject.receive(.setUpSearcher)
-        #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:updater:)"])
+        #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:tableView:updater:)"])
         #expect(searcher.navigationItem === subject.navigationItem)
         #expect(searcher.updater === subject.dataSourceDelegate)
     }
@@ -80,15 +80,16 @@ struct ArtistsViewControllerTests {
     @Test("receive tearDownSearcher: calls searcher tearDownSearcher")
     func tearDownSearcher() async {
         await subject.receive(.tearDownSearcher)
-        #expect(searcher.methodsCalled == ["tearDownSearcher(navigationItem:tableView:)"])
+        #expect(searcher.methodsCalled == ["tearDownSearcher(navigationItem:tableView:updater:)"])
         #expect(searcher.navigationItem === subject.navigationItem)
         #expect(searcher.tableView === subject.tableView)
     }
 
     @Test("present: presents to the data source")
-    func present() {
+    func present() async {
         let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
         subject.present(state)
+        await #while(mockDataSourceDelegate.methodsCalled.last != "present(_:)")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }
@@ -99,7 +100,7 @@ struct ArtistsViewControllerTests {
         subject.present(state)
         #expect(!subject.activity.isAnimating)
         await #while(searcher.methodsCalled.isEmpty)
-        #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:updater:)"])
+        #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:tableView:updater:)"])
         #expect(searcher.navigationItem === subject.navigationItem)
         #expect(searcher.updater === subject.dataSourceDelegate)
     }

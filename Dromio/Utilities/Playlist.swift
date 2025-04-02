@@ -25,7 +25,6 @@ final class Playlist: PlaylistType {
         }
         set {
             try? services.persistence.save(songList: newValue, key: persistenceKey)
-            print(list.map { $0.title })
         }
     }
 
@@ -51,7 +50,6 @@ final class Playlist: PlaylistType {
     /// Delete the given song from the list.
     /// - Parameter song: The song.
     func delete(song: SubsonicSong) {
-        print("playlist delete")
         guard let index = list.firstIndex(where: { $0.id == song.id }) else {
             return
         }

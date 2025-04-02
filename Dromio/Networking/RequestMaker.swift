@@ -267,7 +267,6 @@ final class RequestMaker: RequestMakerType {
             action: "jukeboxControl",
             additional: additional
         )
-        print(url)
         let data = try await services.networker.performRequest(url: url)
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<JukeboxResponse>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)

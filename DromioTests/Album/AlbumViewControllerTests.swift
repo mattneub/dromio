@@ -46,7 +46,7 @@ struct AlbumViewControllerTests {
     }
 
     @Test("present: presents to the data source")
-    func present() {
+    func present() async {
         let state = AlbumState(
             albumTitle: "Album",
             songs: [.init(
@@ -64,6 +64,7 @@ struct AlbumViewControllerTests {
             )]
         )
         subject.present(state)
+        await #while(mockDataSourceDelegate.methodsCalled.last != "present(_:)")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }

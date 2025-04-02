@@ -226,7 +226,6 @@ final class Player: NSObject, PlayerType {
         if let song = currentSong {
             services.nowPlayingInfo.display(song: song)
         }
-        print("player rate is", player.rate)
         if player.rate == 0 {
             services.nowPlayingInfo.pausedAt(player.currentTime().seconds)
             playerStatePublisher.send(.paused)

@@ -1,7 +1,7 @@
 import UIKit
 
 /// View controller that displays a list of all albums.
-final class AlbumsViewController: UITableViewController, ReceiverPresenter {
+final class AlbumsViewController: UITableViewController, AsyncReceiverPresenter {
     /// Data source and delegate object, created in `init`.
     var dataSourceDelegate: (any DataSourceDelegateSearcher<AlbumsAction, AlbumsState, Void>)?
 
@@ -18,22 +18,22 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
     let activity: UIActivityIndicatorView = {
         let activity = UIActivityIndicatorView(style: .large)
         activity.color = .label
+        activity.backgroundColor = UIColor(dynamicProvider: { traits in
+            switch traits.userInterfaceStyle {
+            case .light: UIColor.label.resolvedColor(with: .init(userInterfaceStyle: .dark))
+            default: UIColor.label.resolvedColor(with: .init(userInterfaceStyle: .light))
+            }
+        })
         activity.translatesAutoresizingMaskIntoConstraints = false
+        activity.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        activity.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        activity.layer.cornerRadius = 20
         return activity
-    }()
-
-    lazy var tableViewBackground: UIView = {
-        let view = UIView()
-        view.addSubview(activity)
-        view.centerYAnchor.constraint(equalTo: activity.centerYAnchor).isActive = true
-        view.centerXAnchor.constraint(equalTo: activity.centerXAnchor).isActive = true
-        return view
     }()
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         dataSourceDelegate = AlbumsDataSourceDelegate(tableView: tableView)
-        title = "All Albums"
         do {
             let item = UIBarButtonItem(
                 title: nil, image: UIImage(systemName: "list.bullet"), target: self, action: #selector(showPlaylist)
@@ -52,35 +52,37 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
         view.backgroundColor = .background
-        tableView.backgroundView = tableViewBackground
-        activity.startAnimating()
-        Task {
-            try? await unlessTesting {
-                // cosmetic, looks better if we wait a moment
-                try? await Task.sleep(for: .seconds(0.4))
-            }
-            await processor?.receive(.initialData)
-        }
+        view.addSubview(activity)
+        activity.centerXAnchor.constraint(equalTo: tableView.frameLayoutGuide.centerXAnchor).isActive = true
+        activity.centerYAnchor.constraint(equalTo: tableView.frameLayoutGuide.centerYAnchor).isActive = true
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
         Task {
-            await processor?.receive(.viewDidAppear)
+            await processor?.receive(.initialData)
         }
     }
 
     func receive(_ effect: AlbumsEffect) async {
         switch effect {
+        case .scrollToZero:
+            print("window nil?")
+            if tableView.window != nil {
+                print("visible cells?")
+                if !tableView.visibleCells.isEmpty {
+                    print("scrolling")
+                    tableView.scrollToRow(at: .init(row: 0, section: 0), at: .top, animated: false)
+                }
+            }
         case .setUpSearcher:
-            await searcher.setUpSearcher(navigationItem: navigationItem, updater: dataSourceDelegate)
+            await searcher.setUpSearcher(navigationItem: navigationItem, tableView: tableView, updater: dataSourceDelegate)
         case .tearDownSearcher:
             await searcher.tearDownSearcher(navigationItem: navigationItem, tableView: tableView)
         }
     }
 
-    func present(_ state: AlbumsState) {
-        activity.stopAnimating()
+    func present(_ state: AlbumsState) async {
         title = switch state.listType {
         case .allAlbums: 
             "All Albums"
@@ -90,6 +92,19 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
             nil
         }
 
+        switch state.animateSpinner {
+        case true:
+            if !activity.isAnimating {
+                activity.startAnimating()
+                activity.window?.isUserInteractionEnabled = false
+            }
+        case false:
+            if activity.isAnimating {
+                activity.stopAnimating()
+                activity.window?.isUserInteractionEnabled = true
+            }
+        }
+
         navigationItem.leftBarButtonItem = switch state.listType {
         case .allAlbums, .randomAlbums:
             UIBarButtonItem(image: UIImage(systemName: "arrow.trianglehead.turn.up.right.circle"), menu: UIMenu())
@@ -97,12 +112,8 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
             nil
         }
 
-        Task {
-            await searcher.setUpSearcher(navigationItem: navigationItem, updater: dataSourceDelegate)
-        }
-
         navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
-        dataSourceDelegate?.present(state)
+        await dataSourceDelegate?.present(state)
     }
     
     /// Private subroutine of `present` that generates the left bar button item menu, depending

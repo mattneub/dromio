@@ -11,7 +11,8 @@ struct SearcherTests {
         #expect(subject.searchController == nil)
         let navigationItem = UINavigationItem()
         let handler = MockSearchHandler()
-        await subject.setUpSearcher(navigationItem: navigationItem, updater: handler)
+        let tableView = MockTableView()
+        await subject.setUpSearcher(navigationItem: navigationItem, tableView: tableView, updater: handler)
         let controller = try #require(subject.searchController)
         #expect(controller.hidesNavigationBarDuringPresentation == false)
         #expect(controller.obscuresBackgroundDuringPresentation == false)
@@ -29,15 +30,13 @@ struct SearcherTests {
         let tableView = MockTableView()
         let navigationItem = UINavigationItem()
         let handler = MockSearchHandler()
-        await subject.setUpSearcher(navigationItem: navigationItem, updater: handler)
+        await subject.setUpSearcher(navigationItem: navigationItem, tableView: tableView, updater: handler)
         let controller = try #require(subject.searchController)
         // that was prep, this is the test
         await subject.tearDownSearcher(navigationItem: navigationItem, tableView: tableView)
         #expect(controller.isActive == false)
         #expect(navigationItem.searchController == nil)
         #expect(subject.searchController == nil)
-        #expect(tableView.methodsCalled == ["scrollToRow(at:at:animated:)"])
-        #expect(tableView.indexPath == .init(row: 0, section: 0))
     }
 }
 

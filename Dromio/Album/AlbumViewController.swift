@@ -35,7 +35,9 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
     }
 
     func present(_ state: AlbumState) {
-        dataSourceDelegate?.present(state)
+        Task {
+            await dataSourceDelegate?.present(state)
+        }
     }
 
     func receive(_ effect: AlbumEffect) {

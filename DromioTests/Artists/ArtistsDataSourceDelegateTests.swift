@@ -75,6 +75,25 @@ struct ArtistsDataSourceDelegateTests {
         #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .systemGray3)
     }
 
+    @Test("present: does not call begin/endUpdates if we're not in a window")
+    func presentWithDataCellNoWindow() async throws {
+        await #while(subject.datasource == nil)
+        var state = ArtistsState()
+        state.artists = [.init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil)]
+        subject.present(state)
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
+        let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
+        let configuration = try #require(cell?.contentConfiguration as? ArtistsCellContentConfiguration)
+        let expected = ArtistsCellContentConfiguration(artist: .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: nil))
+        #expect(configuration == expected)
+        #expect(!tableView.methodsCalled.contains("beginUpdates()")) // *
+        #expect(!tableView.methodsCalled.contains("endUpdates()")) // *
+        #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .background)
+        cell?.isSelected = true
+        #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .systemGray3)
+    }
+
     @Test("sectionIndexTitles: with allArtists, returns uppercased section identifiers")
     func sectionIndexTitlesAll() async throws {
         await #while(subject.datasource == nil)

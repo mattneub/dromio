@@ -6,10 +6,10 @@ protocol RootCoordinatorType: AnyObject {
     // Processors are rooted here. They are all expressed as protocols, for testability.
 
     var pingProcessor: (any Processor<PingAction, PingState, Void>)? { get }
-    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
+    var albumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
     var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)? { get }
     var artistsProcessor: (any Processor<ArtistsAction, ArtistsState, ArtistsEffect>)? { get }
-    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
+    var artistAlbumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)? { get }
     var serverProcessor: (any Processor<ServerAction, ServerState, Void>)? { get }
 
@@ -66,12 +66,12 @@ protocol RootCoordinatorType: AnyObject {
 final class RootCoordinator: RootCoordinatorType {
 
     var pingProcessor: (any Processor<PingAction, PingState, Void>)?
-    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
+    var albumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)?
     var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)?
     var artistsProcessor: (any Processor<ArtistsAction, ArtistsState, ArtistsEffect>)?
     // The albums module can appear in two places simultaneously, so we need a place to root
     // a second instance of the albums processor.
-    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
+    var artistAlbumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)?
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)?
     var serverProcessor: (any Processor<ServerAction, ServerState, Void>)?
 

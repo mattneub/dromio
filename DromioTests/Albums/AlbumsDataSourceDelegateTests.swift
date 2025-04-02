@@ -29,7 +29,7 @@ struct AlbumsDataSourceDelegateTests {
             .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
             .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
         ]
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.listType == .allAlbums)
         let snapshot = subject.datasource.snapshot()
@@ -46,7 +46,7 @@ struct AlbumsDataSourceDelegateTests {
             .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
             .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
         ]
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.listType == .albumsForArtist(id: "1", source: .artists))
         let snapshot = subject.datasource.snapshot()
@@ -63,7 +63,7 @@ struct AlbumsDataSourceDelegateTests {
             .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
             .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
         ]
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.listType == .randomAlbums)
         let snapshot = subject.datasource.snapshot()
@@ -77,7 +77,7 @@ struct AlbumsDataSourceDelegateTests {
         makeWindow(view: tableView)
         var state = AlbumsState()
         state.albums = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
@@ -91,6 +91,25 @@ struct AlbumsDataSourceDelegateTests {
         #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .systemGray3)
     }
 
+    @Test("present: does not call begin/endUpdates if we're not in a window")
+    func presentWithDataCellNotInWindow() async throws {
+        await #while(subject.datasource == nil)
+        var state = AlbumsState()
+        state.albums = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        await subject.present(state)
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
+        let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
+        let configuration = try #require(cell?.contentConfiguration as? AlbumsCellContentConfiguration)
+        let expected = AlbumsCellContentConfiguration(album: .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil))
+        #expect(configuration == expected)
+        #expect(!tableView.methodsCalled.contains("beginUpdates()")) // *
+        #expect(!tableView.methodsCalled.contains("endUpdates()")) // *
+        #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .background)
+        cell?.isSelected = true
+        #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .systemGray3)
+    }
+
     @Test("sectionIndexTitles: with allAlbums, returns uppercased section identifiers")
     func sectionIndexTitlesAll() async throws {
         await #while(subject.datasource == nil)
@@ -99,7 +118,7 @@ struct AlbumsDataSourceDelegateTests {
             .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
             .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
         ]
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let result = try #require(subject.datasource.sectionIndexTitles(for: tableView))
         #expect(result == ["T", "Y"])
@@ -114,7 +133,7 @@ struct AlbumsDataSourceDelegateTests {
             .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
         ]
         subject.datasource.searching = true
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
     }
@@ -124,7 +143,7 @@ struct AlbumsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         var state = AlbumsState(listType: .allAlbums)
         state.albums = []
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.sectionIdentifier(for: 0) == "Dummy") // it will become nil
         #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
     }
@@ -137,7 +156,7 @@ struct AlbumsDataSourceDelegateTests {
             .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
             .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
         ]
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
     }
@@ -150,7 +169,7 @@ struct AlbumsDataSourceDelegateTests {
             .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
             .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
         ]
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
     }

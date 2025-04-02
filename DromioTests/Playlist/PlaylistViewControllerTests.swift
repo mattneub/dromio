@@ -111,7 +111,7 @@ struct PlaylistViewControllerTests {
     }
 
     @Test("present: presents to the data source")
-    func present() {
+    func present() async {
         let state = PlaylistState(
             songs: [.init(
                 id: "1",
@@ -128,6 +128,7 @@ struct PlaylistViewControllerTests {
             )]
         )
         subject.present(state)
+        await #while(mockDataSourceDelegate.methodsCalled.last != "present(_:)")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }
@@ -265,6 +266,7 @@ struct PlaylistViewControllerTests {
         )
         subject.postponedState = state
         await subject.receive(.deselectAll)
+        await #while(mockDataSourceDelegate.methodsCalled.last != "present(_:)")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }

@@ -4,7 +4,7 @@ import Testing
 @MainActor
 struct AlbumsProcessorTests {
     let subject = AlbumsProcessor()
-    let presenter = MockReceiverPresenter<AlbumsEffect, AlbumsState>()
+    let presenter = MockAsyncReceiverPresenter<AlbumsEffect, AlbumsState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
 
@@ -15,52 +15,82 @@ struct AlbumsProcessorTests {
         caches.albumsList = nil
     }
 
-    @Test("mutating the state presents the state")
-    func state() {
-        subject.state.albums.append(.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil))
-        #expect(presenter.statePresented?.albums.first == .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil))
-    }
-
-    @Test("receive allAlbums: sends `tearDown` effect, sends `getAlbumList` to request maker, sets state")
-    func receiveAllAlbums() async {
-        requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+    @Test("receive allAlbums: starts by presenting spinner animation")
+    func receiveAllAlbumsStart() async {
+        subject.state.animateSpinner = false
+        #expect(presenter.statePresented == nil)
         await subject.receive(.allAlbums)
-        #expect(presenter.thingsReceived == [.tearDownSearcher])
-        #expect(requestMaker.methodsCalled == ["getAlbumList()"])
-        #expect(subject.state.listType == .allAlbums)
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statesPresented.first?.animateSpinner == true)
     }
 
-    @Test("receive allAlbums: gets list from cache if it exists, sends teardown, sends getAlbumList, sets state")
+    @Test("receive allAlbums: sends `tearDown` effect, sends `getAlbumList` to request maker, sets state, turns off spinner, sends searcher/scroll effects")
+    func receiveAllAlbums() async {
+        subject.state.animateSpinner = true
+        requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        #expect(presenter.statePresented == nil)
+        await subject.receive(.allAlbums)
+        #expect(presenter.statePresented?.animateSpinner == false)
+        #expect(presenter.thingsReceived == [.tearDownSearcher, .setUpSearcher, .scrollToZero])
+        #expect(requestMaker.methodsCalled == ["getAlbumList()"])
+        #expect(presenter.statePresented?.listType == .allAlbums)
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+    }
+
+    @Test("receive allAlbums: gets list from cache if it exists, sends teardown, sends getAlbumList, sets state, turns off spinner, sends searcher/scroll effects")
     func receiveAllAlbumsCached() async {
+        subject.state.animateSpinner = true
         caches.albumsList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
         requestMaker.albumList = []
+        #expect(presenter.statePresented == nil)
         await subject.receive(.allAlbums)
-        #expect(presenter.thingsReceived == [.tearDownSearcher])
+        #expect(presenter.statePresented?.animateSpinner == false)
+        #expect(presenter.thingsReceived == [.tearDownSearcher, .setUpSearcher, .scrollToZero])
         #expect(requestMaker.methodsCalled.isEmpty)
-        #expect(subject.state.listType == .allAlbums)
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.listType == .allAlbums)
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
     }
 
-    @Test("receive artists: sends `tearDown` effect, tells coordinator to showArtists")
+    @Test("receive artists: tells coordinator to showArtists")
     func showArtists() async {
         await subject.receive(.artists)
-        #expect(presenter.thingsReceived == [.tearDownSearcher])
         #expect(coordinator.methodsCalled.last == "showArtists()")
     }
 
-    @Test("receive initialData: if listType is .albumsForArtist and source .artists, sends getAlbumsFor with id to request maker, sets state")
+    @Test("receive initialData: turns on hasInitialData, starts by presenting state with spinner on, ultimately turns it off")
+    func receiveInitialDataSpinner() async {
+        subject.state.animateSpinner = false
+        subject.state.hasInitialData = false
+        #expect(presenter.statePresented == nil)
+        await subject.receive(.initialData)
+        #expect(subject.state.hasInitialData == true)
+        #expect(presenter.statesPresented.first?.animateSpinner == true)
+        #expect(presenter.statesPresented.last?.animateSpinner == false)
+    }
+
+    @Test("receive initialData: if `hasInitialData` is true, just stops")
+    func receiveInitialDataHasInitialData() async {
+        subject.state.hasInitialData = true
+        #expect(presenter.statePresented == nil)
+        await subject.receive(.initialData)
+        #expect(subject.state.hasInitialData == true)
+        #expect(presenter.statesPresented == [])
+    }
+
+    @Test("receive initialData: if listType is .albumsForArtist and source .artists, sends getAlbumsFor with id to request maker, sets state, sends effects")
     func receiveInitialDataForArtist() async {
         subject.state.listType = .albumsForArtist(id: "1", source: .artists)
         requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        #expect(presenter.statePresented == nil)
         await subject.receive(.initialData)
         #expect(requestMaker.methodsCalled == ["getAlbumsFor(artistId:)"])
         #expect(requestMaker.artistId == "1")
-        #expect(subject.state.listType == .albumsForArtist(id: "1", source: .artists))
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.listType == .albumsForArtist(id: "1", source: .artists))
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.animateSpinner == false)
+        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
     }
 
-    @Test("receive initialData: if listType is .albumsForArtist and source .composers, sends getSongsBySearch with name to request maker, sets state")
+    @Test("receive initialData: if listType is .albumsForArtist and source .composers, sends getSongsBySearch with name to request maker, sets state, sends effects")
     func receiveInitialDataForComposer() async {
         subject.state.listType = .albumsForArtist(id: "1", source: .composers(name: "Me"))
         requestMaker.songList = [.init(
@@ -77,11 +107,14 @@ struct AlbumsProcessorTests {
             contributors: [.init(role: "composer", artist: .init(id: "1", name: "Moi", albumCount: nil, album: nil, roles: nil))]
         )]
         caches.albumsList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        #expect(presenter.statePresented == nil)
         await subject.receive(.initialData)
         #expect(requestMaker.methodsCalled == ["getSongsBySearch(query:)"])
         #expect(requestMaker.query == "Me")
-        #expect(subject.state.listType == .albumsForArtist(id: "1", source: .composers(name: "Me")))
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.listType == .albumsForArtist(id: "1", source: .composers(name: "Me")))
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.animateSpinner == false)
+        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
     }
 
     @Test("receive initialData:, listType .albumsForArtist for source .composers, red/green testing the filter")
@@ -120,10 +153,13 @@ struct AlbumsProcessorTests {
             // this artist is a composer with the right name but the wrong id, so his album doesn't match
             contributors: [.init(role: "composer", artist: .init(id: "2", name: "Me", albumCount: nil, album: nil, roles: nil))]
         )]
+        #expect(presenter.statePresented == nil)
         await subject.receive(.initialData)
-        #expect(subject.state.listType == .albumsForArtist(id: "1", source: .composers(name: "Me")))
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.listType == .albumsForArtist(id: "1", source: .composers(name: "Me")))
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
         //
+        presenter.statePresented = nil
+        subject.state.hasInitialData = false
         requestMaker.songList = [.init(
             id: "1",
             title: "Tra-la",
@@ -151,9 +187,11 @@ struct AlbumsProcessorTests {
             contributors: [.init(role: "artist", artist: .init(id: "1", name: "Me", albumCount: nil, album: nil, roles: nil))]
         )]
         await subject.receive(.initialData)
-        #expect(subject.state.listType == .albumsForArtist(id: "1", source: .composers(name: "Me")))
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.listType == .albumsForArtist(id: "1", source: .composers(name: "Me")))
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
         //
+        presenter.statePresented = nil
+        subject.state.hasInitialData = false
         requestMaker.songList = [.init(
             id: "1",
             title: "Tra-la",
@@ -181,29 +219,42 @@ struct AlbumsProcessorTests {
             contributors: [.init(role: "composer", artist: .init(id: "1", name: "Me", albumCount: nil, album: nil, roles: nil))]
         )]
         await subject.receive(.initialData)
-        #expect(subject.state.listType == .albumsForArtist(id: "1", source: .composers(name: "Me")))
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.listType == .albumsForArtist(id: "1", source: .composers(name: "Me")))
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
     }
 
     @Test("receive initialData: if listType is .allAlbums behaves exactly as receiving .allAlbums")
     func receiveInitialDataAllAlbums() async {
         subject.state.listType = .allAlbums
+        subject.state.animateSpinner = true
         requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        #expect(presenter.statePresented == nil)
         await subject.receive(.initialData)
-        #expect(presenter.thingsReceived == [.tearDownSearcher])
+        #expect(presenter.statePresented?.animateSpinner == false)
+        #expect(presenter.thingsReceived == [.tearDownSearcher, .setUpSearcher, .scrollToZero])
         #expect(requestMaker.methodsCalled == ["getAlbumList()"])
-        #expect(subject.state.listType == .allAlbums)
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.listType == .allAlbums)
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
     }
 
-    @Test("receive randomAlbums: sends `tearDown` effect, sends `getAlbumList` to request maker, sets state")
+    @Test("receive randomAlbums: starts by sending `tearDown` and starting the spinner")
+    func receiveRandomAlbumsStart() async {
+        subject.state.animateSpinner = false
+        await subject.receive(.randomAlbums)
+        #expect(presenter.statesPresented.first?.animateSpinner == true)
+        #expect(presenter.thingsReceived.first == .tearDownSearcher)
+    }
+
+    @Test("receive randomAlbums: sends `scrollToZero` effect, sends `getAlbumList` to request maker, sets state, turns off spinner")
     func receiveRandomAlbums() async {
         requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        #expect(presenter.statePresented == nil)
         await subject.receive(.randomAlbums)
-        #expect(presenter.thingsReceived == [.tearDownSearcher])
+        #expect(presenter.thingsReceived == [.tearDownSearcher, .scrollToZero])
         #expect(requestMaker.methodsCalled == ["getAlbumsRandom()"])
-        #expect(subject.state.listType == .randomAlbums)
-        #expect(subject.state.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.listType == .randomAlbums)
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.animateSpinner == false)
     }
 
     @Test("receive server: sends dismissToPing to coordinator")
@@ -212,27 +263,23 @@ struct AlbumsProcessorTests {
         #expect(coordinator.methodsCalled.last == "dismissToPing()")
     }
 
-    @Test("showAlbum: sends no effect, sends `showAlbum` to coordinator, with info from specified album")
+    @Test("showAlbum: sends no effect, no presentation, sends `showAlbum` to coordinator, with info from specified album")
     func showAlbum() async {
         subject.state.albums = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
         await subject.receive(.showAlbum(albumId: "1"))
+        #expect(presenter.statePresented == nil)
         #expect(presenter.thingsReceived.isEmpty)
         #expect(coordinator.methodsCalled == ["showAlbum(albumId:title:)"])
         #expect(coordinator.albumId == "1")
         #expect(coordinator.title == "Yoho")
     }
 
-    @Test("receive showPlaylist: sends no effect, tells coordinator to showPlaylist")
+    @Test("receive showPlaylist: sends no effect, no presentation, tells coordinator to showPlaylist")
     func showPlaylist() async {
         await subject.receive(.showPlaylist)
+        #expect(presenter.statePresented == nil)
         #expect(presenter.thingsReceived.isEmpty)
         #expect(coordinator.methodsCalled.last == "showPlaylist(state:)")
         #expect(coordinator.playlistState == nil)
-    }
-
-    @Test("receive viewDidAppear: sends `setUpSearcher` effect")
-    func receiveViewDidAppear() async {
-        await subject.receive(.viewDidAppear)
-        #expect(presenter.thingsReceived == [.setUpSearcher])
     }
 }

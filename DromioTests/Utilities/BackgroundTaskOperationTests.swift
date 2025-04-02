@@ -11,7 +11,7 @@ struct BackgroundTaskOperationTests {
         try await confirmation(expectedCount: 1) { confirmed in
             let subject = BackgroundTaskOperation(whatToDo: { confirmed() }, cleanup: { throw TestError.codeShouldNotRun }, application: application)
             try await subject.start()
-            try? await Task.sleep(for: .seconds(0.1))
+            try? await Task.sleep(for: .seconds(0.2))
         }
         #expect(application.methodsCalled.contains("beginBackgroundTask(expirationHandler:)"))
         #expect(application.methodsCalled.contains("endBackgroundTask(_:)"))
@@ -24,7 +24,7 @@ struct BackgroundTaskOperationTests {
         try await confirmation(expectedCount: 2) { confirmed in
             let subject = BackgroundTaskOperation(whatToDo: { confirmed() }, cleanup: { confirmed() }, application: application)
             try await subject.start()
-            try? await Task.sleep(for: .seconds(0.1))
+            try? await Task.sleep(for: .seconds(0.2))
         }
         #expect(application.methodsCalled.contains("beginBackgroundTask(expirationHandler:)"))
         #expect(application.methodsCalled.contains("endBackgroundTask(_:)"))
@@ -37,7 +37,7 @@ struct BackgroundTaskOperationTests {
         try? await confirmation(expectedCount: 1) { confirmed in
             let subject = BackgroundTaskOperation(whatToDo: { throw TestError.codeShouldNotRun }, cleanup: { confirmed() }, application: application)
             try await subject.start()
-            try? await Task.sleep(for: .seconds(0.1))
+            try? await Task.sleep(for: .seconds(0.2))
         }
         #expect(application.methodsCalled.contains("beginBackgroundTask(expirationHandler:)"))
         #expect(application.methodsCalled.contains("endBackgroundTask(_:)"))
