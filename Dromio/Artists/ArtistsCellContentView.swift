@@ -48,13 +48,17 @@ struct ArtistsCellContentConfiguration: UIContentConfiguration, Equatable {
 
     /// The configuration must be created directly from an artist.
     /// - Parameter artist: The artist.
-    init(artist: SubsonicArtist) {
+    init(artist: SubsonicArtist, composer: Bool = false) {
         self.name = artist.name
-        self.albums = String(
-            AttributedString(
-                localized: "^[\(artist.albumCount ?? 0)\n\("album")](inflect: true)"
-            ).characters
-        )
+        self.albums = if composer || artist.albumCount == 0 || artist.albumCount == nil {
+            " \n "
+        } else {
+            String(
+                AttributedString(
+                    localized: "^[\(artist.albumCount ?? 0)\n\("album")](inflect: true)"
+                ).characters
+            )
+        }
     }
 
     func makeContentView() -> any UIView & UIContentView {

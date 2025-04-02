@@ -9,7 +9,6 @@ final class AlbumsProcessor: AsyncProcessor {
     /// Reference to the view controller, set by coordinator on creation.
     weak var presenter: (any AsyncReceiverPresenter<AlbumsEffect, AlbumsState>)?
 
-    // TODO: Trying a new experiment here; _all_ presentation is manual.
     /// State to be presented to the presenter.
     var state: AlbumsState = AlbumsState()
 
@@ -28,6 +27,9 @@ final class AlbumsProcessor: AsyncProcessor {
                 await presenter?.present(state)
                 await presenter?.receive(.setUpSearcher)
                 await presenter?.receive(.scrollToZero)
+                try? await unlessTesting {
+                    try? await Task.sleep(for: .seconds(0.2))
+                }
                 state.animateSpinner = false
                 await presenter?.present(state)
             } catch {
@@ -63,6 +65,9 @@ final class AlbumsProcessor: AsyncProcessor {
                     }
                     await presenter?.receive(.setUpSearcher)
                     await presenter?.receive(.scrollToZero)
+                    try? await unlessTesting {
+                        try? await Task.sleep(for: .seconds(0.2))
+                    }
                     state.animateSpinner = false
                     await presenter?.present(state)
                 } catch {
@@ -85,6 +90,9 @@ final class AlbumsProcessor: AsyncProcessor {
                 state.albums = albums
                 await presenter?.present(state)
                 await presenter?.receive(.scrollToZero)
+                try? await unlessTesting {
+                    try? await Task.sleep(for: .seconds(0.2))
+                }
                 state.animateSpinner = false
                 await presenter?.present(state)
             } catch {

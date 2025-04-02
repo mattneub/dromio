@@ -67,11 +67,8 @@ final class AlbumsViewController: UITableViewController, AsyncReceiverPresenter 
     func receive(_ effect: AlbumsEffect) async {
         switch effect {
         case .scrollToZero:
-            print("window nil?")
             if tableView.window != nil {
-                print("visible cells?")
                 if !tableView.visibleCells.isEmpty {
-                    print("scrolling")
                     tableView.scrollToRow(at: .init(row: 0, section: 0), at: .top, animated: false)
                 }
             }

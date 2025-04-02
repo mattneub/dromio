@@ -110,6 +110,32 @@ struct AlbumsDataSourceDelegateTests {
         #expect(cell?.backgroundConfiguration?.backgroundColorTransformer?.transform(.white) == .systemGray3)
     }
 
+    @Test("present: whether cells end up hidden depends on state's animateSpinner")
+    func presentAnimateSpinner() async {
+        await #while(subject.datasource == nil)
+        var state = AlbumsState(listType: .allAlbums)
+        state.albums = [
+            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+        ]
+        do {
+            state.animateSpinner = true
+            await subject.present(state)
+            await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+            await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
+            let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
+            #expect(cell?.isHidden == true)
+        }
+        do {
+            state.animateSpinner = false
+            await subject.present(state)
+            await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+            await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
+            let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
+            #expect(cell?.isHidden == false)
+        }
+    }
+
     @Test("sectionIndexTitles: with allAlbums, returns uppercased section identifiers")
     func sectionIndexTitlesAll() async throws {
         await #while(subject.datasource == nil)

@@ -23,11 +23,10 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
         tableView.delegate = self
     }
 
-    func present(_ state: ArtistsState) {
+    func present(_ state: ArtistsState) async {
         datasource?.listType = state.listType
-        Task {
-            await updateTableView(data: state.artists)
-        }
+        hideCells = state.animateSpinner
+        await updateTableView(data: state.artists)
     }
 
     // MARK: - Table view contents
@@ -37,6 +36,8 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
 
     /// A copy of the data that we can restore after a search.
     var originalData = [SubsonicArtist]()
+
+    var hideCells = false
 
     /// Type of the diffable data source.
     typealias Datasource = MyArtistsTableViewDiffableDataSource
@@ -67,8 +68,12 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
             return nil
         }
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
-        cell.contentConfiguration = ArtistsCellContentConfiguration(artist: artist)
+        cell.contentConfiguration = ArtistsCellContentConfiguration(
+            artist: artist,
+            composer: datasource.listType == .composers
+        )
         cell.configureBackground()
+        cell.isHidden = hideCells
         return cell
     }
 
@@ -102,7 +107,7 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
             snapshot.appendSections([section.name])
             snapshot.appendItems(section.rows.map {$0.id})
         }
-        await datasource.apply(snapshot, animatingDifferences: false)
+        await datasource.applySnapshotUsingReloadData(snapshot)
         if self.tableView?.window != nil {
             self.tableView?.beginUpdates()
             self.tableView?.endUpdates()

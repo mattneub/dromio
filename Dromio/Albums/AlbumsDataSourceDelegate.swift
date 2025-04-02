@@ -24,6 +24,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
 
     func present(_ state: AlbumsState) async {
         datasource?.listType = state.listType
+        hideCells = state.animateSpinner
         await updateTableView(data: state.albums)
     }
 
@@ -34,6 +35,8 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
 
     /// A copy of the data that we can restore after a search.
     var originalData = [SubsonicAlbum]()
+
+    var hideCells = false
 
     /// Type of the diffable data source.
     typealias Datasource = MyAlbumsTableViewDiffableDataSource
@@ -66,6 +69,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         cell.contentConfiguration = AlbumsCellContentConfiguration(album: album)
         cell.configureBackground()
+        cell.isHidden = hideCells
         return cell
     }
 
@@ -102,7 +106,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
             snapshot.appendSections([section.name])
             snapshot.appendItems(section.rows.map {$0.id})
         }
-        await datasource.apply(snapshot, animatingDifferences: false)
+        await datasource.applySnapshotUsingReloadData(snapshot)
         if self.tableView?.window != nil {
             self.tableView?.beginUpdates()
             self.tableView?.endUpdates()

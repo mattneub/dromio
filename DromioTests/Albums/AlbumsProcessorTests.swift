@@ -36,7 +36,7 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
     }
 
-    @Test("receive allAlbums: gets list from cache if it exists, sends teardown, sends getAlbumList, sets state, turns off spinner, sends searcher/scroll effects")
+    @Test("receive allAlbums: gets list from cache if it exists, sends teardown, sets state, turns off spinner, sends searcher/scroll effects")
     func receiveAllAlbumsCached() async {
         subject.state.animateSpinner = true
         caches.albumsList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]

@@ -9,6 +9,7 @@ struct ArtistsViewControllerTests {
     let mockDataSourceDelegate = MockDataSourceDelegate<ArtistsState, ArtistsAction, Void>(tableView: UITableView())
     let processor = MockReceiver<ArtistsAction>()
     let searcher = MockSearcher()
+    let tableView = MockTableView()
 
     init() {
         subject.dataSourceDelegate = mockDataSourceDelegate
@@ -50,23 +51,47 @@ struct ArtistsViewControllerTests {
         #expect(mockDataSourceDelegate.processor === processor2)
     }
 
+    @Test("Activity spinner is correctly constructed")
+    func activitySpinner() throws {
+        let spinner = subject.activity
+        #expect(spinner.style == .large)
+        #expect(spinner.color == .label)
+        #expect(spinner.backgroundColor!.resolvedColor(with: .init(userInterfaceStyle: .dark)) == UIColor.label.resolvedColor(with: .init(userInterfaceStyle: .light)))
+        #expect(spinner.backgroundColor!.resolvedColor(with: .init(userInterfaceStyle: .light)) == UIColor.label.resolvedColor(with: .init(userInterfaceStyle: .dark)))
+        #expect(spinner.layer.cornerRadius == 20)
+    }
+
     @Test("viewDidLoad: sets the data source's processor, sets background color, sets spinner, sends .allArtists action")
     func viewDidLoad() async throws {
         subject.loadViewIfNeeded()
         #expect(mockDataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .background)
-        let tableBackground = try #require(subject.tableView.backgroundView)
-        #expect(subject.activity.isDescendant(of: tableBackground))
-        #expect(subject.activity.isAnimating)
-        await #while(processor.thingsReceived.isEmpty)
-        #expect(processor.thingsReceived.first == .allArtists)
+        #expect(subject.activity.isDescendant(of: subject.view))
     }
 
-    @Test("viewDidAppear: sends .viewDidAppear action")
-    func viewDidAppear() async {
-        subject.viewDidAppear(false)
-        await #while(processor.thingsReceived.last != .viewDidAppear)
-        #expect(processor.thingsReceived.last == .viewDidAppear)
+    @Test("viewIsAppearing: sends .viewIsAppearing action")
+    func viewIsAppearing() async {
+        subject.viewIsAppearing(false)
+        await #while(processor.thingsReceived.last != .viewIsAppearing)
+        #expect(processor.thingsReceived.last == .viewIsAppearing)
+    }
+
+    @Test("receive scrollToZero: scrolls to zero")
+    func scrollToZero() async {
+        // in order to test this we practically have to build that actual app!
+        subject.tableView = tableView // who knew you could do that?
+        subject.dataSourceDelegate = ArtistsDataSourceDelegate(tableView: tableView)
+        var artists = [SubsonicArtist]()
+        for id in (1...100) {
+            artists.append(.init(id: String(id), name: "name", albumCount: nil, album: nil, roles: nil))
+        }
+        makeWindow(viewController: subject)
+        await subject.present(.init(artists: artists))
+        await #while(tableView.numberOfRows(inSection: 0) < 100)
+        tableView.scrollToRow(at: .init(row: 100, section: 0), at: .bottom, animated: false)
+        // that was prep, this is the test
+        await subject.receive(.scrollToZero)
+        #expect(tableView.contentOffset.y == -20)
     }
 
     @Test("receive setUpSearcher: calls searcher setUpSearcher")
@@ -88,27 +113,29 @@ struct ArtistsViewControllerTests {
     @Test("present: presents to the data source")
     func present() async {
         let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
-        subject.present(state)
+        await subject.present(state)
         await #while(mockDataSourceDelegate.methodsCalled.last != "present(_:)")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }
 
-    @Test("present: stops spinner calls searcher setUpSearcher")
-    func presentSearcher() async {
-        let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
-        subject.present(state)
-        #expect(!subject.activity.isAnimating)
-        await #while(searcher.methodsCalled.isEmpty)
-        #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:tableView:updater:)"])
-        #expect(searcher.navigationItem === subject.navigationItem)
-        #expect(searcher.updater === subject.dataSourceDelegate)
+    @Test("present: obeys the state's animateSpinner")
+    func presentAnimateSpinner() async {
+        let window = makeWindow(viewController: subject)
+        let state = ArtistsState(animateSpinner: true)
+        await subject.present(state)
+        #expect(subject.activity.isAnimating == true)
+        #expect(window.isUserInteractionEnabled == false)
+        let state2 = ArtistsState(animateSpinner: false)
+        await subject.present(state2)
+        #expect(subject.activity.isAnimating == false)
+        #expect(window.isUserInteractionEnabled == true)
     }
 
     @Test("present: sets the title and left bar button menu item according to the state")
     func presentAll() async throws {
         let state = ArtistsState(listType: .allArtists)
-        subject.present(state)
+        await subject.present(state)
         #expect(subject.title == "Artists")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
         #expect(menu.children.count == 3)
@@ -138,9 +165,9 @@ struct ArtistsViewControllerTests {
     }
 
     @Test("present: sets the title and left bar button menu item according to the state")
-    func presentRandom() async throws {
+    func presentComposers() async throws {
         let state = ArtistsState(listType: .composers)
-        subject.present(state)
+        await subject.present(state)
         #expect(subject.title == "Composers")
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
         #expect(menu.children.count == 3)

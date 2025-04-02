@@ -46,6 +46,22 @@ struct ArtistsCellContentConfigurationTests {
         ))
         subject.configuration = configuration2
         labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
-        #expect(Set(labelTexts) == Set(["Name", "0\nalbums"]))
+        #expect(Set(labelTexts) == Set(["Name", " \n "]))
+    }
+
+    @Test("if composer is true, album count is always suppressed")
+    func applyConfigurationComposer() throws {
+        let configuration = ArtistsCellContentConfiguration(artist: SubsonicArtist(
+            id: "1",
+            name: "Name",
+            albumCount: 100,
+            album: nil,
+            roles: [],
+            sortName: nil
+        ), composer: true)
+        let subject = ArtistsCellContentView(configuration)
+        let loadedView = try #require(subject.subviews.first)
+        let labelTexts = loadedView.subviews.filter { $0 is UILabel }.map { ($0 as? UILabel)?.text ?? "" }
+        #expect(Set(labelTexts) == Set(["Name", " \n "]))
     }
 }

@@ -1,7 +1,7 @@
 import UIKit
 
 /// View controller that displays a list of all artists.
-final class ArtistsViewController: UITableViewController, ReceiverPresenter {
+final class ArtistsViewController: UITableViewController, AsyncReceiverPresenter {
     /// Data source and delegate object, created in `init`.
     var dataSourceDelegate: (any DataSourceDelegateSearcher<ArtistsAction, ArtistsState, Void>)?
 
@@ -15,16 +15,17 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
     let activity: UIActivityIndicatorView = {
         let activity = UIActivityIndicatorView(style: .large)
         activity.color = .label
+        activity.backgroundColor = UIColor(dynamicProvider: { traits in
+            switch traits.userInterfaceStyle {
+            case .light: UIColor.label.resolvedColor(with: .init(userInterfaceStyle: .dark))
+            default: UIColor.label.resolvedColor(with: .init(userInterfaceStyle: .light))
+            }
+        })
         activity.translatesAutoresizingMaskIntoConstraints = false
+        activity.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        activity.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        activity.layer.cornerRadius = 20
         return activity
-    }()
-
-    lazy var tableViewBackground: UIView = {
-        let view = UIView()
-        view.addSubview(activity)
-        view.centerYAnchor.constraint(equalTo: activity.centerYAnchor).isActive = true
-        view.centerXAnchor.constraint(equalTo: activity.centerXAnchor).isActive = true
-        return view
     }()
 
     /// Object that handles and configures our search controller; it's a var for testing purposes.
@@ -57,22 +58,26 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
         view.backgroundColor = .background
-        tableView.backgroundView = tableViewBackground
-        activity.startAnimating()
-        Task {
-            await processor?.receive(.allArtists)
-        }
+        view.addSubview(activity)
+        activity.centerXAnchor.constraint(equalTo: tableView.frameLayoutGuide.centerXAnchor).isActive = true
+        activity.centerYAnchor.constraint(equalTo: tableView.frameLayoutGuide.centerYAnchor).isActive = true
     }
 
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
         Task {
-            await processor?.receive(.viewDidAppear)
+            await processor?.receive(.viewIsAppearing)
         }
     }
 
     func receive(_ effect: ArtistsEffect) async {
         switch effect {
+        case .scrollToZero:
+            if tableView.window != nil {
+                if !tableView.visibleCells.isEmpty {
+                    tableView.scrollToRow(at: .init(row: 0, section: 0), at: .top, animated: false)
+                }
+            }
         case .setUpSearcher:
             await searcher.setUpSearcher(navigationItem: navigationItem, tableView: tableView, updater: dataSourceDelegate)
         case .tearDownSearcher:
@@ -80,21 +85,27 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         }
     }
 
-    func present(_ state: ArtistsState) {
-        activity.stopAnimating()
+    func present(_ state: ArtistsState) async {
         title = switch state.listType {
         case .allArtists: "Artists"
         case .composers: "Composers"
         }
-
-        Task {
-            await searcher.setUpSearcher(navigationItem: navigationItem, tableView: tableView, updater: dataSourceDelegate)
-        }
-
         navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
-        Task {
-            await dataSourceDelegate?.present(state)
+
+        switch state.animateSpinner {
+        case true:
+            if !activity.isAnimating {
+                activity.startAnimating()
+                activity.window?.isUserInteractionEnabled = false
+            }
+        case false:
+            if activity.isAnimating {
+                activity.stopAnimating()
+                activity.window?.isUserInteractionEnabled = true
+            }
         }
+
+        await dataSourceDelegate?.present(state)
     }
 
     private func menu(for listType: ArtistsState.ListType) -> UIMenu {
