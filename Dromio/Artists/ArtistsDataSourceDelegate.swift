@@ -147,7 +147,7 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
         datasource.searching = true
     }
 
-    func didDismissSearchController(_ searchController: UISearchController) {
+    func willDismissSearchController(_ searchController: UISearchController) {
         datasource.searching = false
         tableView?.reloadSectionIndexTitles()
     }

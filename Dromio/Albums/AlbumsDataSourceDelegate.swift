@@ -146,7 +146,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
         datasource.searching = true
     }
 
-    func didDismissSearchController(_ searchController: UISearchController) {
+    func willDismissSearchController(_ searchController: UISearchController) {
         datasource.searching = false
         tableView?.reloadSectionIndexTitles()
     }

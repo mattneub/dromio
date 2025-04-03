@@ -272,10 +272,10 @@ struct AlbumsDataSourceDelegateTests {
         #expect(subject.originalData == subject.data)
     }
 
-    @Test("didDismissSearchController: resets searching flag, calls table view reload section titles")
-    func didDismiss() {
+    @Test("willDismissSearchController: resets searching flag, calls table view reload section titles")
+    func willDismiss() {
         subject.datasource.searching = true
-        subject.didDismissSearchController(UISearchController())
+        subject.willDismissSearchController(UISearchController())
         #expect(subject.datasource.searching == false)
         #expect(tableView.methodsCalled == ["reloadSectionIndexTitles()"])
     }
