@@ -6,7 +6,7 @@ import Foundation
 @MainActor
 struct PlaylistProcessorTests {
     let subject = PlaylistProcessor()
-    let presenter = MockReceiverPresenter<PlaylistEffect, PlaylistState>()
+    let presenter = MockAsyncReceiverPresenter<PlaylistEffect, PlaylistState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
     let haptic = MockHaptic()
@@ -24,69 +24,6 @@ struct PlaylistProcessorTests {
         services.player = player
         services.download = download
         services.networker = networker
-    }
-
-    @Test("mutating the state presents the state")
-    func state() {
-        let songs = [SubsonicSong(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )]
-        subject.state.songs = songs
-        #expect(presenter.statePresented?.songs == songs)
-    }
-
-    @Test("mutating the state with `noPresentation` doesn't present the state")
-    func stateNoPresentation() {
-        let songs = [SubsonicSong(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )]
-        subject.noPresentation = true
-        subject.state.songs = songs
-        #expect(presenter.statePresented == nil)
-        #expect(subject.noPresentation == false)
-    }
-
-    @Test("mutating the state with `withoutPresentation` doesn't present the state")
-    func stateWithoutPresentation() {
-        let songs = [SubsonicSong(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )]
-        subject.withoutPresentation { state in
-            state.songs = songs
-        }
-        #expect(subject.state.songs == songs)
-        #expect(presenter.statePresented == nil)
-        #expect(subject.noPresentation == false)
     }
 
     @Test("receive clear: tells the current playlist, player, and download to clear, sets the state, call popPlaylist")
@@ -110,7 +47,7 @@ struct PlaylistProcessorTests {
         #expect(playlist.methodsCalled == ["clear()"])
         #expect(player.methodsCalled == ["clear()"])
         await #expect(download.methodsCalled == ["clear()"])
-        #expect(subject.state.songs.isEmpty)
+        #expect(presenter.statePresented?.songs == [])
         await #while(coordinator.methodsCalled.isEmpty)
         #expect(coordinator.methodsCalled == ["popPlaylist()"])
     }
@@ -242,22 +179,7 @@ struct PlaylistProcessorTests {
             contributors: nil
         )]
         await subject.receive(.delete(2))
-        #expect(
-            presenter.statePresented?.songs == [.init(
-                id: "2",
-                title: "Title",
-                album: "Album",
-                artist: "Artist",
-                displayComposer: "Me",
-                track: 1,
-                year: 1970,
-                albumId: "2",
-                suffix: nil,
-                duration: nil,
-                contributors: nil,
-                downloaded: false
-            )]
-        )
+        #expect(presenter.statePresented == nil)
         #expect(player.methodsCalled.isEmpty)
         #expect(playlist.methodsCalled.isEmpty)
     }
@@ -339,7 +261,6 @@ struct PlaylistProcessorTests {
 
     @Test("receive delete: presents only once while looping thru downloads")
     func receiveDeleteDownloadedOnePresentation() async {
-        subject.noPresentation = true
         subject.state.songs = [SubsonicSong(
             id: "3",
             title: "Title",
@@ -455,7 +376,6 @@ struct PlaylistProcessorTests {
             duration: nil,
             contributors: nil
         )]
-        subject.noPresentation = true
         subject.state.offlineMode = true
         await subject.receive(.delete(0))
         #expect(
@@ -479,12 +399,12 @@ struct PlaylistProcessorTests {
     @Test("receive editButton: clears player, toggle state editMode; if turned editMode off, presents twice")
     func editButton() async throws {
         await subject.receive(.editButton)
-        #expect(subject.state.editMode == true)
+        #expect(presenter.statePresented?.editMode == true)
         #expect(presenter.statesPresented.count == 1)
         #expect(presenter.statesPresented[0].updateTableView == false)
         presenter.statesPresented = []
         await subject.receive(.editButton)
-        #expect(subject.state.editMode == false)
+        #expect(presenter.statePresented?.editMode == false)
         #expect(presenter.statesPresented.count == 2)
         #expect(presenter.statesPresented[0].updateTableView == false)
         #expect(presenter.statesPresented[1].updateTableView == true)
@@ -532,8 +452,8 @@ struct PlaylistProcessorTests {
         await #while(!presenter.thingsReceived.contains(.progress("2", 0.5)))
         #expect(presenter.thingsReceived.contains(.progress("2", 0.5)))
         player.currentSongIdPublisher.send("10")
-        await #while(subject.state.currentSongId != "10")
-        #expect(subject.state.currentSongId == "10")
+        await #while(presenter.statePresented == nil)
+        #expect(presenter.statePresented?.currentSongId == "10")
         await #while(requestMaker.methodsCalled.isEmpty)
         #expect(requestMaker.methodsCalled.contains("scrobble(songId:)"))
         #expect(requestMaker.songId == "10")
@@ -714,7 +634,6 @@ struct PlaylistProcessorTests {
             duration: nil,
             contributors: nil
         )]
-        subject.noPresentation = true
         subject.state.offlineMode = true
         await subject.receive(.initialData)
         #expect(
@@ -739,12 +658,12 @@ struct PlaylistProcessorTests {
 
     @Test("receive jukeboxButton: toggles state jukeboxMode, call haptic")
     func receiveJukebox() async {
-        #expect(!subject.state.jukeboxMode)
+        #expect(subject.state.jukeboxMode == false)
         await subject.receive(.jukeboxButton)
-        #expect(subject.state.jukeboxMode)
+        #expect(presenter.statePresented?.jukeboxMode == true)
         #expect(haptic.methodsCalled == ["impact()"])
         await subject.receive(.jukeboxButton)
-        #expect(!subject.state.jukeboxMode)
+        #expect(presenter.statePresented?.jukeboxMode == false)
         #expect(haptic.methodsCalled == ["impact()", "impact()"])
     }
 
@@ -779,7 +698,7 @@ struct PlaylistProcessorTests {
         #expect(playlist.methodsCalled == ["move(from:to:)"])
         #expect(playlist.fromRow == 1)
         #expect(playlist.toRow == 0)
-        #expect(subject.state.songs == [.init(
+        #expect(presenter.statePresented?.songs == [.init(
             id: "2",
             title: "Title",
             album: "Album",
@@ -895,7 +814,7 @@ struct PlaylistProcessorTests {
         await #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
         #expect(player.methodsCalled == ["play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
         #expect(player.urls.map { $0.scheme } == ["http", "file", "file"])
-        #expect(subject.state.songs.filter { $0.downloaded == true }.count == 3)
+        #expect(presenter.statePresented?.songs.filter { $0.downloaded == true }.count == 3)
         #expect(try operatedOnBackgroundTask() == 3)
     }
 
@@ -947,7 +866,7 @@ struct PlaylistProcessorTests {
         await #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
         #expect(player.methodsCalled == ["play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
         #expect(player.urls.map { $0.scheme } == ["file", "file", "file"])
-        #expect(subject.state.songs.filter { $0.downloaded == true }.count == 3)
+        #expect(presenter.statePresented?.songs.filter { $0.downloaded == true }.count == 3)
         #expect(try operatedOnBackgroundTask() == 3)
     }
 

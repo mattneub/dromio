@@ -3,32 +3,15 @@ import Combine
 
 /// Processor containing logic for the PlaylistViewController.
 @MainActor
-final class PlaylistProcessor: Processor {
+final class PlaylistProcessor: AsyncProcessor {
     /// Reference to the coordinator, set by coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
 
     /// Reference to the view controller, set by coordinator on creation.
-    weak var presenter: (any ReceiverPresenter<PlaylistEffect, PlaylistState>)?
+    weak var presenter: (any AsyncReceiverPresenter<PlaylistEffect, PlaylistState>)?
 
-    /// State to be presented to the presenter; mutating it presents, unless `noPresentation` forbids.
-    var noPresentation = false
-    var state = PlaylistState() {
-        didSet {
-            if noPresentation {
-                noPresentation = false
-            } else {
-                presenter?.present(state)
-            }
-        }
-    }
-
-    /// Utility method that makes it easier to perform / batch state changes without presentation.
-    func withoutPresentation(execute: (inout PlaylistState) -> Void) {
-        var stateCopy = state
-        execute(&stateCopy)
-        noPresentation = true
-        state = stateCopy
-    }
+    /// State to be presented to the presenter.
+    var state = PlaylistState()
 
     /// Pipeline subscribing to Download's `progress` during a download, so we can report progress.
     var downloadPipeline: AnyCancellable?
@@ -50,6 +33,7 @@ final class PlaylistProcessor: Processor {
                 services.player.clear()
                 await services.download.clear()
                 state.songs = services.currentPlaylist.list
+                await presenter?.present(state)
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.3))
                 }
@@ -63,13 +47,9 @@ final class PlaylistProcessor: Processor {
                 try await services.download.delete(song: song)
                 services.currentPlaylist.delete(song: song)
                 try await configureSongs()
-                withoutPresentation { state in
-                    state.animate = true
-                }
-                presenter?.present(state)
-                withoutPresentation { state in
-                    state.animate = false
-                }
+                state.animate = true
+                await presenter?.present(state)
+                state.animate = false
                 if state.songs.isEmpty && !state.jukeboxMode {
                     try? await unlessTesting {
                         try? await Task.sleep(for: .seconds(0.3))
@@ -79,38 +59,35 @@ final class PlaylistProcessor: Processor {
             } catch {}
         case .editButton:
             services.player.clear()
-            withoutPresentation { state in
-                state.updateTableView = false
-            }
+            state.updateTableView = false
             state.editMode.toggle()
-            withoutPresentation { state in
-                state.updateTableView = true
-            }
+            await presenter?.present(state)
+            state.updateTableView = true
             if !state.editMode {
                 // present, thus cleaning up the datasource's data which may have become stale while editing
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.5))
                 }
-                presenter?.present(state)
+                await presenter?.present(state)
             }
         case .initialData:
             try? await configureSongs()
-            presenter?.present(state)
+            await presenter?.present(state)
             setUpPipelines()
             services.currentPlaylist.setList(state.songs) // they must always be in sync, and we may have just filtered the list
         case .jukeboxButton:
             services.haptic.impact()
             state.jukeboxMode.toggle()
+            await presenter?.present(state)
         case .move(let fromRow, let toRow):
             services.currentPlaylist.move(from: fromRow, to: toRow)
-            withoutPresentation { state in
-                var songs = state.songs
-                guard fromRow < songs.count else { return }
-                guard toRow < songs.count else { return }
-                let song = songs.remove(at: fromRow)
-                songs.insert(song, at: toRow)
-                state.songs = songs
-            }
+            var songs = state.songs
+            guard fromRow < songs.count else { return }
+            guard toRow < songs.count else { return }
+            let song = songs.remove(at: fromRow)
+            songs.insert(song, at: toRow)
+            state.songs = songs
+            await presenter?.present(state)
         case .playPause:
             services.haptic.impact()
             services.player.playPause()
@@ -151,7 +128,7 @@ final class PlaylistProcessor: Processor {
         }
         let operation = services.backgroundTaskOperationMaker.make { @MainActor [weak self] in
             _ = try await services.download.download(song: song) // if already downloaded, no harm done
-            self?.markDownloaded(song: song)
+            await self?.markDownloaded(song: song)
             return ()
         }
         try await operation.start()
@@ -161,7 +138,7 @@ final class PlaylistProcessor: Processor {
             let operation = services.backgroundTaskOperationMaker.make { @MainActor [weak self] in
                 let url = try await services.download.download(song: song)
                 services.player.playNext(url: url, song: song)
-                self?.markDownloaded(song: song)
+                await self?.markDownloaded(song: song)
                 return ()
             }
             try await operation.start()
@@ -194,18 +171,17 @@ final class PlaylistProcessor: Processor {
             }
             songs = try await result.array()
         }
-        withoutPresentation { state in
-            state.songs = songs
-        }
+        state.songs = songs
         // no presentation took place during this method! it is up to the caller to present
     }
 
     /// Given a song, mark it as downloaded in `state.songs`. This is O(1) but so what?
     /// - Parameter song: The song.
-    private func markDownloaded(song: SubsonicSong) {
+    private func markDownloaded(song: SubsonicSong) async {
         if let index = state.songs.firstIndex(where: { $0.id == song.id }) {
             if !state.songs[index].downloaded { // do not present unnecessarily
                 state.songs[index].downloaded = true
+                await presenter?.present(state)
             }
         }
     }
@@ -244,8 +220,10 @@ final class PlaylistProcessor: Processor {
         }
         if playerCurrentSongIdPipeline == nil {
             playerCurrentSongIdPipeline = services.player.currentSongIdPublisher.removeDuplicates().sink { [weak self] songId in
-                self?.state.currentSongId = songId
+                guard let self else { return }
+                state.currentSongId = songId
                 Task {
+                    await presenter?.present(state)
                     if let songId {
                         try? await services.requestMaker.scrobble(songId: songId)
                     }

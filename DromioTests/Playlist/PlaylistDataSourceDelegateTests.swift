@@ -40,7 +40,7 @@ struct PlaylistDataSourceDelegateTests {
             duration: nil,
             contributors: nil
         )]
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
@@ -67,7 +67,7 @@ struct PlaylistDataSourceDelegateTests {
             contributors: nil
         )]
         state.animate = animate
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
         #expect(snapshot.itemIdentifiers.count == 1)
@@ -92,7 +92,7 @@ struct PlaylistDataSourceDelegateTests {
         )]
         state.animate = animate
         state.updateTableView = false
-        subject.present(state)
+        await subject.present(state)
         try? await Task.sleep(for: .seconds(0.3))
         let snapshot = subject.datasource.snapshot()
         #expect(snapshot.itemIdentifiers.count == 0)
@@ -116,7 +116,7 @@ struct PlaylistDataSourceDelegateTests {
             contributors: nil
         )]
         state.animate = animate
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
@@ -161,7 +161,7 @@ struct PlaylistDataSourceDelegateTests {
         )]
         state.currentSongId = "10"
         state.animate = animate
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
@@ -203,7 +203,7 @@ struct PlaylistDataSourceDelegateTests {
             downloaded: true
         )]
         state.animate = animate
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
@@ -247,7 +247,7 @@ struct PlaylistDataSourceDelegateTests {
         makeWindow(view: tableView)
         var state = PlaylistState()
         state.songs = [song]
-        subject.present(state)
+        await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         subject.tableView(tableView, didSelectRowAt: IndexPath(row: 0, section: 0))
         await #while(processor.thingsReceived.isEmpty)

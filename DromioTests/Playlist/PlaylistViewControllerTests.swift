@@ -127,14 +127,14 @@ struct PlaylistViewControllerTests {
                 contributors: nil
             )]
         )
-        subject.present(state)
+        await subject.present(state)
         await #while(mockDataSourceDelegate.methodsCalled.last != "present(_:)")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }
 
     @Test("present: if the table view has a selection, does _not_ present to the data source, but stores instead")
-    func presentWithSelection() {
+    func presentWithSelection() async {
         subject.tableView.selectRow(at: .init(row: 0, section: 0), animated: false, scrollPosition: .none)
         let state = PlaylistState(
             songs: [.init(
@@ -151,7 +151,7 @@ struct PlaylistViewControllerTests {
                 contributors: nil
             )]
         )
-        subject.present(state)
+        await subject.present(state)
         #expect(mockDataSourceDelegate.state == nil)
         #expect(subject.postponedState == state)
     }
@@ -163,10 +163,10 @@ struct PlaylistViewControllerTests {
         let button = try #require(subject.tableView.tableHeaderView?.subviews(ofType: UIButton.self).first)
         #expect(button.configuration?.image == UIImage(systemName: "rectangle"))
         var state = PlaylistState(jukeboxMode: true, songs: [])
-        subject.present(state)
+        await subject.present(state)
         #expect(button.configuration?.image == UIImage(systemName: "checkmark.rectangle"))
         state = PlaylistState(jukeboxMode: false, songs: [])
-        subject.present(state)
+        await subject.present(state)
         #expect(button.configuration?.image == UIImage(systemName: "rectangle"))
     }
 
@@ -174,10 +174,10 @@ struct PlaylistViewControllerTests {
     func presentEditButton() async throws {
         let editButton = try #require(subject.navigationItem.leftBarButtonItem)
         var state = PlaylistState(editMode: true)
-        subject.present(state)
+        await subject.present(state)
         #expect(editButton.image == UIImage(systemName: "checkmark"))
         state.editMode = false
-        subject.present(state)
+        await subject.present(state)
         #expect(editButton.image == UIImage(systemName: "scissors"))
     }
 
@@ -187,19 +187,19 @@ struct PlaylistViewControllerTests {
         var state = PlaylistState()
         state.jukeboxMode = false
         state.currentSongId = nil
-        subject.present(state)
+        await subject.present(state)
         #expect(!items[1].isEnabled)
         state.jukeboxMode = true
         state.currentSongId = nil
-        subject.present(state)
+        await subject.present(state)
         #expect(!items[1].isEnabled)
         state.jukeboxMode = false
         state.currentSongId = "1"
-        subject.present(state)
+        await subject.present(state)
         #expect(items[1].isEnabled)
         state.jukeboxMode = true
         state.currentSongId = "1"
-        subject.present(state)
+        await subject.present(state)
         #expect(!items[1].isEnabled)
     }
 
@@ -208,10 +208,10 @@ struct PlaylistViewControllerTests {
         let items = try #require(subject.navigationItem.rightBarButtonItems)
         var state = PlaylistState()
         state.offlineMode = false
-        subject.present(state)
+        await subject.present(state)
         #expect(items[0].isEnabled)
         state.offlineMode = true
-        subject.present(state)
+        await subject.present(state)
         #expect(!items[0].isEnabled)
     }
 
@@ -220,20 +220,20 @@ struct PlaylistViewControllerTests {
         let button = subject.jukeboxButton
         var state = PlaylistState()
         state.offlineMode = false
-        subject.present(state)
+        await subject.present(state)
         #expect(button.isEnabled)
         state.offlineMode = true
-        subject.present(state)
+        await subject.present(state)
         #expect(!button.isEnabled)
     }
 
     @Test("present: edit mode sets subject edit mode")
-    func presentEditMode() {
+    func presentEditMode() async {
         var state = PlaylistState(editMode: true)
-        subject.present(state)
+        await subject.present(state)
         #expect(subject.isEditing)
         state.editMode = false
-        subject.present(state)
+        await subject.present(state)
         #expect(!subject.isEditing)
     }
 

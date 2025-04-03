@@ -1,7 +1,7 @@
 import UIKit
 
 /// View controller that displays a list of all songs in an album.
-final class PlaylistViewController: UITableViewController, ReceiverPresenter {
+final class PlaylistViewController: UITableViewController, AsyncReceiverPresenter {
     /// Data source and delegate object, created in `init`.
     var dataSourceDelegate: (any DataSourceDelegate<PlaylistAction, PlaylistState, PlaylistEffect>)?
 
@@ -84,7 +84,7 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         }
     }
 
-    func present(_ state: PlaylistState) {
+    func present(_ state: PlaylistState) async {
         jukeboxButton.configuration?.image = if state.jukeboxMode {
             UIImage(systemName: "checkmark.rectangle")
         } else {
@@ -114,9 +114,7 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
             }
         }
         if tableView.indexPathForSelectedRow == nil {
-            Task {
-                await dataSourceDelegate?.present(state)
-            }
+            await dataSourceDelegate?.present(state)
         } else { // if there is currently a selection, postpone presentation until there isn't
             self.postponedState = state
         }
@@ -127,10 +125,8 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         case .deselectAll:
             tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
             if let state = postponedState {
-                Task {
-                    await dataSourceDelegate?.present(state)
-                    postponedState = nil
-                }
+                await dataSourceDelegate?.present(state)
+                postponedState = nil
             }
         case .playerState(let playerState):
             if let playPauseButton = navigationItem.rightBarButtonItems?[1] {

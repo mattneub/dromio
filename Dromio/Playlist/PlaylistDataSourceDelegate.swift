@@ -39,16 +39,14 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         }
     }
 
-    func present(_ state: PlaylistState) {
+    func present(_ state: PlaylistState) async {
         data = state.songs
         currentSongId = state.currentSongId
         if state.updateTableView {
-            Task {
-                if state.animate {
-                    await animateUpdateTableView()
-                } else {
-                    await updateTableView()
-                }
+            if state.animate {
+                await animateUpdateTableView()
+            } else {
+                await updateTableView()
             }
         }
     }

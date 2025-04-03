@@ -7,7 +7,7 @@ final class MockRootCoordinator: RootCoordinatorType {
     var albumProcessor: (any AsyncProcessor<AlbumAction, AlbumState, AlbumEffect>)?
     var albumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)?
     var artistsProcessor: (any AsyncProcessor<ArtistsAction, ArtistsState, ArtistsEffect>)?
-    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)?
+    var playlistProcessor: (any AsyncProcessor<PlaylistAction, PlaylistState, PlaylistEffect>)?
     var artistAlbumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)?
     var pingProcessor: (any AsyncProcessor<PingAction, PingState, Void>)?
     var rootViewController: UIViewController?
