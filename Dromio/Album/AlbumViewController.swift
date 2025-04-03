@@ -85,7 +85,7 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
             tableView.selectRow(at: nil, animated: false, scrollPosition: .none)
         case .scrollToZero:
             if tableView.window != nil {
-                if !tableView.visibleCells.isEmpty {
+                if !tableView.visibleCells.isEmpty && tableView.numberOfSections > 0 && tableView.numberOfRows(inSection: 0) > 0 {
                     tableView.scrollToRow(at: .init(row: 0, section: 0), at: .top, animated: false)
                 }
             }

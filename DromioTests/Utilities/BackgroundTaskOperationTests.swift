@@ -4,10 +4,10 @@ import UIKit
 
 @MainActor
 struct BackgroundTaskOperationTests {
-    let application = MockApplication()
 
     @Test("start: calls application begin background task, calls whatToDo, calls application end background task")
     func start() async throws {
+        let application = MockApplication()
         try await confirmation(expectedCount: 1) { confirmed in
             let subject = BackgroundTaskOperation(whatToDo: { confirmed() }, cleanup: { throw TestError.codeShouldNotRun }, application: application)
             try await subject.start()
@@ -20,6 +20,7 @@ struct BackgroundTaskOperationTests {
 
     @Test("start: with timeout calls application begin background task, calls cleanup, calls application end background task")
     func startWithTimeout() async throws {
+        let application = MockApplication()
         application.timeout = true
         try await confirmation(expectedCount: 2) { confirmed in
             let subject = BackgroundTaskOperation(whatToDo: { confirmed() }, cleanup: { confirmed() }, application: application)
@@ -31,9 +32,10 @@ struct BackgroundTaskOperationTests {
         #expect(application.identifierToReturn == application.identifierAtEnd)
     }
 
-    // TODO: This test flickers and I don't know why
+    // TODO: Keep an eye on this test, it has flickered and I don't know why
     @Test("start: if `whatToDo` throws, calls cleanup")
     func startWithThrow() async throws {
+        let application = MockApplication()
         application.timeout = true
         try? await confirmation(expectedCount: 1) { confirmed in
             let subject = BackgroundTaskOperation(whatToDo: { throw TestError.codeShouldNotRun }, cleanup: { confirmed() }, application: application)

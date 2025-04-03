@@ -80,7 +80,21 @@ struct AlbumViewControllerTests {
         tableView.scrollToRow(at: .init(row: 100, section: 0), at: .bottom, animated: false)
         // that was prep, this is the test
         await subject.receive(.scrollToZero)
+        #expect(tableView.methodsCalled.last == "scrollToRow(at:at:animated:)")
         #expect(tableView.contentOffset.y == -20)
+    }
+
+    @Test("receive scrollToZero: does nothing if there are no cells")
+    func scrollToZeroNoCells() async {
+        // in order to test this we practically have to build that actual app!
+        subject.tableView = tableView // who knew you could do that?
+        subject.dataSourceDelegate = AlbumDataSourceDelegate(tableView: tableView)
+        let songs = [SubsonicSong]()
+        makeWindow(viewController: subject)
+        await subject.present(.init(songs: songs))
+        // that was prep, this is the test
+        await subject.receive(.scrollToZero)
+        #expect(!tableView.methodsCalled.contains("scrollToRow(at:at:animated:)"))
     }
 
     @Test("receive setUpSearcher: calls searcher setUpSearcher")
