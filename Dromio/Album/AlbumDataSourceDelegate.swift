@@ -2,7 +2,7 @@ import UIKit
 
 /// Class that functions as data source and delegate for AlbumViewController table view.
 @MainActor
-final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDelegate {
+final class AlbumDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITableViewDelegate {
 
     /// Processor to whom we can send action messages.
     weak var processor: (any Receiver<AlbumAction>)?
@@ -23,11 +23,13 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
         tableView.delegate = self
     }
 
-    func present(_ state: AlbumState) {
+    func present(_ state: AlbumState) async {
         totalCount = state.songs.count
-        Task {
-            await updateTableView(state)
+        hideCells = state.animateSpinner
+        if let title = state.albumTitle {
+            self.albumTitle = title
         }
+        await updateTableView(data: state.songs)
     }
 
     // MARK: - Table view contents
@@ -35,7 +37,12 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
     /// Data to be displayed by the table view.
     var data = [SubsonicSong]()
 
-    let albumTitleDummy = "albumTitleDummy"
+    /// A copy of the data that we can restore after a search.
+    var originalData = [SubsonicSong]()
+
+    var albumTitle = "albumTitleDummy"
+
+    var hideCells = false
 
     var totalCount: Int = 0
 
@@ -54,7 +61,7 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
             return cellProvider(tableView, indexPath, identifier)
         }
         var snapshot = NSDiffableDataSourceSnapshot<String, String>()
-        snapshot.appendSections([albumTitleDummy])
+        snapshot.appendSections([albumTitle])
         snapshot.appendItems([])
         datasource.apply(snapshot, animatingDifferences: false)
         return datasource
@@ -70,17 +77,22 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
         cell.contentConfiguration = AlbumCellContentConfiguration(song: song, totalCount: totalCount)
         cell.configureBackground()
+        cell.isHidden = hideCells
         return cell
     }
 
     /// Method called by `present` to bring the table into line with the data.
-    func updateTableView(_ state: AlbumState) async {
-        self.data = state.songs
+    func updateTableView(data: [SubsonicSong]) async {
+        self.data = data
         var snapshot = datasource.snapshot()
         snapshot.deleteAllItems() // despite the name, this deletes the section too
-        snapshot.appendSections([state.albumTitle ?? albumTitleDummy])
-        snapshot.appendItems(state.songs.map { $0.id })
-        await datasource.apply(snapshot, animatingDifferences: false)
+        snapshot.appendSections([albumTitle])
+        snapshot.appendItems(data.map { $0.id })
+        await datasource.applySnapshotUsingReloadData(snapshot)
+        if self.tableView?.window != nil {
+            self.tableView?.beginUpdates()
+            self.tableView?.endUpdates()
+        }
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -103,7 +115,7 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
             return nil // shouldn't happen
         }
         let albumTitle = datasource.snapshot().sectionIdentifiers[0]
-        guard albumTitle != albumTitleDummy else {
+        guard albumTitle != "albumTitleDummy" else {
             return nil // shouldn't happen
         }
         let headerView = UITableViewHeaderFooterView()
@@ -114,4 +126,30 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegate, UITableViewDe
         headerView.contentConfiguration = configuration
         return headerView
     }
+
+    // MARK: Searching
+
+    // Quite tricky, because we get calls to this method not just when the user types in the
+    // search bar but also when the user _taps_ in the search bar and when the user or the app
+    // cancels searching.
+    func updateSearchResults(for searchController: UISearchController) {
+        if let update = searchController.searchBar.text, !update.isEmpty {
+            let filteredData = originalData.filter {
+                $0.title.range(of: update, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+            }
+            data = filteredData
+        } else {
+            if !originalData.isEmpty {
+                data = originalData
+            }
+        }
+        Task {
+            await updateTableView(data: data)
+        }
+    }
+
+    func willPresentSearchController(_ searchController: UISearchController) {
+        originalData = data
+    }
+
 }

@@ -7,9 +7,11 @@ import WaitWhile
 struct AlbumsDataSourceDelegateTests {
     var subject: AlbumsDataSourceDelegate!
     let tableView = MockTableView()
+    let processor = MockProcessor<AlbumsAction, AlbumsState, AlbumsEffect>()
 
-    init() async {
+    init() {
         subject = .init(tableView: tableView)
+        subject.processor = processor
     }
 
     @Test("initializer: creates and sets the data source, sets the delegate")
@@ -198,6 +200,19 @@ struct AlbumsDataSourceDelegateTests {
         await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
+    }
+
+    @Test("didSelect: sends showAlbum to processor")
+    func didSelect() async {
+        let album = SubsonicAlbum(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)
+        makeWindow(view: tableView)
+        var state = AlbumsState()
+        state.albums = [album]
+        await subject.present(state)
+        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
+        subject.tableView(tableView, didSelectRowAt: IndexPath(row: 0, section: 0))
+        await #while(processor.thingsReceived.isEmpty)
+        #expect(processor.thingsReceived.contains(.showAlbum(albumId: "1")))
     }
 
     @Test("updateSearchResults: if there is search bar text, filters data on it, updates datasource")

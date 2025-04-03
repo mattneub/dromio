@@ -76,7 +76,7 @@ struct AlbumsProcessorTests {
         #expect(presenter.statesPresented == [])
     }
 
-    @Test("receive initialData: if listType is .albumsForArtist and source .artists, sends getAlbumsFor with id to request maker, sets state, sends effects")
+    @Test("receive initialData: if listType is .albumsForArtist and source .artists, sends getAlbumsFor with id to request maker, sets state")
     func receiveInitialDataForArtist() async {
         subject.state.listType = .albumsForArtist(id: "1", source: .artists)
         requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
@@ -87,10 +87,10 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented?.listType == .albumsForArtist(id: "1", source: .artists))
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
+        #expect(presenter.thingsReceived.isEmpty) // not searchable
     }
 
-    @Test("receive initialData: if listType is .albumsForArtist and source .composers, sends getSongsBySearch with name to request maker, sets state, sends effects")
+    @Test("receive initialData: if listType is .albumsForArtist and source .composers, sends getSongsBySearch with name to request maker, sets state")
     func receiveInitialDataForComposer() async {
         subject.state.listType = .albumsForArtist(id: "1", source: .composers(name: "Me"))
         requestMaker.songList = [.init(
@@ -114,7 +114,7 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented?.listType == .albumsForArtist(id: "1", source: .composers(name: "Me")))
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
+        #expect(presenter.thingsReceived.isEmpty) // not searchable
     }
 
     @Test("receive initialData:, listType .albumsForArtist for source .composers, red/green testing the filter")

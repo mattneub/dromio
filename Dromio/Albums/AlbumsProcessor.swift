@@ -63,8 +63,7 @@ final class AlbumsProcessor: AsyncProcessor {
                         let songs = try await services.requestMaker.getSongsBySearch(query: name)
                         state.albums = albumsForComposer(songs: songs, id: id)
                     }
-                    await presenter?.receive(.setUpSearcher)
-                    await presenter?.receive(.scrollToZero)
+                    await presenter?.present(state)
                     try? await unlessTesting {
                         try? await Task.sleep(for: .seconds(0.2))
                     }

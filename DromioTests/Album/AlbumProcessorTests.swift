@@ -5,7 +5,7 @@ import WaitWhile
 @MainActor
 struct AlbumProcessorTests {
     let subject = AlbumProcessor()
-    let presenter = MockReceiverPresenter<AlbumEffect, AlbumState>()
+    let presenter = MockAsyncReceiverPresenter<AlbumEffect, AlbumState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
     let haptic = MockHaptic()
@@ -19,13 +19,17 @@ struct AlbumProcessorTests {
         services.currentPlaylist = playlist
     }
 
-    @Test("mutating the state presents the state")
-    func state() {
-        subject.state.albumId = "1"
-        #expect(presenter.statePresented?.albumId == "1")
+    @Test("receive initialData: turns on initialdata, starts by presenting spinner animation")
+    func receiveAInitialDataStart() async {
+        subject.state.hasInitialData = false
+        subject.state.animateSpinner = false
+        #expect(presenter.statePresented == nil)
+        await subject.receive(.initialData)
+        #expect(subject.state.hasInitialData == true)
+        #expect(presenter.statesPresented.first?.animateSpinner == true)
     }
 
-    @Test("receive initialData: sends `getSongsFor` to request maker, sets state `songs`")
+    @Test("receive initialData: sends `getSongsFor` to request maker, sets state songs, turns off spinner, sends effects")
     func receiveInitialData() async {
         requestMaker.songList = [.init(
             id: "1",
@@ -59,6 +63,31 @@ struct AlbumProcessorTests {
                 contributors: nil
             )]
         )
+        #expect(presenter.statePresented?.animateSpinner == false)
+        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
+    }
+
+    @Test("receive initialData: does nothing state hasInitialData")
+    func receiveInitialDataHasInitialData() async {
+        subject.state.hasInitialData = true
+        requestMaker.songList = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        subject.state.albumId = "2"
+        await subject.receive(.initialData)
+        #expect(requestMaker.methodsCalled.isEmpty)
+        #expect(presenter.statePresented == nil)
+        #expect(presenter.thingsReceived.isEmpty)
     }
 
     @Test("receive tapped: appends to current playlist, calls haptic success, sends animatePlaylist and deselectAll effect")

@@ -7,7 +7,7 @@ protocol RootCoordinatorType: AnyObject {
 
     var pingProcessor: (any Processor<PingAction, PingState, Void>)? { get }
     var albumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
-    var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)? { get }
+    var albumProcessor: (any AsyncProcessor<AlbumAction, AlbumState, AlbumEffect>)? { get }
     var artistsProcessor: (any AsyncProcessor<ArtistsAction, ArtistsState, ArtistsEffect>)? { get }
     var artistAlbumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)? { get }
@@ -67,7 +67,7 @@ final class RootCoordinator: RootCoordinatorType {
 
     var pingProcessor: (any Processor<PingAction, PingState, Void>)?
     var albumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)?
-    var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)?
+    var albumProcessor: (any AsyncProcessor<AlbumAction, AlbumState, AlbumEffect>)?
     var artistsProcessor: (any AsyncProcessor<ArtistsAction, ArtistsState, ArtistsEffect>)?
     // The albums module can appear in two places simultaneously, so we need a place to root
     // a second instance of the albums processor.
