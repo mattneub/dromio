@@ -5,7 +5,7 @@ import WaitWhile
 @MainActor
 struct ServerProcessorTests {
     let subject = ServerProcessor()
-    let presenter = MockReceiverPresenter<Void, ServerState>()
+    let presenter = MockAsyncReceiverPresenter<Void, ServerState>()
     let urlMaker = MockURLMaker()
     let persistence = MockPersistence()
     let coordinator = MockRootCoordinator()
@@ -17,16 +17,6 @@ struct ServerProcessorTests {
         services.urlMaker = urlMaker
         services.persistence = persistence
         subject.delegate = delegate
-    }
-
-    @Test("mutating state presents, but if `noPresentation` flag, does not present and resets the flag")
-    func mutatingState() {
-        subject.state.host = "host"
-        #expect(presenter.statePresented?.host == "host")
-        subject.noPresentation = true
-        subject.state.host = ""
-        #expect(presenter.statePresented?.host == "host")
-        #expect(presenter.statesPresented.count == 1)
     }
 
     @Test("receive schemeChanged: sets the state scheme without presenting")

@@ -1,6 +1,6 @@
 import UIKit
 
-final class ServerViewController: UIViewController, ReceiverPresenter {
+final class ServerViewController: UIViewController, AsyncReceiverPresenter {
 
     weak var processor: (any Receiver<ServerAction>)?
 
@@ -18,7 +18,7 @@ final class ServerViewController: UIViewController, ReceiverPresenter {
     }
 
     /// We don't actually need to be presented with any state.
-    func present(_ state: ServerState) {}
+    func present(_ state: ServerState) async {}
 
     /// Action of all the text fields.
     @IBAction func textFieldChanged (_ sender: UITextField) {

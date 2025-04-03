@@ -2,30 +2,18 @@ import Foundation
 
 /// Processor containing the logic for the server view controller.
 @MainActor
-final class ServerProcessor: Processor {
+final class ServerProcessor: AsyncProcessor {
     weak var coordinator: (any RootCoordinatorType)?
 
-    weak var presenter: (any ReceiverPresenter<Void, ServerState>)?
+    weak var presenter: (any AsyncReceiverPresenter<Void, ServerState>)?
 
     weak var delegate: (any ServerDelegate)?
 
-    /// Sometimes we want to maintain state without presenting, so this temporary toggle lets us
-    /// mutate the state without presenting.
-    var noPresentation = false
-    var state = ServerState() {
-        didSet {
-            if noPresentation {
-                noPresentation = false
-            } else {
-                presenter?.present(state)
-            }
-        }
-    }
+    var state = ServerState()
 
     func receive(_ action: ServerAction) async {
         switch action {
         case .schemeChanged(let scheme):
-            noPresentation = true
             state.scheme = scheme
         case .textFieldChanged(let field, let text):
             let fieldPath: WritableKeyPath<ServerState, String> = switch field {
@@ -34,7 +22,6 @@ final class ServerProcessor: Processor {
             case .port: \.port
             case .username: \.username
             }
-            noPresentation = true
             state[keyPath: fieldPath] = text
         case .done:
             do {

@@ -31,6 +31,7 @@ struct BackgroundTaskOperationTests {
         #expect(application.identifierToReturn == application.identifierAtEnd)
     }
 
+    // TODO: This test flickers and I don't know why
     @Test("start: if `whatToDo` throws, calls cleanup")
     func startWithThrow() async throws {
         application.timeout = true

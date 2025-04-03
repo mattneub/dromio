@@ -11,7 +11,7 @@ protocol RootCoordinatorType: AnyObject {
     var artistsProcessor: (any AsyncProcessor<ArtistsAction, ArtistsState, ArtistsEffect>)? { get }
     var artistAlbumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)? { get }
-    var serverProcessor: (any Processor<ServerAction, ServerState, Void>)? { get }
+    var serverProcessor: (any AsyncProcessor<ServerAction, ServerState, Void>)? { get }
 
     // The root coordinator also needs a reference to the true root view controller.
 
@@ -73,7 +73,7 @@ final class RootCoordinator: RootCoordinatorType {
     // a second instance of the albums processor.
     var artistAlbumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)?
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)?
-    var serverProcessor: (any Processor<ServerAction, ServerState, Void>)?
+    var serverProcessor: (any AsyncProcessor<ServerAction, ServerState, Void>)?
 
     weak var rootViewController: UIViewController?
 

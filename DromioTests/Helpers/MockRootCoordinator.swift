@@ -3,7 +3,7 @@ import UIKit
 
 @MainActor
 final class MockRootCoordinator: RootCoordinatorType {
-    var serverProcessor: (any Processor<ServerAction, ServerState, Void>)?
+    var serverProcessor: (any AsyncProcessor<ServerAction, ServerState, Void>)?
     var albumProcessor: (any AsyncProcessor<AlbumAction, AlbumState, AlbumEffect>)?
     var albumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)?
     var artistsProcessor: (any AsyncProcessor<ArtistsAction, ArtistsState, ArtistsEffect>)?
