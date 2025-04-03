@@ -1,9 +1,9 @@
 import UIKit
 
 /// View controller for when we ping the server.
-class PingViewController: UIViewController, ReceiverPresenter {
+class PingViewController: UIViewController, AsyncReceiverPresenter {
     /// A reference to the PingProcessor, set by the coordinator on creation.
-    weak var processor: (any Processor<PingAction, PingState, Void>)?
+    weak var processor: (any AsyncProcessor<PingAction, PingState, Void>)?
 
     /// Label shown as we are trying to ping and after we know the result.
     @IBOutlet var pingingLabel: UILabel!
@@ -40,7 +40,7 @@ class PingViewController: UIViewController, ReceiverPresenter {
         }
     }
 
-    func present(_ state: PingState) {
+    func present(_ state: PingState) async {
         pingingLabel.isHidden = true
         successLabel.isHidden = true
         failureLabel.isHidden = true

@@ -6,7 +6,7 @@ import WaitWhile
 @MainActor
 struct PingViewControllerTests {
     let subject = PingViewController(nibName: "Ping", bundle: nil)
-    let processor = MockProcessor<PingAction, PingState, Void>()
+    let processor = MockAsyncProcessor<PingAction, PingState, Void>()
 
     init() {
         subject.processor = processor
@@ -35,10 +35,10 @@ struct PingViewControllerTests {
     }
 
     @Test("present: sets the labels and buttons as expected")
-    func present() {
+    func present() async {
         subject.loadViewIfNeeded()
 
-        subject.present(.init(status: .empty))
+        await subject.present(.init(status: .empty))
         #expect(subject.pingingLabel.isHidden)
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
@@ -47,7 +47,7 @@ struct PingViewControllerTests {
         #expect(subject.deleteServerButton.isHidden)
         #expect(subject.offlineModeButton.isHidden)
 
-        subject.present(.init(status: .unknown))
+        await subject.present(.init(status: .unknown))
         #expect(!subject.pingingLabel.isHidden)
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
@@ -56,7 +56,7 @@ struct PingViewControllerTests {
         #expect(subject.deleteServerButton.isHidden)
         #expect(subject.offlineModeButton.isHidden)
 
-        subject.present(.init(status: .success))
+        await subject.present(.init(status: .success))
         #expect(!subject.pingingLabel.isHidden)
         #expect(!subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
@@ -65,7 +65,7 @@ struct PingViewControllerTests {
         #expect(subject.deleteServerButton.isHidden)
         #expect(subject.offlineModeButton.isHidden)
 
-        subject.present(.init(status: .failure(message: "oops")))
+        await subject.present(.init(status: .failure(message: "oops")))
         #expect(!subject.pingingLabel.isHidden)
         #expect(subject.successLabel.isHidden)
         #expect(!subject.failureLabel.isHidden)
@@ -75,7 +75,7 @@ struct PingViewControllerTests {
         #expect(!subject.deleteServerButton.isHidden)
         #expect(!subject.offlineModeButton.isHidden)
 
-        subject.present(.init(status: .choices))
+        await subject.present(.init(status: .choices))
         #expect(subject.pingingLabel.isHidden)
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)

@@ -6,7 +6,7 @@ import WaitWhile
 @MainActor
 struct PingProcessorTests {
     let subject = PingProcessor()
-    let presenter = MockReceiverPresenter<Void, PingState>()
+    let presenter = MockAsyncReceiverPresenter<Void, PingState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
     let urlMaker = MockURLMaker()
@@ -29,17 +29,10 @@ struct PingProcessorTests {
         requestMaker.user = .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: true)
     }
 
-    @Test("changing the state presents the state")
-    func changeState() {
-        #expect(presenter.statePresented == nil)
-        subject.state.status = .success
-        #expect(presenter.statePresented?.status == .success)
-    }
-
     @Test("receive choices: sets the status to choices, clears the player")
     func receiveChoices() async {
         await subject.receive(.choices)
-        #expect(subject.state.status == .choices)
+        #expect(presenter.statePresented?.status == .choices)
         #expect(player.methodsCalled == ["clear()"])
     }
 

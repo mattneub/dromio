@@ -5,7 +5,7 @@ import UIKit
 protocol RootCoordinatorType: AnyObject {
     // Processors are rooted here. They are all expressed as protocols, for testability.
 
-    var pingProcessor: (any Processor<PingAction, PingState, Void>)? { get }
+    var pingProcessor: (any AsyncProcessor<PingAction, PingState, Void>)? { get }
     var albumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
     var albumProcessor: (any AsyncProcessor<AlbumAction, AlbumState, AlbumEffect>)? { get }
     var artistsProcessor: (any AsyncProcessor<ArtistsAction, ArtistsState, ArtistsEffect>)? { get }
@@ -65,7 +65,7 @@ protocol RootCoordinatorType: AnyObject {
 @MainActor
 final class RootCoordinator: RootCoordinatorType {
 
-    var pingProcessor: (any Processor<PingAction, PingState, Void>)?
+    var pingProcessor: (any AsyncProcessor<PingAction, PingState, Void>)?
     var albumsProcessor: (any AsyncProcessor<AlbumsAction, AlbumsState, AlbumsEffect>)?
     var albumProcessor: (any AsyncProcessor<AlbumAction, AlbumState, AlbumEffect>)?
     var artistsProcessor: (any AsyncProcessor<ArtistsAction, ArtistsState, ArtistsEffect>)?

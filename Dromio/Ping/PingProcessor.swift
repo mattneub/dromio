@@ -3,24 +3,21 @@ import Foundation
 /// Processor containing logic for the Ping view controller.
 ///
 @MainActor
-final class PingProcessor: Processor {
+final class PingProcessor: AsyncProcessor {
     /// A reference to the root coordinator, set by the coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
 
     /// A reference to our presenter (the Ping view controller), set by the coordinator on creation.
-    weak var presenter: (any ReceiverPresenter<Void, PingState>)?
+    weak var presenter: (any AsyncReceiverPresenter<Void, PingState>)?
 
-    /// The state. Mutating the state causes the presenter to present the state.
-    var state = PingState() {
-        didSet {
-            presenter?.present(state)
-        }
-    }
+    /// The state.
+    var state = PingState()
 
     func receive(_ action: PingAction) async {
         switch action {
         case .choices:
             state.status = .choices
+            await presenter?.present(state)
             services.player.clear()
         case .deleteServer:
             await deleteServer()
@@ -38,6 +35,7 @@ final class PingProcessor: Processor {
     func ping() async {
         do {
             state.status = .empty
+            await presenter?.present(state)
             await Task.yield()
             if services.urlMaker.currentServerInfo == nil {
                 guard let server = try services.persistence.loadServers().first else {
@@ -47,6 +45,7 @@ final class PingProcessor: Processor {
                 services.urlMaker.currentServerInfo = server
             }
             state.status = .unknown
+            await presenter?.present(state)
             await Task.yield()
             try await services.requestMaker.ping()
             try? await unlessTesting {
@@ -58,6 +57,7 @@ final class PingProcessor: Processor {
             }
             userHasJukeboxRole = user.jukeboxRole
             state.status = .success
+            await presenter?.present(state)
             await Task.yield()
             try? await unlessTesting {
                 try? await Task.sleep(for: .seconds(0.6))
@@ -65,8 +65,10 @@ final class PingProcessor: Processor {
             coordinator?.showAlbums()
         } catch NetworkerError.message(let message) {
             state.status = .failure(message: message)
+            await presenter?.present(state)
         } catch {
             state.status = .failure(message: error.localizedDescription)
+            await presenter?.present(state)
         }
     }
 

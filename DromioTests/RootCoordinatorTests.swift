@@ -49,7 +49,7 @@ struct RootCoordinatorTests {
     func dismissToPing() async {
         // fake minimal initial interface
         let subject = RootCoordinator()
-        let pingProcessor = MockProcessor<PingAction, PingState, Void>()
+        let pingProcessor = MockAsyncProcessor<PingAction, PingState, Void>()
         subject.pingProcessor = pingProcessor
         let rootViewController = UIViewController()
         makeWindow(viewController: rootViewController)
@@ -274,7 +274,7 @@ struct RootCoordinatorTests {
     func showAlert() async throws {
         // fake minimal initial interface
         let subject = RootCoordinator()
-        let pingProcessor = MockProcessor<PingAction, PingState, Void>()
+        let pingProcessor = MockAsyncProcessor<PingAction, PingState, Void>()
         subject.pingProcessor = pingProcessor
         let rootViewController = UIViewController()
         makeWindow(viewController: rootViewController)
@@ -294,7 +294,7 @@ struct RootCoordinatorTests {
     func showActionSheet() async throws {
         // fake minimal initial interface
         let subject = RootCoordinator()
-        let pingProcessor = MockProcessor<PingAction, PingState, Void>()
+        let pingProcessor = MockAsyncProcessor<PingAction, PingState, Void>()
         subject.pingProcessor = pingProcessor
         let rootViewController = UIViewController()
         makeWindow(viewController: rootViewController)
