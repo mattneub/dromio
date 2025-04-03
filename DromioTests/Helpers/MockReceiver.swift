@@ -14,7 +14,7 @@ final class MockReceiverPresenter<T, U>: UIViewController, ReceiverPresenter {
     var statesPresented = [U]()
     var thingsReceived: [T] = []
 
-    func present(_ state: U) {
+    func present(_ state: U) async {
         statePresented = state
         statesPresented.append(state)
     }
@@ -28,31 +28,6 @@ final class MockProcessor<T, U, V>: Processor {
     var thingsReceived: [T] = []
 
     var presenter: (any ReceiverPresenter<V, U>)?
-
-    func receive(_ thingReceived: T) async {
-        thingsReceived.append(thingReceived)
-    }
-}
-
-final class MockAsyncReceiverPresenter<T, U>: UIViewController, AsyncReceiverPresenter {
-    var statePresented: U?
-    var statesPresented = [U]()
-    var thingsReceived: [T] = []
-
-    func present(_ state: U) async {
-        statePresented = state
-        statesPresented.append(state)
-    }
-
-    func receive(_ thingReceived: T) async {
-        thingsReceived.append(thingReceived)
-    }
-}
-
-final class MockAsyncProcessor<T, U, V>: AsyncProcessor {
-    var thingsReceived: [T] = []
-
-    var presenter: (any AsyncReceiverPresenter<V, U>)?
 
     func receive(_ thingReceived: T) async {
         thingsReceived.append(thingReceived)

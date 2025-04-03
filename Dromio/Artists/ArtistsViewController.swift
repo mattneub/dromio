@@ -1,7 +1,7 @@
 import UIKit
 
 /// View controller that displays a list of all artists.
-final class ArtistsViewController: UITableViewController, AsyncReceiverPresenter {
+final class ArtistsViewController: UITableViewController, ReceiverPresenter {
     /// Data source and delegate object, created in `init`.
     var dataSourceDelegate: (any DataSourceDelegateSearcher<ArtistsAction, ArtistsState, Void>)?
 

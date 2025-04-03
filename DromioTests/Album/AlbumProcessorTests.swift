@@ -5,7 +5,7 @@ import WaitWhile
 @MainActor
 struct AlbumProcessorTests {
     let subject = AlbumProcessor()
-    let presenter = MockAsyncReceiverPresenter<AlbumEffect, AlbumState>()
+    let presenter = MockReceiverPresenter<AlbumEffect, AlbumState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
     let haptic = MockHaptic()

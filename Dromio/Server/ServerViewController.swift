@@ -1,6 +1,6 @@
 import UIKit
 
-final class ServerViewController: UIViewController, AsyncReceiverPresenter {
+final class ServerViewController: UIViewController, ReceiverPresenter {
 
     weak var processor: (any Receiver<ServerAction>)?
 

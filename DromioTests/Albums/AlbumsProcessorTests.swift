@@ -4,7 +4,7 @@ import Testing
 @MainActor
 struct AlbumsProcessorTests {
     let subject = AlbumsProcessor()
-    let presenter = MockAsyncReceiverPresenter<AlbumsEffect, AlbumsState>()
+    let presenter = MockReceiverPresenter<AlbumsEffect, AlbumsState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
 

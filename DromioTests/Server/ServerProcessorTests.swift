@@ -5,7 +5,7 @@ import WaitWhile
 @MainActor
 struct ServerProcessorTests {
     let subject = ServerProcessor()
-    let presenter = MockAsyncReceiverPresenter<Void, ServerState>()
+    let presenter = MockReceiverPresenter<Void, ServerState>()
     let urlMaker = MockURLMaker()
     let persistence = MockPersistence()
     let coordinator = MockRootCoordinator()

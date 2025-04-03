@@ -6,7 +6,7 @@ import Foundation
 @MainActor
 struct PlaylistProcessorTests {
     let subject = PlaylistProcessor()
-    let presenter = MockAsyncReceiverPresenter<PlaylistEffect, PlaylistState>()
+    let presenter = MockReceiverPresenter<PlaylistEffect, PlaylistState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
     let haptic = MockHaptic()

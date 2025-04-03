@@ -2,12 +2,12 @@ import Foundation
 
 /// Processor containing logic for the ArtistsViewController.
 @MainActor
-final class ArtistsProcessor: AsyncProcessor {
+final class ArtistsProcessor: Processor {
     /// Reference to the coordinator, set by coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
 
     /// Reference to the view controller, set by coordinator on creation.
-    weak var presenter: (any AsyncReceiverPresenter<ArtistsEffect, ArtistsState>)?
+    weak var presenter: (any ReceiverPresenter<ArtistsEffect, ArtistsState>)?
 
     /// State to be presented to the presenter.
     var state: ArtistsState = ArtistsState()

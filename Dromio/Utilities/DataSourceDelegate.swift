@@ -4,7 +4,7 @@ import UIKit
 /// How the actual type does this is an internal implementation detail; the only absolute
 /// requirement is that the initializer must set the table view's `dataSource` and `delegate`.
 ///
-@MainActor protocol DataSourceDelegate<ProcessorAction, State, Received>: NSObjectProtocol, AsyncReceiverPresenter {
+@MainActor protocol DataSourceDelegate<ProcessorAction, State, Received>: NSObjectProtocol, ReceiverPresenter {
     associatedtype ProcessorAction
 
     /// Processor to whom to send any action messages.

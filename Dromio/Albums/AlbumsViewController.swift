@@ -1,7 +1,7 @@
 import UIKit
 
 /// View controller that displays a list of all albums.
-final class AlbumsViewController: UITableViewController, AsyncReceiverPresenter {
+final class AlbumsViewController: UITableViewController, ReceiverPresenter {
     /// Data source and delegate object, created in `init`.
     var dataSourceDelegate: (any DataSourceDelegateSearcher<AlbumsAction, AlbumsState, Void>)?
 

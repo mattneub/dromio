@@ -2,12 +2,12 @@ import Foundation
 
 /// Processor containing logic for the AlbumsViewController.
 @MainActor
-final class AlbumsProcessor: AsyncProcessor {
+final class AlbumsProcessor: Processor {
     /// Reference to the coordinator, set by coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
 
     /// Reference to the view controller, set by coordinator on creation.
-    weak var presenter: (any AsyncReceiverPresenter<AlbumsEffect, AlbumsState>)?
+    weak var presenter: (any ReceiverPresenter<AlbumsEffect, AlbumsState>)?
 
     /// State to be presented to the presenter.
     var state: AlbumsState = AlbumsState()

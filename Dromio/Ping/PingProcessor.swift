@@ -3,12 +3,12 @@ import Foundation
 /// Processor containing logic for the Ping view controller.
 ///
 @MainActor
-final class PingProcessor: AsyncProcessor {
+final class PingProcessor: Processor {
     /// A reference to the root coordinator, set by the coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
 
     /// A reference to our presenter (the Ping view controller), set by the coordinator on creation.
-    weak var presenter: (any AsyncReceiverPresenter<Void, PingState>)?
+    weak var presenter: (any ReceiverPresenter<Void, PingState>)?
 
     /// The state.
     var state = PingState()

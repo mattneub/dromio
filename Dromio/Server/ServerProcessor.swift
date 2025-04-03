@@ -2,10 +2,10 @@ import Foundation
 
 /// Processor containing the logic for the server view controller.
 @MainActor
-final class ServerProcessor: AsyncProcessor {
+final class ServerProcessor: Processor {
     weak var coordinator: (any RootCoordinatorType)?
 
-    weak var presenter: (any AsyncReceiverPresenter<Void, ServerState>)?
+    weak var presenter: (any ReceiverPresenter<Void, ServerState>)?
 
     weak var delegate: (any ServerDelegate)?
 
