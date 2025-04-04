@@ -35,9 +35,9 @@ No information is fetched from the server unless you ask for it by navigating to
 
 Titles and artists can be lengthy, especially for Classical music. Unlike many Subsonic clients, Dromio _does not truncate this information._ Dromio provides a _full_ display of the information that it fetches — album title and artist; track title, artist, composer, year, and duration:
 
-![Simulator Screenshot - iPhone SE (3rd generation) - 2025-04-04 at 07 55 17](https://github.com/user-attachments/assets/4219a88a-1fe8-4b4d-a697-a23995a657a2)
+![Simulator Screenshot - iPhone SE (3rd generation) - 2025-04-04 at 07 55 17](https://github.com/user-attachments/assets/b8d4c1d1-75c8-4525-8674-14acc759b526)
 
-![Simulator Screenshot - iPhone SE (3rd generation) - 2025-04-04 at 07 55 37](https://github.com/user-attachments/assets/f670afcd-ec88-4d2c-bebb-7e080fba7d3e)
+![Simulator Screenshot - iPhone SE (3rd generation) - 2025-04-04 at 07 55 37](https://github.com/user-attachments/assets/fbceae18-fff2-481d-a9c9-62a14dbc7311)
 
 ### How to Use
 
@@ -65,7 +65,7 @@ On the Queue screen, tap a track to begin listening to the Queue, starting with 
 
 In this screenshot, the first track has been tapped; it is playing and has finished downloading. The second track has also been downloaded. The third track is in the middle of downloading. The fourth track is not yet downloaded.
 
-![Simulator Screenshot - iPhone SE (3rd generation) - 2025-04-04 at 07 57 32](https://github.com/user-attachments/assets/1dcd1c26-bae9-47ce-966a-b4ffb1958f74)
+![Simulator Screenshot - iPhone SE (3rd generation) - 2025-04-04 at 07 57 32](https://github.com/user-attachments/assets/5b2d75ff-c584-4222-83af-e7788d3c321f)
 
 Apart from the “playpause” button, Dromio has no “player” interface. If you want “player” interface, use the iPhone’s built-in Now Playing Info center (in, for example, the Control Center).
 
