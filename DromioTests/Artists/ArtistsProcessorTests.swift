@@ -13,6 +13,8 @@ struct ArtistsProcessorTests {
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
         caches.allArtists = nil
+        caches.artistsWhoAreArtists = nil
+        caches.artistsWhoAreComposers = nil
     }
 
     @Test("receive albums: sends dismissArtists to coordinator")
@@ -60,6 +62,17 @@ struct ArtistsProcessorTests {
         #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
     }
 
+    @Test("receive allArtists: but if filtered list is already cached, uses that instead")
+    func receiveAllArtistsCachedFiltered() async {
+        caches.artistsWhoAreArtists = [
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
+        ]
+        caches.allArtists = []
+        requestMaker.artistList = []
+        await subject.receive(.allArtists)
+        #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
+    }
+
     @Test("receive composers: sends `getArtists` to request maker, filters, sets state, turns off spinner, sends effects")
     func receiveComposers() async {
         requestMaker.artistList = [
@@ -91,6 +104,17 @@ struct ArtistsProcessorTests {
         #expect(presenter.statePresented?.artists == [
             .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
         ])
+    }
+
+    @Test("receive composers: but if filtered list is already cached, uses that instead")
+    func receiveComposersCachedFiltered() async {
+        caches.artistsWhoAreComposers = [
+            .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
+        ]
+        caches.allArtists = []
+        requestMaker.artistList = []
+        await subject.receive(.composers)
+        #expect(presenter.statePresented?.artists == [.init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil)])
     }
 
     @Test("receiver server: tell coordinator to dismissToPing")

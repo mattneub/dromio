@@ -23,10 +23,12 @@ final class ArtistsProcessor: Processor {
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.4))
                 }
-                let artists = try await caches.fetch(\.allArtists) {
-                    try await services.requestMaker.getArtistsBySearch()
+                let artistsWhoAreArtists = try await caches.fetch(\.artistsWhoAreArtists) {
+                    let artists = try await caches.fetch(\.allArtists) {
+                        try await services.requestMaker.getArtistsBySearch()
+                    }
+                    return artists.filter { ($0.roles ?? []).contains("artist") }
                 }
-                let artistsWhoAreArtists = artists.filter { ($0.roles ?? []).contains("artist") }
                 state.listType = .allArtists
                 state.artists = artistsWhoAreArtists
                 await presenter?.present(state)
@@ -49,10 +51,12 @@ final class ArtistsProcessor: Processor {
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.4))
                 }
-                let artists = try await caches.fetch(\.allArtists) {
-                    try await services.requestMaker.getArtistsBySearch()
+                let artistsWhoAreComposers = try await caches.fetch(\.artistsWhoAreComposers) {
+                    let artists = try await caches.fetch(\.allArtists) {
+                        try await services.requestMaker.getArtistsBySearch()
+                    }
+                    return artists.filter { ($0.roles ?? []).contains("composer") }
                 }
-                let artistsWhoAreComposers = artists.filter { ($0.roles ?? []).contains("composer") }
                 state.listType = .composers
                 state.artists = artistsWhoAreComposers
                 await presenter?.present(state)

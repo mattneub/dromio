@@ -20,7 +20,7 @@
             <subviews>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="1000" verticalHuggingPriority="1000" horizontalCompressionResistancePriority="1000" verticalCompressionResistancePriority="1000" text="Label" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YW7-7k-Jv6">
                     <rect key="frame" x="16" y="10" width="321" height="113"/>
-                    <fontDescription key="fontDescription" name="Verdana-Bold" family="Verdana" pointSize="17"/>
+                    <fontDescription key="fontDescription" name="Verdana-Bold" family="Verdana" pointSize="16"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
                     <lineBreakStrategy key="lineBreakStrategy"/>
