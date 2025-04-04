@@ -46,6 +46,7 @@ struct PlaylistProcessorTests {
         #expect(haptic.methodsCalled == ["impact()"])
         #expect(playlist.methodsCalled == ["clear()"])
         #expect(player.methodsCalled == ["clear()"])
+        #expect(networker.methodsCalled == ["clear()"])
         await #expect(download.methodsCalled == ["clear()"])
         #expect(presenter.statePresented?.songs == [])
         await #while(coordinator.methodsCalled.isEmpty)
@@ -93,6 +94,7 @@ struct PlaylistProcessorTests {
         )]
         await subject.receive(.delete(1))
         #expect(player.methodsCalled.last == "clear()")
+        #expect(networker.methodsCalled == ["clear()"])
         #expect(await download.methodsCalled.last == "delete(song:)")
         #expect(await download.song?.id == "2")
         #expect(playlist.methodsCalled.last == "delete(song:)")
@@ -181,6 +183,7 @@ struct PlaylistProcessorTests {
         await subject.receive(.delete(2))
         #expect(presenter.statePresented == nil)
         #expect(player.methodsCalled.isEmpty)
+        #expect(networker.methodsCalled.isEmpty)
         #expect(playlist.methodsCalled.isEmpty)
     }
 
@@ -399,6 +402,8 @@ struct PlaylistProcessorTests {
     @Test("receive editButton: clears player, toggle state editMode; if turned editMode off, presents twice")
     func editButton() async throws {
         await subject.receive(.editButton)
+        #expect(player.methodsCalled == ["clear()"])
+        #expect(networker.methodsCalled == ["clear()"])
         #expect(presenter.statePresented?.editMode == true)
         #expect(presenter.statesPresented.count == 1)
         #expect(presenter.statesPresented[0].updateTableView == false)
@@ -732,7 +737,7 @@ struct PlaylistProcessorTests {
         #expect(player.methodsCalled == ["playPause()"])
     }
 
-    @Test("receive tapped: calls haptic, sends .deselectAll", .mockBackgroundTask)
+    @Test("receive tapped: calls haptic, clears player and networker, sends .deselectAll", .mockBackgroundTask)
     func receiveTapped() async {
         let song = SubsonicSong(
             id: "1",
@@ -765,6 +770,8 @@ struct PlaylistProcessorTests {
         #expect(haptic.methodsCalled == ["success()"])
         await #while(presenter.thingsReceived.isEmpty)
         #expect(presenter.thingsReceived[0] == .deselectAll)
+        #expect(player.methodsCalled.first == "clear()")
+        #expect(networker.methodsCalled.first == "clear()")
     }
 
     @Test("receive tapped: calls stream, play, download for the first; download, playNext for the rest; marks songs downloaded", .mockBackgroundTask)
@@ -812,7 +819,7 @@ struct PlaylistProcessorTests {
         await subject.receive(.tapped(song))
         #expect(requestMaker.methodsCalled == ["stream(songId:)"])
         await #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
-        #expect(player.methodsCalled == ["play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
+        #expect(player.methodsCalled == ["clear()", "play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
         #expect(player.urls.map { $0.scheme } == ["http", "file", "file"])
         #expect(presenter.statePresented?.songs.filter { $0.downloaded == true }.count == 3)
         #expect(try operatedOnBackgroundTask() == 3)
@@ -864,7 +871,7 @@ struct PlaylistProcessorTests {
         await subject.receive(.tapped(song))
         #expect(requestMaker.methodsCalled.isEmpty)
         await #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
-        #expect(player.methodsCalled == ["play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
+        #expect(player.methodsCalled == ["clear()", "play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
         #expect(player.urls.map { $0.scheme } == ["file", "file", "file"])
         #expect(presenter.statePresented?.songs.filter { $0.downloaded == true }.count == 3)
         #expect(try operatedOnBackgroundTask() == 3)
@@ -968,6 +975,7 @@ struct PlaylistProcessorTests {
         #expect(requestMaker.methodsCalled.isEmpty)
         await #expect(download.methodsCalled.isEmpty)
         #expect(player.methodsCalled.isEmpty)
+        #expect(networker.methodsCalled.isEmpty)
         let mockBackgroundTaskOperationMaker = try #require(services.backgroundTaskOperationMaker as? MockBackgroundTaskOperationMaker)
         #expect(mockBackgroundTaskOperationMaker.mockBackgroundTaskOperation == nil)
     }

@@ -9,10 +9,11 @@ enum NetworkerError: Error, Equatable {
 
 /// Protocol defining the public face of our Networker.
 @MainActor protocol NetworkerType: Sendable {
+    func clear() async
     func performRequest(url: URL) async throws -> Data
     func performDownloadRequest(url: URL) async throws -> URL
     func progress(id: String, fraction: Double?)
-    var progress: PassthroughSubject<(id: String, fraction: Double?), Never> { get }
+    var progress: CurrentValueSubject<(id: String, fraction: Double?), Never> { get }
 }
 
 /// Class embodying all _actual_ networking activity vis-a-vis the Navidrome server. In general,
@@ -24,7 +25,7 @@ final class Networker: NetworkerType {
     let session: URLSession
 
     /// Publisher of progress in our download task when calling `performDownloadRequest`.
-    var progress = PassthroughSubject<(id: String, fraction: Double?), Never>()
+    var progress = CurrentValueSubject<(id: String, fraction: Double?), Never>((id: "-1", fraction: nil))
 
     /// Initializer.
     /// - Parameter session: Optional session, to be used by tests. The app itself should supply nothing
@@ -37,6 +38,16 @@ final class Networker: NetworkerType {
             config.timeoutIntervalForRequest = 10
             let session = URLSession(configuration: config)
             self.session = session
+        }
+    }
+
+    /// Stop whatever you're doing and clear the progress subject.
+    func clear() async {
+        for task in await session.allTasks {
+            task.cancel()
+        }
+        if let fraction = progress.value.fraction, fraction < 1 {
+            progress.send((id: progress.value.id, fraction: 0))
         }
     }
 
@@ -66,9 +77,7 @@ final class Networker: NetworkerType {
             return (url, response)
         } cleanup: { [weak self] in
             guard let self else { return }
-            for task in await session.allTasks {
-                task.cancel()
-            }
+            await clear()
         }
         let (url, response) = try await operation.start()
         try validate(response: response)

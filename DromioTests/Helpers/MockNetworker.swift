@@ -4,7 +4,7 @@ import Combine
 
 final class MockNetworker: NetworkerType {
 
-    var progress = PassthroughSubject<(id: String, fraction: Double?), Never>()
+    var progress = CurrentValueSubject<(id: String, fraction: Double?), Never>((id: "-1", fraction: nil))
 
     var dataToReturn = [Data()]
     var errorToThrow: (any Error)?
@@ -13,6 +13,10 @@ final class MockNetworker: NetworkerType {
     var urlToReturn = URL(string: "http://example.com")!
     var id: String?
     var fraction: Double?
+
+    func clear() async {
+        methodsCalled.append(#function)
+    }
 
     func performRequest(url: URL) async throws -> Data {
         self.url = url

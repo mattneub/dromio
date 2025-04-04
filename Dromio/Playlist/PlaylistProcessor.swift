@@ -32,6 +32,7 @@ final class PlaylistProcessor: Processor {
                 services.currentPlaylist.clear()
                 services.player.clear()
                 await services.download.clear()
+                await services.networker.clear()
                 state.songs = services.currentPlaylist.list
                 await presenter?.present(state)
                 try? await unlessTesting {
@@ -43,6 +44,7 @@ final class PlaylistProcessor: Processor {
             guard row < state.songs.count else { return }
             let song = state.songs[row]
             services.player.clear()
+            await services.networker.clear()
             do {
                 try await services.download.delete(song: song)
                 services.currentPlaylist.delete(song: song)
@@ -59,6 +61,7 @@ final class PlaylistProcessor: Processor {
             } catch {}
         case .editButton:
             services.player.clear()
+            await services.networker.clear()
             state.updateTableView = false
             state.editMode.toggle()
             await presenter?.present(state)
@@ -72,9 +75,9 @@ final class PlaylistProcessor: Processor {
             }
         case .initialData:
             try? await configureSongs()
+            services.currentPlaylist.setList(state.songs) // they must always be in sync, and we may have just filtered the list
             await presenter?.present(state)
             setUpPipelines()
-            services.currentPlaylist.setList(state.songs) // they must always be in sync, and we may have just filtered the list
         case .jukeboxButton:
             services.haptic.impact()
             state.jukeboxMode.toggle()
@@ -96,13 +99,13 @@ final class PlaylistProcessor: Processor {
             guard sequence.count > 0 else {
                 return
             }
+            services.player.clear()
+            await services.networker.clear()
             services.haptic.success()
-            Task { // don't let this delay also delay the start of playing
-                try? await unlessTesting {
-                    try? await Task.sleep(for: .seconds(0.3))
-                }
-                await presenter?.receive(.deselectAll)
+            try? await unlessTesting {
+                try? await Task.sleep(for: .seconds(0.3))
             }
+            await presenter?.receive(.deselectAll)
             if state.jukeboxMode {
                 try? await playOnJukebox(sequence: sequence)
             } else {

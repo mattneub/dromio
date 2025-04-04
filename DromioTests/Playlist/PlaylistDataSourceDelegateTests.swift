@@ -8,10 +8,12 @@ struct PlaylistDataSourceDelegateTests {
     var subject: PlaylistDataSourceDelegate!
     let tableView = UITableView()
     let processor = MockProcessor<PlaylistAction, PlaylistState, PlaylistEffect>()
+    let player = MockPlayer()
 
     init() {
         subject = .init(tableView: tableView)
         subject.processor = processor
+        services.player = player
     }
 
     @Test("initializer: creates and sets the data source, sets the delegate")
@@ -279,5 +281,24 @@ struct PlaylistDataSourceDelegateTests {
         subject.datasource.tableView(tableView, moveRowAt: .init(row: 1, section: 0), to: .init(row: 2, section: 0))
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.last == .move(from: 1, to: 2))
+    }
+
+    @Test("canEdit: returns false iff player is playing")
+    func canEdit() {
+        do {
+            player.playerStatePublisher.value = .empty
+            let result = subject.datasource.tableView(tableView, canEditRowAt: .init(row: 0, section: 0))
+            #expect(result == true)
+        }
+        do {
+            player.playerStatePublisher.value = .paused
+            let result = subject.datasource.tableView(tableView, canEditRowAt: .init(row: 0, section: 0))
+            #expect(result == true)
+        }
+        do {
+            player.playerStatePublisher.value = .playing
+            let result = subject.datasource.tableView(tableView, canEditRowAt: .init(row: 0, section: 0))
+            #expect(result == false)
+        }
     }
 }

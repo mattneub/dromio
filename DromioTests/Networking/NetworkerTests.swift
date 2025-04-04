@@ -14,6 +14,23 @@ struct NetworkerTests {
         return URLSession(configuration: configuration)
     }()
 
+    @Test("clear: resets the fraction of the progress publisher if it is less than 1")
+    func clear() async {
+        do {
+            subject.progress(id: "-1", fraction: 1)
+            await subject.clear()
+            #expect(subject.progress.value.fraction == 1)
+            #expect(subject.progress.value.id == "-1")
+        }
+        do {
+            subject.progress(id: "-1", fraction: 0.9)
+            await subject.clear()
+            #expect(subject.progress.value.fraction == 0)
+            #expect(subject.progress.value.id == "-1")
+        }
+    }
+    // TODO: Mock the entire session and its tasks so we can prove that `clear` cancels the tasks?
+
     @Test("performRequest: throws if response is not HTTPURLResponse")
     func performRequestWrongResponseType() async throws {
         MockURLProtocol.requestHandler = { request in
