@@ -12,9 +12,7 @@ struct ArtistsProcessorTests {
         subject.presenter = presenter
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
-        caches.allArtists = nil
-        caches.artistsWhoAreArtists = nil
-        caches.artistsWhoAreComposers = nil
+        caches.clear()
     }
 
     @Test("receive albums: sends dismissArtists to coordinator")

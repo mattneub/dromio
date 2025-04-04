@@ -1,8 +1,21 @@
 import Foundation
 
+@MainActor
+protocol CachesType {
+    var albumsList: [SubsonicAlbum]? { get set }
+    var allArtists: [SubsonicArtist]? { get set }
+    var artistsWhoAreArtists: [SubsonicArtist]? { get set }
+    var artistsWhoAreComposers: [SubsonicArtist]? { get set }
+    func fetch<T: Sendable>(
+        _ key: ReferenceWritableKeyPath<Caches, Optional<T>>,
+        using: () async throws -> T
+    ) async throws -> T
+    func clear()
+}
+
 /// Class that memoizes our biggest and most commonly used server fetch results.
 @MainActor
-final class Caches {
+final class Caches: CachesType {
     /// For the result of `getAlbumList`
     var albumsList: [SubsonicAlbum]?
 
@@ -34,5 +47,12 @@ final class Caches {
             self[keyPath: key] = result
             return result
         }
+    }
+
+    func clear() {
+        albumsList = nil
+        allArtists = nil
+        artistsWhoAreArtists = nil
+        artistsWhoAreComposers = nil
     }
 }

@@ -1,6 +1,6 @@
 This is **Dromio**, a new dedicated Navidrome client for iPhone. It does not support any other type of Subsonic server — it is Navidrome-only.
 
-Dromio is very small and simple (it occupies just 2MB of your iPhone’s storage), and takes a minimalist attitude towards letting you select and play your music, supplying very few screens. It is oriented particularly towards Classical music buffs, fully displaying long track titles and artist information, and supporting tagging for Composer and Year.
+Dromio is very small and simple, typically occupying just 2MB of your iPhone’s storage. It adopts a minimalist attitude, supplying very few screens: its goal is to help you survey, select, and play your music — and that’s all. It is oriented particularly towards Classical music buffs, fully displaying long track titles and artist information, and supporting tagging for Composer and Year.
 
 **Requirements:** Dromio requires iOS 18 and a Navidrome server running  the “BFR” (0.55.0) or later. You will need to have `Subsonic.ArtistParticipations` set to `true` in your configuration; otherwise, Dromio’s artist and composer support will not work.
 
@@ -8,25 +8,32 @@ Dromio was inspired by the Navidrome “BFR”. I started writing it when the �
 
 ### A Minimalist Navidrome Client
 
-Dromio takes a minimalist attitude:
+Dromio takes a minimalist attitude, with no waste of your time, your space, or your attention:
 
-- There is no “database” stored on disk. Dromio works by talking to the Navidrome server, not by making a database and consulting the database. Navidrome _is_ the database. You never need to “update” Dromio’s copy of the database; it doesn’t have any database.
-- The vast majority of OpenSubsonic endpoints are unsupported.
-- There is no admin (e.g. creation of users), because you can do that with Navidrome’s web interface.
+- There is no account administration (e.g. creation of users), because you can do that with Navidrome’s web interface.
 - There is no creation and storage of named playlists.
-- “Foo-foo” features like favorites, play counts, genres and so forth are unsupported. 
+- Secondary features like favorites, play counts, genres and so forth are unsupported. 
 - No artwork is fetched or displayed.
 
-Dromio fetches and displays only the following information, and only when you ask for that information:
+Most important, there is no “database” stored on disk. Dromio works by talking to the Navidrome server, not by creating a database and consulting that database. Navidrome _is_ the database. You never need to “update” Dromio’s copy of the database; there is no such copy.
+
+Unlike some Subsonic clients, Dromio lets you store credentials for multiple accounts on multiple servers. There is no difficulty or delay switching servers, because no song information has been stored.
+
+Dromio displays the following information:
 
 * Albums and their songs.
 * Random albums and their songs.
 * Artists and their albums (and those albums’ songs).
 * Composers and their albums (and those albums’ songs).
+* The current queue (songs to be played, or currently playing).
+
+No information is fetched from the server unless you ask for it by navigating to that screen.
+
+Albums, artists, and composers are alphabetized and searchable. Album songs are searchable.
 
 ### Full Display
 
-Some screenshots will illustrate Dromio’s full display of the information that it does fetch — album title and artist; track title, artist, composer, year, and duration:
+Titles and artists can be lengthy, especially for Classical music. Unlike many Subsonic clients, Dromio does not truncate this information. Dromio provides a _full_ display of the information that it fetches — album title and artist; track title, artist, composer, year, and duration:
 
 ![IMG_1947](https://github.com/user-attachments/assets/5e6d48ad-7e57-4803-b385-8777e88aa649)
 

@@ -12,7 +12,7 @@ struct AlbumsProcessorTests {
         subject.presenter = presenter
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
-        caches.albumsList = nil
+        caches.clear()
     }
 
     @Test("receive allAlbums: starts by presenting spinner animation")

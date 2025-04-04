@@ -17,4 +17,18 @@ import Testing
         }
         #expect(result2 == result)
     }
+
+    @Test("clear: clears the caches")
+    func cachesClear() {
+        let subject = Caches()
+        subject.albumsList = [.init(id: "1", name: "Name", artist: nil, songCount: 0, song: nil)]
+        subject.allArtists = [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: nil, sortName: nil)]
+        subject.artistsWhoAreArtists = [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: nil, sortName: nil)]
+        subject.artistsWhoAreComposers = [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: nil, sortName: nil)]
+        subject.clear()
+        #expect(subject.albumsList == nil)
+        #expect(subject.allArtists == nil)
+        #expect(subject.artistsWhoAreArtists == nil)
+        #expect(subject.artistsWhoAreComposers == nil)
+    }
 }
