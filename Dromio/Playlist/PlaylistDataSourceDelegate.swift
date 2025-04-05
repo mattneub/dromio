@@ -125,7 +125,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         snapshot.appendSections(["Dummy"])
         snapshot.appendItems(data.map {$0.id})
         // an `id` _was_ change, otherwise we wouldn't be here; animate that change
-        datasource.defaultRowAnimation = .right
+        datasource.defaultRowAnimation = .fade
         await datasource.apply(snapshot, animatingDifferences: unlessTesting(true))
     }
 
@@ -146,12 +146,9 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: nil) { [weak self] action, view, completion in
-            completion(true)
             Task {
-                try? await unlessTesting {
-                    try? await Task.sleep(for: .seconds(0.3))
-                }
                 await self?.processor?.receive(.delete(indexPath.row))
+                completion(true)
             }
         }
         deleteAction.image = UIImage(systemName: "trash")

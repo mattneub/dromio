@@ -271,9 +271,9 @@ struct PlaylistDataSourceDelegateTests {
             UIView(),
             { ok in resultOK = ok}
         )
-        #expect(resultOK == true)
         await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.last == .delete(1))
+        #expect(resultOK == true)
     }
 
     @Test("moveRow: tells the processor to move row with the specified rows")
