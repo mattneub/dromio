@@ -12,7 +12,7 @@ struct PlaylistProcessorTests {
     let haptic = MockHaptic()
     let playlist = MockPlaylist()
     let player = MockPlayer()
-    let download = MockDownload()
+    let download = MockDownload(fileManager: MockFileManager())
     let networker = MockNetworker()
 
     init() {

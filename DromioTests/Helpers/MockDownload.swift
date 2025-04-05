@@ -2,11 +2,12 @@
 import Foundation
 
 actor MockDownload: DownloadType {
-
     var urlToReturn: URL = URL(string: "file://temp/stuff")!
     var song: SubsonicSong?
     var methodsCalled = [String]()
     nonisolated(unsafe) var bools: [String: Bool] = [:]
+
+    init(fileManager: any FileManagerType) {}
 
     func download(song: SubsonicSong) async throws -> URL {
         methodsCalled.append(#function)

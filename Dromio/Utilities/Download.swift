@@ -5,8 +5,25 @@ enum DownloadError: Error {
     case ranOutOfTime
 }
 
+/// Protocol that wraps the File Manager, for testing purposes.
+protocol FileManagerType: Sendable {
+    func moveItem(
+        at srcURL: URL,
+        to dstURL: URL
+    ) throws
+    func removeItem(at URL: URL) throws
+    func contentsOfDirectory(
+        at url: URL,
+        includingPropertiesForKeys keys: [URLResourceKey]?,
+        options mask: FileManager.DirectoryEnumerationOptions
+    ) throws -> [URL]
+}
+
+extension FileManager: FileManagerType, @retroactive @unchecked Sendable {}
+
 /// Public face of our Download type.
 protocol DownloadType: Actor {
+    init(fileManager: FileManagerType)
     func download(song: SubsonicSong) async throws -> URL
     func clear()
     func delete(song: SubsonicSong) throws
@@ -19,6 +36,12 @@ protocol DownloadType: Actor {
 /// stuff going on on the main actor.
 ///
 actor Download: DownloadType {
+    var fileManager: FileManagerType
+
+    @MainActor
+    init(fileManager: FileManagerType) {
+        self.fileManager = fileManager
+    }
     /// The directory where downloads are stored.
     func downloadsDirectory() -> URL { .cachesDirectory }
 
@@ -43,7 +66,6 @@ actor Download: DownloadType {
         url.deleteLastPathComponent()
         url.appendPathComponent(filename)
         // move it into the downloads directory and return new URL
-        let fileManager = FileManager.default
         let newURL = downloadsDirectory().appending(path: filename, directoryHint: .notDirectory)
         if let _ = try? fileManager.moveItem(at: url, to: newURL) {
             return newURL
@@ -70,7 +92,6 @@ actor Download: DownloadType {
     /// - Parameter song: The song.
     func delete(song: SubsonicSong) throws {
         guard let url = try downloadedURL(for: song) else { return }
-        let fileManager = FileManager.default
         try fileManager.removeItem(at: url)
     }
 
@@ -83,10 +104,10 @@ actor Download: DownloadType {
     /// Clear the contents of the given directory.
     /// - Parameter directory: The directory.
     private func clear(directory: URL) {
-        let fileManager = FileManager.default
         let contents: [URL] = (try? fileManager.contentsOfDirectory(
             at: directory,
-            includingPropertiesForKeys: []
+            includingPropertiesForKeys: nil,
+            options: []
         )) ?? []
         for url in contents {
             try? fileManager.removeItem(at: url)
@@ -100,10 +121,10 @@ actor Download: DownloadType {
     ///
     func downloadedURL(for song: SubsonicSong) throws -> URL? {
         let filename = try filename(for: song)
-        let fileManager = FileManager.default
         let contents: [URL] = (try? fileManager.contentsOfDirectory(
             at: downloadsDirectory(),
-            includingPropertiesForKeys: []
+            includingPropertiesForKeys: nil,
+            options: []
         )) ?? []
         for url in contents {
             if url.lastPathComponent == filename {

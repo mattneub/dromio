@@ -9,7 +9,7 @@ struct Services {
     var audioSession: AudioSessionType = AVAudioSession.sharedInstance()
     var backgroundTaskOperationMaker: BackgroundTaskOperationMakerType = BackgroundTaskOperationMaker()
     var currentPlaylist: PlaylistType = Playlist()
-    var download: DownloadType = Download()
+    var download: DownloadType = Download(fileManager: FileManager.default)
     var haptic: HapticType = Haptic()
     var networker: NetworkerType = Networker()
     var nowPlayingInfo: NowPlayingInfoType = NowPlayingInfo()
