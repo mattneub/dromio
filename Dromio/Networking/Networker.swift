@@ -7,6 +7,34 @@ enum NetworkerError: Error, Equatable {
     case message(String)
 }
 
+/// Protocol wrapping URLSession so we can mock it.
+@MainActor
+protocol URLSessionType: Sendable {
+    func allTasks() async -> [URLSessionTaskType]
+
+    func data(
+        for request: URLRequest,
+        delegate: (any URLSessionTaskDelegate)?
+    ) async throws -> (Data, URLResponse)
+
+    func download(
+        for request: URLRequest,
+        delegate: (any URLSessionTaskDelegate)?
+    ) async throws -> (URL, URLResponse)
+}
+
+extension URLSession: URLSessionType {
+    func allTasks() async -> [URLSessionTaskType] { await allTasks }
+}
+
+/// Protocol wrapping URLSessionTask so we can mock it.
+@MainActor
+protocol URLSessionTaskType {
+    func cancel()
+}
+
+extension URLSessionTask: URLSessionTaskType {}
+
 /// Protocol defining the public face of our Networker.
 @MainActor protocol NetworkerType: Sendable {
     func clear() async
@@ -22,7 +50,7 @@ enum NetworkerError: Error, Equatable {
 @MainActor
 final class Networker: NetworkerType {
     /// The URLSession set by `init`.
-    let session: URLSession
+    let session: any URLSessionType
 
     /// Publisher of progress in our download task when calling `performDownloadRequest`.
     var progress = CurrentValueSubject<(id: String, fraction: Double?), Never>((id: "-1", fraction: nil))
@@ -30,7 +58,7 @@ final class Networker: NetworkerType {
     /// Initializer.
     /// - Parameter session: Optional session, to be used by tests. The app itself should supply nothing
     ///   here, so the Networker instance configures the session itself.
-    init(session: URLSession? = nil) {
+    init(session: (any URLSessionType)? = nil) {
         if let session {
             self.session = session
         } else {
@@ -43,7 +71,7 @@ final class Networker: NetworkerType {
 
     /// Stop whatever you're doing and clear the progress subject.
     func clear() async {
-        for task in await session.allTasks {
+        for task in await session.allTasks() {
             task.cancel()
         }
         if let fraction = progress.value.fraction, fraction < 1 {
@@ -56,7 +84,7 @@ final class Networker: NetworkerType {
     /// - Returns: The data returned from the server; throws if the status code is not 200.
     func performRequest(url: URL) async throws -> Data {
         let request = URLRequest(url: url)
-        let (data, response) = try await session.data(for: request)
+        let (data, response) = try await session.data(for: request, delegate: nil)
         try validate(response: response)
         return data
     }

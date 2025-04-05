@@ -23,7 +23,7 @@ final class MockPlaylist: PlaylistType {
         self.list = songs
     }
 
-    func delete(song: Dromio.SubsonicSong) {
+    func delete(song: SubsonicSong) {
         methodsCalled.append(#function)
         self.song = song
     }

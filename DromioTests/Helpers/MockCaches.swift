@@ -2,13 +2,13 @@
 
 @MainActor
 final class MockCaches: CachesType {
-    var albumsList: [Dromio.SubsonicAlbum]?
-    var allArtists: [Dromio.SubsonicArtist]?
-    var artistsWhoAreArtists: [Dromio.SubsonicArtist]?
-    var artistsWhoAreComposers: [Dromio.SubsonicArtist]?
+    var albumsList: [SubsonicAlbum]?
+    var allArtists: [SubsonicArtist]?
+    var artistsWhoAreArtists: [SubsonicArtist]?
+    var artistsWhoAreComposers: [SubsonicArtist]?
     var methodsCalled = [String]()
 
-    func fetch<T>(_ key: ReferenceWritableKeyPath<Dromio.Caches, Optional<T>>, using: () async throws -> T) async throws -> T where T : Sendable {
+    func fetch<T>(_ key: ReferenceWritableKeyPath<Caches, Optional<T>>, using: () async throws -> T) async throws -> T where T : Sendable {
         fatalError("unsupported")
     }
 

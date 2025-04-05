@@ -14,7 +14,7 @@ actor MockDownload: DownloadType {
         return urlToReturn
     }
 
-    func delete(song: Dromio.SubsonicSong) throws {
+    func delete(song: SubsonicSong) throws {
         methodsCalled.append(#function)
         self.song = song
     }

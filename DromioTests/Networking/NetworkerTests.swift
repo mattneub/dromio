@@ -29,7 +29,17 @@ struct NetworkerTests {
             #expect(subject.progress.value.id == "-1")
         }
     }
-    // TODO: Mock the entire session and its tasks so we can prove that `clear` cancels the tasks?
+
+    @Test("clear: cancels session tasks")
+    func clearCancelsTasks() async throws {
+        let mockSession = MockURLSession()
+        let subject = Networker(session: mockSession)
+        mockSession.tasks = [MockURLSessionTask(), MockURLSessionTask()]
+        await subject.clear()
+        for task in mockSession.tasks {
+            #expect(task.methodsCalled == ["cancel()"])
+        }
+    }
 
     @Test("performRequest: throws if response is not HTTPURLResponse")
     func performRequestWrongResponseType() async throws {
