@@ -1,7 +1,6 @@
 import Foundation
 
-/// Inner response for the `ping` request. Contains enough info to tell whether you're talking
-/// correctly to the server.
+/// Inner response for the `ping` request.
 struct PingResponse: InnerResponse {
     let status: String
     let version: String

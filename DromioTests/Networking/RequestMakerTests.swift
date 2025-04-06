@@ -458,7 +458,7 @@ struct RequestMakerTests {
     @Test("getArtistsBySearch: calls url maker with action search3 and additional, calls networker, calls validator, returns list")
     func getArtistsBySearch() async throws {
         let payload = SubsonicResponse(
-            subsonicResponse: SearchResult3Response(
+            subsonicResponse: Search3Response(
                 status: "ok",
                 version: "1",
                 type: "navidrome",
@@ -490,7 +490,7 @@ struct RequestMakerTests {
     @Test("getArtistsBySearch: paginates with chunk 500")
     func getArtistsBySearchPaginate() async throws {
         let payload1 = SubsonicResponse(
-            subsonicResponse: SearchResult3Response(
+            subsonicResponse: Search3Response(
                 status: "ok",
                 version: "1",
                 type: "navidrome",
@@ -502,7 +502,7 @@ struct RequestMakerTests {
             )
         )
         let payload2 = SubsonicResponse(
-            subsonicResponse: SearchResult3Response(
+            subsonicResponse: Search3Response(
                 status: "ok",
                 version: "1",
                 type: "navidrome",
@@ -551,7 +551,7 @@ struct RequestMakerTests {
     @Test("getArtistsBySearch: rethrows validator error")
     func getArtistsBySearchValidatorThrow() async throws {
         let payload = SubsonicResponse(
-            subsonicResponse: SearchResult3Response(
+            subsonicResponse: Search3Response(
                 status: "ok",
                 version: "1",
                 type: "navidrome",
@@ -573,7 +573,7 @@ struct RequestMakerTests {
     @Test("getSongsBySearch: calls url maker with action search3 and additional, calls networker, calls validator, returns list")
     func getSongsBySearch() async throws {
         let payload = SubsonicResponse(
-            subsonicResponse: SearchResult3Response(
+            subsonicResponse: Search3Response(
                 status: "ok",
                 version: "1",
                 type: "navidrome",
@@ -605,7 +605,7 @@ struct RequestMakerTests {
     @Test("getSongsBySearch: paginates with chunk 500")
     func getSongsBySearchPaginate() async throws {
         let payload1 = SubsonicResponse(
-            subsonicResponse: SearchResult3Response(
+            subsonicResponse: Search3Response(
                 status: "ok",
                 version: "1",
                 type: "navidrome",
@@ -617,7 +617,7 @@ struct RequestMakerTests {
             )
         )
         let payload2 = SubsonicResponse(
-            subsonicResponse: SearchResult3Response(
+            subsonicResponse: Search3Response(
                 status: "ok",
                 version: "1",
                 type: "navidrome",
@@ -666,7 +666,7 @@ struct RequestMakerTests {
     @Test("getSongsBySearch: rethrows validator error")
     func getSongsBySearchValidatorThrow() async throws {
         let payload = SubsonicResponse(
-            subsonicResponse: SearchResult3Response(
+            subsonicResponse: Search3Response(
                 status: "ok",
                 version: "1",
                 type: "navidrome",

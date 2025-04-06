@@ -1,5 +1,6 @@
 import Foundation
 
+/// Inner response for the `getUser` request.
 struct UserResponse: InnerResponse {
     let status: String
     let version: String

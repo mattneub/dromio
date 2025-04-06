@@ -18,6 +18,7 @@ protocol RequestMakerType: Sendable {
     func scrobble(songId: String) async throws
 }
 
+/// Extention allowing the `jukebox` method's optional `songId` to be omitted.
 extension RequestMakerType {
     func jukebox(action: JukeboxAction) async throws -> JukeboxStatus? {
         try await jukebox(action: action, songId: nil)
@@ -27,14 +28,15 @@ extension RequestMakerType {
 /// Class that makes constructs and sends requests to the server. If you want to talk to the server,
 /// this is the class you turn to. Other types such as URLMaker, Networker, and ResponseValidator are separated
 /// from and subservient to this class, and are expressed as separate services, partly for clarity
-/// of factoring and partly because it makes everything so much more testable.
+/// of factoring and partly because it makes everything sooooo much more testable.
 ///
 @MainActor
 final class RequestMaker: RequestMakerType {
 
     /// Utility method for looping through paginated network calls that fetch an array of some entity T, such
-    /// as fetching all albums or all artists. We need this because Subsonic puts a maximum on how many
-    /// of these entities we can ask for at a time.
+    /// as fetching all albums or all artists. We need this because Subsonic sometimes puts a maximum on how many
+    /// of these entities we can ask for at a time; also it's just nicer to paginate if the result would
+    /// be huge otherwise.
     /// - Parameters:
     ///   - chunk: The size of the chunk to ask for each time through the loop. Typically this is 500,
     ///     the maximum permitted by the server.
@@ -72,6 +74,10 @@ final class RequestMaker: RequestMakerType {
         try await services.responseValidator.validateResponse(jsonResponse)
     }
 
+    /// Get information about the user. We do this at launch as soon as we have a successful ping;
+    /// we are interested only in the user's `downloadRole`, `streamRole`, and `jukeboxRole`. We
+    /// should probably also be interested in the `scrobblingEnabled`; at present I always scrobble.
+    /// - Returns: The user.
     func getUser() async throws -> SubsonicUser {
         let url = try services.urlMaker.urlFor(action: "getUser")
         let data = try await services.networker.performRequest(url: url)
@@ -80,8 +86,8 @@ final class RequestMaker: RequestMakerType {
         return jsonResponse.subsonicResponse.user
     }
 
-    /// Get a list of all albums in alphabetical title order and return it, throwing if anything goes wrong.
-    /// - Returns: Array of all albums.
+    /// Get a list of all albums.
+    /// - Returns: The list of albums.
     ///
     func getAlbumList() async throws -> [SubsonicAlbum] {
         try await paginate(chunk: 500) { chunk, offset in
@@ -130,7 +136,7 @@ final class RequestMaker: RequestMakerType {
     /// - Returns: The list of artists.
     ///
     /// We are not currently using this. The reason is that its idea of an "artist" is defined at
-    /// the level of the album.
+    /// the level of the album, which doesn't interest me.
     ///
     func getArtists() async throws -> [SubsonicArtist] {
         let url = try services.urlMaker.urlFor(
@@ -172,12 +178,17 @@ final class RequestMaker: RequestMakerType {
             ]
         )
         let data = try await services.networker.performRequest(url: url)
-        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<SearchResult3Response>.self, from: data)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<Search3Response>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)
         return jsonResponse.subsonicResponse.searchResult3.artist ?? []
     }
 
-    /// Get the list of all songs.
+    /// Get a list of all songs matching a query. This is used as part of a rather elaborate dance
+    /// that we do in order to find the albums on which a given artist is the composer, as
+    /// Subsonic provides no way to ask for that information directly, and Deluan is not
+    /// interested in providing rest API that isn't part of the OpenSubsonic standard.
+    /// - Parameter query: The query.
+    /// - Returns: The list of songs.
     func getSongsBySearch(query: String) async throws -> [SubsonicSong] {
         try await paginate(chunk: 500) { chunk, offset in
             return try await getSongsBySearch(query: query, chunk: chunk, offset: offset)
@@ -197,7 +208,7 @@ final class RequestMaker: RequestMakerType {
             ]
         )
         let data = try await services.networker.performRequest(url: url)
-        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<SearchResult3Response>.self, from: data)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<Search3Response>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)
         return jsonResponse.subsonicResponse.searchResult3.song ?? []
     }
@@ -220,7 +231,8 @@ final class RequestMaker: RequestMakerType {
         return jsonResponse.subsonicResponse.artist.album ?? []
     }
 
-    /// Get an album along with its songs, and return the songs, throwing if anything goes wrong.
+    /// Get the songs of a given album; this call actually provides a lot of other information
+    /// about the album as well, but we are throwing that information away.
     /// - Parameter albumId: The id of the album.
     /// - Returns: An array of the songs of the specified albums.
     func getSongsFor(albumId: String) async throws -> [SubsonicSong] {
@@ -234,7 +246,7 @@ final class RequestMaker: RequestMakerType {
         return jsonResponse.subsonicResponse.album.song ?? []
     }
     
-    /// Download a song, throwing if anything goes wrong.
+    /// Download a song.
     /// - Parameter songId: The id of the desired song.
     /// - Returns: The file URL where the song data resides locally after downloading.
     func download(songId: String) async throws -> URL {
@@ -245,9 +257,11 @@ final class RequestMaker: RequestMakerType {
         return try await services.networker.performDownloadRequest(url: url)
     }
 
-    /// Stream a song, throwing if anything goes wrong.
+    /// Prepare to stream a song. We do not actually do any networking here; we just
+    /// form the stream URL and return it.
     /// - Parameter songId: The id of the desired song.
-    /// - Returns: The request URL itself.
+    /// - Returns: A remote URL, suitable for handing over to a player that knows how to
+    ///   play from a remote URL.
     func stream(songId: String) async throws -> URL {
         let url = try services.urlMaker.urlFor(
             action: "stream",
@@ -256,6 +270,11 @@ final class RequestMaker: RequestMakerType {
         return url
     }
 
+    /// Give the navidrome server a jukebox command.
+    /// - Parameters:
+    ///   - action: The command, expressed as an enum so you can't go wrong.
+    ///   - songId: Optionally, a songId. This is used only with the `.add` action.
+    /// - Returns: A status object, which we are not currently using for anything.
     func jukebox(action: JukeboxAction, songId: String?) async throws -> JukeboxStatus? {
         let additional: KeyValuePairs<String, String> = if let songId {[
             "action": action.rawValue,
@@ -275,7 +294,10 @@ final class RequestMaker: RequestMakerType {
         }
         return jsonResponse.subsonicResponse.jukeboxStatus
     }
-
+    
+    /// Tell the navidrome server to scrobble a given song. This ensures that the song and its album
+    /// will count as having been recently played.
+    /// - Parameter songId: The id of the song being played.
     func scrobble(songId: String) async throws {
         let url = try services.urlMaker.urlFor(
             action: "scrobble",

@@ -1,7 +1,6 @@
 import Foundation
 
-/* Note: the demo server is at demo.navidrome.org, port 80, demo, demo */
-/* However, I can't work with it as it apparently does not permit downloads */
+/* Note: the demo server is at (http, not https as stated in the docs) demo.navidrome.org, port 80, demo, demo */
 
 /// Struct describing a Navidrome server.
 struct ServerInfo: Codable, Equatable {
@@ -11,6 +10,7 @@ struct ServerInfo: Codable, Equatable {
     let username: String // "u"
     let password: String // used to calculate "t" and "s"
     let version: String // "v"
+    // To specify a server configuration, it is sufficient to combine the username and host.
     var id: String { username + "@" + host }
 
     /// Copy self, replacing the password with an empty string.
@@ -40,7 +40,7 @@ struct ServerInfo: Codable, Equatable {
         )
     }
 
-    /// Errors that may be thrown by the string-based initializer.
+    /// Errors that may be thrown by the string-based initializer (see below).
     enum ValidationError: Error {
         case hostEmpty
         case passwordEmpty

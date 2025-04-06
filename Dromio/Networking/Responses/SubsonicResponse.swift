@@ -8,7 +8,7 @@ struct SubsonicResponse<T: InnerResponse>: Codable {
     }
 }
 
-/// Protocol encompassing the commonality of goes into the `subsonicResponse` property of a
+/// Protocol encompassing the commonality of whatever goes into the `subsonicResponse` property of a
 /// SubsonicResponse.
 protocol InnerResponse: Codable {
     var status: String {get} // "ok" or "failed"

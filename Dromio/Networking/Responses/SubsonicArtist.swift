@@ -1,5 +1,7 @@
 import Foundation
 
+/// Type of the array element of the ArtistIndex.
+/// Serves as data for the actual app.
 struct SubsonicArtist: Codable, Equatable, Sendable {
     let id: String
     let name: String

@@ -1,6 +1,6 @@
 import Foundation
 
-/// Inner response for the `getAlbumsList2` request.
+/// Inner response for the `getAlbumList2` request.
 struct AlbumList2Response: InnerResponse {
     let status: String
     let version: String

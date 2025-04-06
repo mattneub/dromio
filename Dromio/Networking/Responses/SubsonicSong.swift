@@ -1,7 +1,7 @@
 import Foundation
 
 /// Type of the array element of the `song` property of the SubsonicAlbum.
-/// Serves as actual data for the app.
+/// Serves as data for the actual app.
 struct SubsonicSong: Codable, Equatable, Sendable {
     let id: String
     let title: String
@@ -14,7 +14,7 @@ struct SubsonicSong: Codable, Equatable, Sendable {
     let suffix: String?
     let duration: Double?
     let contributors: [Contributor]?
-    // Lots of other stuff I'm ignoring for now...
+    // Lots of other stuff I'm ignoring...
     // This, however, is internal to the app:
     var downloaded: Bool = false
     // Because of that one internal property, I am forced to add a CodingKeys enum! Sheesh.
@@ -33,6 +33,7 @@ struct SubsonicSong: Codable, Equatable, Sendable {
     }
 }
 
+/// Type of the SubsonicSong `contributors` array element.
 struct Contributor: Codable, Equatable, Sendable {
     let role: String
     let artist: SubsonicArtist // just name and id

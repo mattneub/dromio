@@ -46,13 +46,15 @@ extension URLSessionTask: URLSessionTaskType {}
 
 /// Class embodying all _actual_ networking activity vis-a-vis the Navidrome server. In general,
 /// only the RequestMaker should have reason to talk to the Networker; in a sense, the RequestMaker
-/// is the public face of the Networker.
+/// is the public face of the Networker. However, the `clear` method is more public than that, because
+/// anyone might have reason to tell the Networking to stop whatever it's doing.
 @MainActor
 final class Networker: NetworkerType {
     /// The URLSession set by `init`.
     let session: any URLSessionType
 
     /// Publisher of progress in our download task when calling `performDownloadRequest`.
+    /// Who has ears to hear, let him hear.
     var progress = CurrentValueSubject<(id: String, fraction: Double?), Never>((id: "-1", fraction: nil))
 
     /// Initializer.

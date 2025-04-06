@@ -1,6 +1,6 @@
 import Foundation
 
-/// Class that functions as a delegate for our download task. It observes the progress of the
+/// Class that functions as a delegate for the Networker's download task. It observes the progress of the
 /// task and forwards each update to the Networker, where it can be subscribed to.
 ///
 final class DownloadDelegate: NSObject, URLSessionTaskDelegate {

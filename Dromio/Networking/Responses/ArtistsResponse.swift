@@ -1,6 +1,7 @@
 import Foundation
 
-struct ArtistsResponse: InnerResponse { // for getArtists
+/// Inner response for the `getArtists` request.
+struct ArtistsResponse: InnerResponse {
     let status: String
     let version: String
     let type: String
@@ -10,20 +11,12 @@ struct ArtistsResponse: InnerResponse { // for getArtists
     let error: SubsonicError? // may not be possible, but present for parity with ping
 }
 
+/// The type of the ArtistsResponse `artists`.
 struct ArtistsIndex: Codable, Equatable {
     let index: [ArtistIndex]
 }
 
+/// The type of the ArtistsIndex `index`.
 struct ArtistIndex: Codable, Equatable {
     let artist: [SubsonicArtist]
-}
-
-struct ArtistResponse: InnerResponse { // for getArtist
-    let status: String
-    let version: String
-    let type: String
-    let serverVersion: String
-    let openSubsonic: Bool
-    let artist: SubsonicArtist
-    let error: SubsonicError? // may not be possible, but present for parity with ping
 }

@@ -17,7 +17,7 @@ extension URLMakerType {
 @MainActor
 final class URLMaker: URLMakerType {
     /// Bundle of properties expressing what we need to know about the server to talk to it.
-    /// To change what server we talk to, just change this info.
+    /// To change what server we talk to, or how we talk to a given server, just change this info.
     var currentServerInfo: ServerInfo?
 
     /// Generate a URL, using the parameters and the information in `currentServerInfo`.
