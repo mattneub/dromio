@@ -122,7 +122,7 @@ final class AlbumsProcessor: Processor {
     ///   - id: The composer's id.
     /// - Returns: The list of albums containing a song by that composer.
     ///
-    func albumsForComposer(songs: [SubsonicSong], id: String) -> [SubsonicAlbum] {
+    private func albumsForComposer(songs: [SubsonicSong], id: String) -> [SubsonicAlbum] {
         // filter to songs containing a contributor whose role is composer and whose id is this id
         let songsByThisComposer = songs.filter { song in
             for contributor in (song.contributors ?? []) {

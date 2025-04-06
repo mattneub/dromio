@@ -26,7 +26,8 @@ class PingViewController: UIViewController, ReceiverPresenter {
     /// Button that lets the user enter offline mode.
     @IBOutlet var offlineModeButton: UIButton!
 
-    var firstTime = true
+    /// Flag so that we know whether we are appearing at launch or later in the app's lifetime.
+    private var firstTime = true
 
     override func viewIsAppearing(_ animated: Bool) {
         super.viewIsAppearing(animated)

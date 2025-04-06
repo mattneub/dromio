@@ -12,6 +12,9 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         }
     }
 
+    /// Object that handles and configures our search controller; it's a var for testing purposes.
+    var searcher = Searcher()
+
     let activity: UIActivityIndicatorView = {
         let activity = UIActivityIndicatorView(style: .large)
         activity.color = .label
@@ -27,9 +30,6 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         activity.layer.cornerRadius = 20
         return activity
     }()
-
-    /// Object that handles and configures our search controller; it's a var for testing purposes.
-    var searcher = Searcher()
 
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
@@ -80,8 +80,6 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
             }
         case .setUpSearcher:
             await searcher.setUpSearcher(navigationItem: navigationItem, tableView: tableView, updater: dataSourceDelegate)
-        case .tearDownSearcher:
-            await searcher.tearDownSearcher(navigationItem: navigationItem, tableView: tableView)
         }
     }
 
@@ -108,6 +106,10 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         await dataSourceDelegate?.present(state)
     }
 
+    
+    /// Utility that supplies the UIMenu depending on the list type.
+    /// - Parameter listType: The list type.
+    /// - Returns: The menu.
     private func menu(for listType: ArtistsState.ListType) -> UIMenu {
         switch listType {
         case .allArtists:

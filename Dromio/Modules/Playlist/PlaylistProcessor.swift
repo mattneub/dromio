@@ -120,7 +120,7 @@ final class PlaylistProcessor: Processor {
     /// that song as `downloaded`.
     /// - Parameter sequence: The sequence (array) of songs.
     ///
-    func play(sequence: [SubsonicSong]) async throws {
+    private func play(sequence: [SubsonicSong]) async throws {
         var sequence = sequence
         // first one, stream / play, and also download — but if _already_ downloaded, just play
         let song = sequence.removeFirst()

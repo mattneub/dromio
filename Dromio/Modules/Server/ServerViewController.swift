@@ -1,7 +1,9 @@
 import UIKit
 
+/// View controller that reports the user's actions to the ServerProcessor.
 final class ServerViewController: UIViewController, ReceiverPresenter {
 
+    /// Reference to the processor, set by the coordinator on creation.
     weak var processor: (any Receiver<ServerAction>)?
 
     @IBOutlet var scheme: UISegmentedControl!
@@ -55,6 +57,7 @@ final class ServerViewController: UIViewController, ReceiverPresenter {
     }
 }
 
+/// Extension that determines whether the user can swipe down to dismiss this sheet.
 extension ServerViewController: UIAdaptivePresentationControllerDelegate {
     func presentationControllerShouldDismiss(_ presentationController: UIPresentationController) -> Bool {
         let servers = (try? services.persistence.loadServers()) ?? []

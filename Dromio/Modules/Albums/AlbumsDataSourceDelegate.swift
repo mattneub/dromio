@@ -6,6 +6,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
     /// Processor to whom we can send action messages.
     weak var processor: (any Receiver<AlbumsAction>)?
 
+    /// Weak reference to the table view, set in the initializer.
     weak var tableView: UITableView?
 
     /// Reuse identifier for the table view cells we will be creating.
@@ -36,6 +37,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
     /// A copy of the data that we can restore after a search.
     var originalData = [SubsonicAlbum]()
 
+    /// Whether the cells should be hidden. Set by `present`.
     var hideCells = false
 
     /// Type of the diffable data source.
@@ -149,8 +151,12 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
     }
 }
 
+/// Class of our diffable data source, so that we can implement `sectionIndexTitles`.
 final class MyAlbumsTableViewDiffableDataSource: UITableViewDiffableDataSource<String, String> {
+    /// List type we are displaying. Only the `.allAlbums` type shows index titles.
     var listType: AlbumsState.ListType = .allAlbums
+
+    /// Whether we are currently searching. Only if we are not searching do we show index titles.
     var searching: Bool = false
 
     override func sectionIndexTitles(for _: UITableView) -> [String]? {

@@ -1,5 +1,6 @@
 import UIKit
 
+/// Content view for the item cell.
 final class AlbumCellContentView: UIView, UIContentView {
     @IBOutlet var title: UILabel!
     @IBOutlet var artist: UILabel!
@@ -47,7 +48,7 @@ final class AlbumCellContentView: UIView, UIContentView {
     }
 }
 
-/// UIContentConfiguration for the item cell.
+/// Content configuration for the item cell.
 struct AlbumCellContentConfiguration: UIContentConfiguration, Equatable {
     let title: String
     let artist: String

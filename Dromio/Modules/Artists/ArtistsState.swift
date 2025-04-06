@@ -6,7 +6,7 @@ struct ArtistsState: Equatable {
     var listType: ListType = .allArtists
     var artists = [SubsonicArtist]()
     var animateSpinner = false
-    var hasInitialData = false
+    var hasInitialData = false // scratchpad
 
     enum ListType {
         case allArtists

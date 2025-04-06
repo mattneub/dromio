@@ -1,5 +1,6 @@
 import UIKit
 
+/// Content view for the item cell.
 final class ArtistsCellContentView: UIView, UIContentView {
     @IBOutlet var name: UILabel!
     @IBOutlet var albums: UILabel!
@@ -41,7 +42,7 @@ final class ArtistsCellContentView: UIView, UIContentView {
     }
 }
 
-/// UIContentConfiguration for the item cell.
+/// Content configuration for the item cell.
 struct ArtistsCellContentConfiguration: UIContentConfiguration, Equatable {
     let name: String
     let albums: String

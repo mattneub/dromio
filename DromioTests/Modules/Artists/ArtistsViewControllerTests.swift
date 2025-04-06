@@ -116,14 +116,6 @@ struct ArtistsViewControllerTests {
         #expect(searcher.updater === subject.dataSourceDelegate)
     }
 
-    @Test("receive tearDownSearcher: calls searcher tearDownSearcher")
-    func tearDownSearcher() async {
-        await subject.receive(.tearDownSearcher)
-        #expect(searcher.methodsCalled == ["tearDownSearcher(navigationItem:tableView:updater:)"])
-        #expect(searcher.navigationItem === subject.navigationItem)
-        #expect(searcher.tableView === subject.tableView)
-    }
-
     @Test("present: presents to the data source")
     func present() async {
         let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])

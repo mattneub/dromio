@@ -10,7 +10,7 @@ final class PingProcessor: Processor {
     /// A reference to our presenter (the Ping view controller), set by the coordinator on creation.
     weak var presenter: (any ReceiverPresenter<Void, PingState>)?
 
-    /// The state.
+    /// The state, to be presented by the presenter.
     var state = PingState()
 
     func receive(_ action: PingAction) async {
@@ -32,7 +32,8 @@ final class PingProcessor: Processor {
         }
     }
 
-    func ping() async {
+    /// Utility saying what to do when we receive .doPing.
+    private func ping() async {
         do {
             state.status = .empty
             await presenter?.present(state)
@@ -72,7 +73,8 @@ final class PingProcessor: Processor {
         }
     }
 
-    func deleteServer() async {
+    /// Utility saying what to do when we receive `.deleteServer`.
+    private func deleteServer() async {
         guard var servers = try? services.persistence.loadServers() else { return }
         guard servers.count > 0 else {
             coordinator?.showAlert(title: "Nothing to delete.", message: "Tap Enter Server Info if you want to add a server.")
@@ -92,7 +94,8 @@ final class PingProcessor: Processor {
         // and stop; user cannot proceed without explicitly picking a server
     }
 
-    func pickServer() async {
+    /// Utility saying what to do when we receive `.pickServer`.
+    private func pickServer() async {
         guard var servers = try? services.persistence.loadServers() else { return }
         guard servers.count > 0 else {
             coordinator?.showAlert(title: "No server to choose.", message: "Tap Enter Server Info if you want to add a server.")
@@ -119,7 +122,8 @@ final class PingProcessor: Processor {
         }
     }
 
-    func offlineMode() async {
+    /// Utility saying what to do when we receive `.offlineMode`.
+    private func offlineMode() async {
         // intersect the current playlist with downloads
         var intersection = [URL?]()
         for song in services.currentPlaylist.list {
@@ -134,6 +138,7 @@ final class PingProcessor: Processor {
 }
 
 extension PingProcessor: ServerDelegate {
+    /// The user has said Done after entering server info in the Server sheet.
     func userEdited(serverInfo: ServerInfo) async {
         var servers = (try? services.persistence.loadServers()) ?? []
         if let index = servers.firstIndex(where: { $0.id == serverInfo.id}) {

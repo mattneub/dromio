@@ -7,6 +7,7 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
     /// Processor to whom we can send action messages.
     weak var processor: (any Receiver<ArtistsAction>)?
 
+    /// Weak reference to the table view; set by the initializer.
     weak var tableView: UITableView?
 
     /// Reuse identifier for the table view cells we will be creating.
@@ -37,6 +38,7 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
     /// A copy of the data that we can restore after a search.
     var originalData = [SubsonicArtist]()
 
+    /// Whether the cells should be hidden; set by `present`.
     var hideCells = false
 
     /// Type of the diffable data source.
@@ -150,8 +152,12 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
     }
 }
 
+/// Class of our diffable data source, so that we can implement `sectionIndexTitles`.
 final class MyArtistsTableViewDiffableDataSource: UITableViewDiffableDataSource<String, String> {
+    /// List type being displayed. It happens that this makes no difference, we always display index titles. But that could change.
     var listType: ArtistsState.ListType = .allArtists
+
+    /// Whether we are currently searching. Only if we are not searching do we display index titles.
     var searching: Bool = false
 
     override func sectionIndexTitles(for _: UITableView) -> [String]? {

@@ -7,6 +7,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
     /// Processor to whom we can send action messages.
     weak var processor: (any Receiver<PlaylistAction>)?
 
+    /// Weak reference to the table view; set by initializer.
     weak var tableView: UITableView?
 
     /// Reuse identifier for the table view cells we will be creating.
@@ -171,6 +172,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
 
 }
 
+/// Subclass of the diffable datasource, so that we can implement `moveRow` and `canEditRow`.
 final class PlaylistDataSource: UITableViewDiffableDataSource<String, String> {
     override func tableView(
         _ tableView: UITableView,

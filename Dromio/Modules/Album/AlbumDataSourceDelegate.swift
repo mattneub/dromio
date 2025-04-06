@@ -7,6 +7,7 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITab
     /// Processor to whom we can send action messages.
     weak var processor: (any Receiver<AlbumAction>)?
 
+    /// Weak reference to the table view, set in the initializer.
     weak var tableView: UITableView?
 
     /// Reuse identifier for the table view cells we will be creating.
@@ -40,10 +41,13 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITab
     /// A copy of the data that we can restore after a search.
     var originalData = [SubsonicSong]()
 
+    /// A copy of the title of the album being represented; set by `present`.
     var albumTitle = "albumTitleDummy"
 
+    /// Whether cells should be hidden; set by `present`.
     var hideCells = false
 
+    /// Total count of songs in this album; set by `present`.
     var totalCount: Int = 0
 
     /// Type of the diffable data source.

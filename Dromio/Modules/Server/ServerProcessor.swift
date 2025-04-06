@@ -3,12 +3,16 @@ import Foundation
 /// Processor containing the logic for the server view controller.
 @MainActor
 final class ServerProcessor: Processor {
+    /// Reference to the coordinator, set by the coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
 
+    /// Reference to the presenter, set by the coordinator on creation.
     weak var presenter: (any ReceiverPresenter<Void, ServerState>)?
 
+    /// Reference to the delegate, set by the coordinator on creation.
     weak var delegate: (any ServerDelegate)?
 
+    /// State that holds the user's changes in the form. It is never presented; it's just our scratchpad.
     var state = ServerState()
 
     func receive(_ action: ServerAction) async {
@@ -41,6 +45,7 @@ final class ServerProcessor: Processor {
     }
 }
 
+/// Protocol that defines a delegate to whom we can report when the user taps the Done button.
 @MainActor
 protocol ServerDelegate: AnyObject {
     func userEdited(serverInfo: ServerInfo) async

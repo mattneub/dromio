@@ -3,6 +3,7 @@
 struct PingState: Equatable {
     var status: PingStatus = .empty
 
+    /// States that the view can be in.
     enum PingStatus: Equatable {
         case empty // no status (we are looking to see whether we even _have_ a server)
         case unknown // we are about to try to ping

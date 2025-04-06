@@ -7,7 +7,7 @@ import Foundation
  We want string text in labels to have some invisible value always, so that the labels have
  size under autolayout.
  Unfortunately in some situations where the server has no useful value to provide for a property,
- it provides an empty/zero value as a placeholder rather than just omitting that key/value pair.
+ it provides an empty/zero value as a placeholder rather than just omitting that property.
  So our solution is to characterize these as Optional and then unwrap / coerce them with these computed
  properties.
  */
