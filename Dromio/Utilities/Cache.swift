@@ -1,13 +1,13 @@
 import Foundation
 
 @MainActor
-protocol CachesType {
-    var albumsList: [SubsonicAlbum]? { get set }
+protocol CacheType {
+    var allAlbums: [SubsonicAlbum]? { get set }
     var allArtists: [SubsonicArtist]? { get set }
     var artistsWhoAreArtists: [SubsonicArtist]? { get set }
     var artistsWhoAreComposers: [SubsonicArtist]? { get set }
     func fetch<T: Sendable>(
-        _ key: ReferenceWritableKeyPath<Caches, Optional<T>>,
+        _ key: ReferenceWritableKeyPath<Cache, Optional<T>>,
         using: () async throws -> T
     ) async throws -> T
     func clear()
@@ -15,9 +15,9 @@ protocol CachesType {
 
 /// Class that memoizes our biggest and most commonly used server fetch results.
 @MainActor
-final class Caches: CachesType {
+final class Cache: CacheType {
     /// For the result of `getAlbumList`
-    var albumsList: [SubsonicAlbum]?
+    var allAlbums: [SubsonicAlbum]?
 
     /// For the result of `getArtistsBySearch`
     var allArtists: [SubsonicArtist]?
@@ -32,12 +32,12 @@ final class Caches: CachesType {
     /// function that returns its type. If I already have that property value, I just return it; if not,
     /// I perform your function, set my property to the result, and return the result.
     /// - Parameters:
-    ///   - key: Keypath within Caches.
+    ///   - key: Keypath within Cache.
     ///   - using: Method to call to get the value if we don't already have it.
     /// - Returns: The value requested, either from our property or from calling the given method.
     ///
     func fetch<T: Sendable>(
-        _ key: ReferenceWritableKeyPath<Caches, Optional<T>>,
+        _ key: ReferenceWritableKeyPath<Cache, Optional<T>>,
         using: () async throws -> T
     ) async throws -> T {
         if let value = self[keyPath: key] {
@@ -50,7 +50,7 @@ final class Caches: CachesType {
     }
 
     func clear() {
-        albumsList = nil
+        allAlbums = nil
         allArtists = nil
         artistsWhoAreArtists = nil
         artistsWhoAreComposers = nil

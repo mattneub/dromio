@@ -12,7 +12,7 @@ struct AlbumsProcessorTests {
         subject.presenter = presenter
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
-        caches.clear()
+        services.cache.clear()
     }
 
     @Test("receive allAlbums: starts by presenting spinner animation")
@@ -33,13 +33,30 @@ struct AlbumsProcessorTests {
         #expect(presenter.thingsReceived == [.tearDownSearcher, .setUpSearcher, .scrollToZero])
         #expect(requestMaker.methodsCalled == ["getAlbumList()"])
         #expect(presenter.statePresented?.listType == .allAlbums)
-        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
+    }
+
+    @Test("receive allAlbums: sorts the list, injecting sortName, and sets the cache to the sorted list")
+    func receiveAllAlbumsSorts() async {
+        requestMaker.albumList = [
+            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+        ]
+        await subject.receive(.allAlbums)
+        #expect(presenter.statePresented?.albums == [
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)
+        ])
+        #expect(services.cache.allAlbums == [
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)
+        ])
     }
 
     @Test("receive allAlbums: gets list from cache if it exists, sends teardown, sets state, turns off spinner, sends searcher/scroll effects")
     func receiveAllAlbumsCached() async {
         subject.state.animateSpinner = true
-        caches.albumsList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        services.cache.allAlbums = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
         requestMaker.albumList = []
         #expect(presenter.statePresented == nil)
         await subject.receive(.allAlbums)
@@ -85,9 +102,23 @@ struct AlbumsProcessorTests {
         #expect(requestMaker.methodsCalled == ["getAlbumsFor(artistId:)"])
         #expect(requestMaker.artistId == "1")
         #expect(presenter.statePresented?.listType == .albumsForArtist(id: "1", source: .artists))
-        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
         #expect(presenter.statePresented?.animateSpinner == false)
         #expect(presenter.thingsReceived.isEmpty) // not searchable
+    }
+
+    @Test("receive initialData: for albumsForArtist, source artist, sorts the list from the requestMaker")
+    func receiveInitialDataForArtistSorts() async {
+        subject.state.listType = .albumsForArtist(id: "1", source: .artists)
+        requestMaker.albumList = [
+            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
+        ]
+        await subject.receive(.initialData)
+        #expect(presenter.statePresented?.albums == [
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)
+        ])
     }
 
     @Test("receive initialData: if listType is .albumsForArtist and source .composers, sends getSongsBySearch with name to request maker, sets state")
@@ -106,7 +137,7 @@ struct AlbumsProcessorTests {
             duration: nil,
             contributors: [.init(role: "composer", artist: .init(id: "1", name: "Moi", albumCount: nil, album: nil, roles: nil))]
         )]
-        caches.albumsList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        services.cache.allAlbums = [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)]
         #expect(presenter.statePresented == nil)
         await subject.receive(.initialData)
         #expect(requestMaker.methodsCalled == ["getSongsBySearch(query:)"])
@@ -117,13 +148,53 @@ struct AlbumsProcessorTests {
         #expect(presenter.thingsReceived.isEmpty) // not searchable
     }
 
+    @Test("receive initialData:, listType albumsForArtist for source composers, keeps sort order from cache")
+    func receiveInitialDataForComposerSorted() async {
+        subject.state.listType = .albumsForArtist(id: "1", source: .composers(name: "Me"))
+        requestMaker.songList = [.init(
+            id: "1",
+            title: "Tra-la",
+            album: nil,
+            artist: nil,
+            displayComposer: nil,
+            track: nil,
+            year: nil,
+            albumId: "1",
+            suffix: nil,
+            duration: nil,
+            contributors: [.init(role: "composer", artist: .init(id: "1", name: "Moi", albumCount: nil, album: nil, roles: nil))]
+        ), .init(
+            id: "1",
+            title: "Tra-la",
+            album: nil,
+            artist: nil,
+            displayComposer: nil,
+            track: nil,
+            year: nil,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: [.init(role: "composer", artist: .init(id: "1", name: "Moi", albumCount: nil, album: nil, roles: nil))]
+        )]
+        services.cache.allAlbums = [
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "3", name: "ZZ", sortName: "zz", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
+        ]
+        await subject.receive(.initialData)
+        #expect(presenter.statePresented?.albums == [
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
+        ])
+    }
+
     @Test("receive initialData:, listType .albumsForArtist for source .composers, red/green testing the filter")
     func receiveInitialDataComposersRedGreen() async {
         // these are our albums
-        caches.albumsList = [.init(
-            id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil
+        services.cache.allAlbums = [.init(
+            id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil
         ), .init(
-            id: "2", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil
+            id: "2", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil
         )]
         // this is the song search info
         subject.state.listType = .albumsForArtist(id: "1", source: .composers(name: "Me"))
@@ -234,7 +305,7 @@ struct AlbumsProcessorTests {
         #expect(presenter.thingsReceived == [.tearDownSearcher, .setUpSearcher, .scrollToZero])
         #expect(requestMaker.methodsCalled == ["getAlbumList()"])
         #expect(presenter.statePresented?.listType == .allAlbums)
-        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
     }
 
     @Test("receive randomAlbums: starts by sending `tearDown` and starting the spinner")

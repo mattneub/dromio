@@ -83,12 +83,9 @@ final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UIT
         self.data = data
         switch datasource?.listType {
         case .allArtists, .composers:
-            // sort the data
-            let data = data.sorted
-            self.data = data
             // clump the data into sections by first letter
             let dictionary = Dictionary(grouping: data) {
-                var firstLetter = String($0.sortName!.prefix(1)) // sortName guaranteed after `sorted`
+                var firstLetter = String(($0.sortName ?? $0.name).prefix(1)) // otiose, we know there's a sortName
                 if !("a"..."z").contains(firstLetter) {
                     firstLetter = "#" // clump all non-letter names at the front under "#"
                 }

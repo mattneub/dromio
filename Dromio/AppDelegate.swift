@@ -3,11 +3,7 @@ import os.log
 
 /// The sole global instance of the services.
 @MainActor
-var services: Services = Services()
-
-/// The sole global instance of the caches.
-@MainActor
-var caches: CachesType = Caches()
+var services: Services = Services.shared
 
 /// Global info about the user's jukebox role.
 @MainActor

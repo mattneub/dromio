@@ -74,7 +74,7 @@ struct AlbumsViewControllerTests {
         subject.dataSourceDelegate = AlbumsDataSourceDelegate(tableView: tableView)
         var albums = [SubsonicAlbum]()
         for id in (1...100) {
-            albums.append(.init(id: String(id), name: "name", sortName: nil, artist: "Artist", songCount: 10, song: nil))
+            albums.append(.init(id: String(id), name: "name", sortName: "name", artist: "Artist", songCount: 10, song: nil))
         }
         makeWindow(viewController: subject)
         await subject.present(.init(albums: albums))

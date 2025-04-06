@@ -23,54 +23,56 @@ struct AlbumsDataSourceDelegateTests {
         #expect(subject.tableView === tableView)
     }
 
-    @Test("present: datasource reflects `albums`, if `allAlbums` then sorted and sectionalized")
-    func presentWithDataDatasourceItemsAll() async {
+    @Test("present: datasource reflects `albums`, if `allAlbums` then sectionalized")
+    func presentWithDataDatasourceItemsAll() async throws {
         await #while(subject.datasource == nil)
         var state = AlbumsState(listType: .allAlbums)
         state.albums = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "3", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
         ]
         await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.listType == .allAlbums)
         let snapshot = subject.datasource.snapshot()
-        #expect(snapshot.sectionIdentifiers == ["t", "y"])
+        try #require(snapshot.sectionIdentifiers == ["t", "y"])
         #expect(snapshot.itemIdentifiers(inSection: "t") == ["2"])
-        #expect(snapshot.itemIdentifiers(inSection: "y") == ["1"])
+        #expect(snapshot.itemIdentifiers(inSection: "y") == ["1", "3"])
     }
 
-    @Test("present: datasource reflects `albums`, if `albumsForArtist` then sorted and sectionalized")
-    func presentWithDataDatasourceItemsAlbumsForArtist() async {
+    @Test("present: datasource reflects `albums`, if `albumsForArtist` then single section")
+    func presentWithDataDatasourceItemsAlbumsForArtist() async throws {
         await #while(subject.datasource == nil)
         var state = AlbumsState(listType: .albumsForArtist(id: "1", source: .artists))
         state.albums = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "3", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
         ]
         await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.listType == .albumsForArtist(id: "1", source: .artists))
         let snapshot = subject.datasource.snapshot()
-        #expect(snapshot.sectionIdentifiers == ["t", "y"])
-        #expect(snapshot.itemIdentifiers(inSection: "t") == ["2"])
-        #expect(snapshot.itemIdentifiers(inSection: "y") == ["1"])
+        try #require(snapshot.sectionIdentifiers == ["dummy"])
+        #expect(snapshot.itemIdentifiers(inSection: "dummy") == ["1", "2", "3"])
     }
 
-    @Test("present: datasource reflects `albums`, if `randomAlbums` then single section, order unchanged")
-    func presentWithDataDatasourceItemsRandom() async {
+    @Test("present: datasource reflects `albums`, if `randomAlbums` then single section")
+    func presentWithDataDatasourceItemsRandom() async throws {
         await #while(subject.datasource == nil)
         var state = AlbumsState(listType: .randomAlbums)
         state.albums = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "3", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
         ]
         await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.listType == .randomAlbums)
         let snapshot = subject.datasource.snapshot()
-        #expect(snapshot.sectionIdentifiers == ["dummy"])
-        #expect(snapshot.itemIdentifiers(inSection: "dummy") == ["1", "2"])
+        try #require(snapshot.sectionIdentifiers == ["dummy"])
+        #expect(snapshot.itemIdentifiers(inSection: "dummy") == ["1", "2", "3"])
     }
 
     @Test("present: cells are correctly populated")
@@ -78,7 +80,7 @@ struct AlbumsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         makeWindow(view: tableView)
         var state = AlbumsState()
-        state.albums = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        state.albums = [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)]
         await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
@@ -97,7 +99,7 @@ struct AlbumsDataSourceDelegateTests {
     func presentWithDataCellNotInWindow() async throws {
         await #while(subject.datasource == nil)
         var state = AlbumsState()
-        state.albums = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
+        state.albums = [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)]
         await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
@@ -117,8 +119,8 @@ struct AlbumsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         var state = AlbumsState(listType: .allAlbums)
         state.albums = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ]
         do {
             state.animateSpinner = true
@@ -143,8 +145,8 @@ struct AlbumsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         var state = AlbumsState(listType: .allAlbums)
         state.albums = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ]
         await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
@@ -157,8 +159,8 @@ struct AlbumsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         var state = AlbumsState(listType: .allAlbums)
         state.albums = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ]
         subject.datasource.searching = true
         await subject.present(state)
@@ -181,8 +183,8 @@ struct AlbumsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         var state = AlbumsState(listType: .randomAlbums)
         state.albums = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ]
         await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
@@ -194,8 +196,8 @@ struct AlbumsDataSourceDelegateTests {
         await #while(subject.datasource == nil)
         var state = AlbumsState(listType: .albumsForArtist(id: "1", source: .artists))
         state.albums = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ]
         await subject.present(state)
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
@@ -204,7 +206,7 @@ struct AlbumsDataSourceDelegateTests {
 
     @Test("didSelect: sends showAlbum to processor")
     func didSelect() async {
-        let album = SubsonicAlbum(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)
+        let album = SubsonicAlbum(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)
         makeWindow(view: tableView)
         var state = AlbumsState()
         state.albums = [album]
@@ -218,14 +220,14 @@ struct AlbumsDataSourceDelegateTests {
     @Test("updateSearchResults: if there is search bar text, filters data on it, updates datasource")
     func updateSearchResults() async {
         subject.originalData = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ]
         let search = UISearchController()
         search.searchBar.text = "y"
         subject.updateSearchResults(for: search)
         #expect(subject.data == [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
         ])
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
@@ -236,15 +238,15 @@ struct AlbumsDataSourceDelegateTests {
     @Test("updateSearchResults: if there is no search bar text, restores data, updates datasource")
     func updateSearchResultsNoText() async {
         subject.originalData = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ]
         let search = UISearchController()
         search.searchBar.text = ""
         subject.updateSearchResults(for: search)
         #expect(subject.data == [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ])
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
@@ -256,16 +258,16 @@ struct AlbumsDataSourceDelegateTests {
     @Test("updateSearchResults: if there is no search bar text and no originalData, just updates datasource")
     func updateSearchResultsNoTextNoOriginalData() async {
         subject.data = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ]
         subject.originalData = []
         let search = UISearchController()
         search.searchBar.text = ""
         subject.updateSearchResults(for: search)
         #expect(subject.data == [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ])
         await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
@@ -278,8 +280,8 @@ struct AlbumsDataSourceDelegateTests {
     func willPresent() {
         subject.originalData = []
         subject.data = [
-            .init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil),
-            .init(id: "2", name: "Teehee", sortName: nil, artist: "Artist", songCount: 30, song: nil),
+            .init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil),
+            .init(id: "2", name: "Teehee", sortName: "teehee", artist: "Artist", songCount: 30, song: nil),
         ]
         #expect(subject.datasource.searching == false)
         subject.willPresentSearchController(UISearchController())

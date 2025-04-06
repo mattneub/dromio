@@ -12,7 +12,7 @@ struct ArtistsProcessorTests {
         subject.presenter = presenter
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
-        caches.clear()
+        services.cache.clear()
     }
 
     @Test("receive albums: sends dismissArtists to coordinator")
@@ -41,13 +41,36 @@ struct ArtistsProcessorTests {
         #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
         #expect(requestMaker.methodsCalled == ["getArtistsBySearch()"])
         #expect(presenter.statePresented?.listType == .allArtists)
-        #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
+        #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: "name")])
+    }
+
+    @Test("receive allArtists: sorts the list, injecting sortName, and sets the cache to the sorted lists")
+    func receiveAllArtistsSorts() async {
+        requestMaker.artistList = [
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
+            .init(id: "2", name: "Aardvark", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
+            .init(id: "3", name: "Aardvark2", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
+        ]
+        await subject.receive(.allArtists)
+        #expect(presenter.statePresented?.artists == [
+            .init(id: "3", name: "Aardvark2", albumCount: nil, album: nil, roles: ["artist"], sortName: "aardvark2"),
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: "name"),
+        ])
+        #expect(services.cache.allArtists == [
+            .init(id: "2", name: "Aardvark", albumCount: nil, album: nil, roles: ["composer"], sortName: "aardvark"),
+            .init(id: "3", name: "Aardvark2", albumCount: nil, album: nil, roles: ["artist"], sortName: "aardvark2"),
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: "name"),
+        ])
+        #expect(services.cache.artistsWhoAreArtists == [
+            .init(id: "3", name: "Aardvark2", albumCount: nil, album: nil, roles: ["artist"], sortName: "aardvark2"),
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: "name"),
+        ])
     }
 
     @Test("receive allArtists: gets list from cache if it exists, filters, sets state, turns off spinner, sends effects")
     func receiveAllArtistsCached() async {
         subject.state.animateSpinner = true
-        caches.allArtists = [
+        services.cache.allArtists = [
             .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
             .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
         ]
@@ -62,10 +85,10 @@ struct ArtistsProcessorTests {
 
     @Test("receive allArtists: but if filtered list is already cached, uses that instead")
     func receiveAllArtistsCachedFiltered() async {
-        caches.artistsWhoAreArtists = [
+        services.cache.artistsWhoAreArtists = [
             .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
         ]
-        caches.allArtists = []
+        services.cache.allArtists = []
         requestMaker.artistList = []
         await subject.receive(.allArtists)
         #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
@@ -83,13 +106,13 @@ struct ArtistsProcessorTests {
         #expect(requestMaker.methodsCalled == ["getArtistsBySearch()"])
         #expect(presenter.statePresented?.listType == .composers)
         #expect(presenter.statePresented?.artists == [
-            .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
+            .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: "composer"),
         ])
     }
 
     @Test("receive composers: gets list from cache if it exists, filters, sets state, turns off spinner, sends effects")
     func receiveComposersCached() async {
-        caches.allArtists = [
+        services.cache.allArtists = [
             .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
             .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
         ]
@@ -104,12 +127,35 @@ struct ArtistsProcessorTests {
         ])
     }
 
+    @Test("receive composers: sorts the list, injecting sortName, and sets the cache to the sorted lists")
+    func receiveComposersSorts() async {
+        requestMaker.artistList = [
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
+            .init(id: "2", name: "Aardvark", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
+            .init(id: "3", name: "Aardvark2", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
+        ]
+        await subject.receive(.composers)
+        #expect(presenter.statePresented?.artists == [
+            .init(id: "3", name: "Aardvark2", albumCount: nil, album: nil, roles: ["composer"], sortName: "aardvark2"),
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["composer"], sortName: "name"),
+        ])
+        #expect(services.cache.allArtists == [
+            .init(id: "2", name: "Aardvark", albumCount: nil, album: nil, roles: ["artist"], sortName: "aardvark"),
+            .init(id: "3", name: "Aardvark2", albumCount: nil, album: nil, roles: ["composer"], sortName: "aardvark2"),
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["composer"], sortName: "name"),
+        ])
+        #expect(services.cache.artistsWhoAreComposers == [
+            .init(id: "3", name: "Aardvark2", albumCount: nil, album: nil, roles: ["composer"], sortName: "aardvark2"),
+            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["composer"], sortName: "name"),
+        ])
+    }
+
     @Test("receive composers: but if filtered list is already cached, uses that instead")
     func receiveComposersCachedFiltered() async {
-        caches.artistsWhoAreComposers = [
+        services.cache.artistsWhoAreComposers = [
             .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
         ]
-        caches.allArtists = []
+        services.cache.allArtists = []
         requestMaker.artistList = []
         await subject.receive(.composers)
         #expect(presenter.statePresented?.artists == [.init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil)])
@@ -171,7 +217,7 @@ struct ArtistsProcessorTests {
         #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
         #expect(requestMaker.methodsCalled == ["getArtistsBySearch()"])
         #expect(presenter.statePresented?.listType == .allArtists)
-        #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
+        #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: "name")])
     }
 
     @Test("receive viewIsAppearing: does nothing if state hasInitialData")

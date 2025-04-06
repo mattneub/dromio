@@ -2,16 +2,16 @@
 import Testing
 
 @MainActor
-struct MockCachesTrait: TestTrait, TestScoping {
+struct MockCacheTrait: TestTrait, TestScoping {
     func provideScope(for test: Test, testCase: Test.Case?, performing function: @Sendable () async throws -> Void) async throws {
-        caches = MockCaches()
+        services.cache = MockCache()
         try await function()
-        caches = Caches()
+        services.cache = Cache()
     }
 }
 
-extension Trait where Self == MockCachesTrait {
-    static var mockCaches: Self {
+extension Trait where Self == MockCacheTrait {
+    static var mockCache: Self {
         Self()
     }
 }

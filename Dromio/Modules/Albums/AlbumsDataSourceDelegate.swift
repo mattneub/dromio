@@ -78,13 +78,10 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
         var sections = [Section(name: "dummy", rows: [SubsonicAlbum]())]
         self.data = data
         switch datasource?.listType {
-        case .allAlbums, .albumsForArtist:
-            // sort the data
-            let data = data.sorted
-            self.data = data
+        case .allAlbums:
             // clump the data into sections by first letter
             let dictionary = Dictionary(grouping: data) {
-                var firstLetter = String($0.sortName!.prefix(1)) // sortName guaranteed after `sorted`
+                var firstLetter = String(($0.sortName ?? $0.name).prefix(1)) // otiose, we know there's a sortName
                 if !("a"..."z").contains(firstLetter) {
                     firstLetter = "#" // clump all non-letter names at the front under "#"
                 }
@@ -93,8 +90,8 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
             sections = Array(dictionary).sorted { $0.key < $1.key }.map {
                 Section(name: $0.key, rows: $0.value)
             }
-        case .randomAlbums:
-            // just one section in the order we're given
+        case .randomAlbums, .albumsForArtist:
+            // just one section
             sections[0].rows = data
         case .none: break
         }

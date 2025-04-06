@@ -112,7 +112,7 @@ final class PingProcessor: Processor {
         try? services.persistence.save(servers: servers)
         services.urlMaker.currentServerInfo = server
         services.currentPlaylist.clear()
-        caches.clear()
+        services.cache.clear()
         await services.download.clear()
         Task {
             await receive(.doPing)
@@ -143,7 +143,7 @@ extension PingProcessor: ServerDelegate {
         try? services.persistence.save(servers: servers)
         services.urlMaker.currentServerInfo = serverInfo
         services.currentPlaylist.clear()
-        caches.clear()
+        services.cache.clear()
         await services.download.clear()
         Task {
             await receive(.doPing)

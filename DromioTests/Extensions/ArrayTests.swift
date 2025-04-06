@@ -11,7 +11,7 @@ struct ArrayTests {
     let album5 = SubsonicAlbum(id: "5", name: "50 ways", sortName: nil, artist: nil, songCount: 0, song: nil)
     let artist1 = SubsonicArtist(id: "1", name: "The buck stops here", albumCount: nil, album: nil, roles: nil, sortName: nil)
     let artist2 = SubsonicArtist(id: "2", name: "Bust my britches", albumCount: nil, album: nil, roles: nil, sortName: nil)
-    let artist3 = SubsonicArtist(id: "3", name: "Büiod back better", albumCount: nil, album: nil, roles: nil, sortName: nil)
+    let artist3 = SubsonicArtist(id: "3", name: "Büild back better", albumCount: nil, album: nil, roles: nil, sortName: nil)
     let artist4 = SubsonicArtist(id: "4", name: "[hey]", albumCount: nil, album: nil, roles: nil, sortName: nil)
     let artist5 = SubsonicArtist(id: "5", name: "[ha]", albumCount: nil, album: nil, roles: nil, sortName: nil)
     let song1 = SubsonicSong(id: "1", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)

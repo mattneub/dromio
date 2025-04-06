@@ -23,9 +23,10 @@ final class ArtistsProcessor: Processor {
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.4))
                 }
-                let artistsWhoAreArtists = try await caches.fetch(\.artistsWhoAreArtists) {
-                    let artists = try await caches.fetch(\.allArtists) {
-                        try await services.requestMaker.getArtistsBySearch()
+                let artistsWhoAreArtists = try await services.cache.fetch(\.artistsWhoAreArtists) {
+                    let artists = try await services.cache.fetch(\.allArtists) {
+                        let artists = try await services.requestMaker.getArtistsBySearch()
+                        return artists.sorted
                     }
                     return artists.filter { ($0.roles ?? []).contains("artist") }
                 }
@@ -51,9 +52,10 @@ final class ArtistsProcessor: Processor {
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.4))
                 }
-                let artistsWhoAreComposers = try await caches.fetch(\.artistsWhoAreComposers) {
-                    let artists = try await caches.fetch(\.allArtists) {
-                        try await services.requestMaker.getArtistsBySearch()
+                let artistsWhoAreComposers = try await services.cache.fetch(\.artistsWhoAreComposers) {
+                    let artists = try await services.cache.fetch(\.allArtists) {
+                        let artists = try await services.requestMaker.getArtistsBySearch()
+                        return artists.sorted
                     }
                     return artists.filter { ($0.roles ?? []).contains("composer") }
                 }

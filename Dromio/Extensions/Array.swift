@@ -5,11 +5,9 @@ extension Array where Element == SubsonicAlbum {
     /// displayed in the interface (in the Albums screen). Basically this order is alphabetical
     /// by `name`, sorted in the way the Finder would do it.
     ///
-    /// Fortunately, a SubsonicAlbum has a `sortedName` property which is supposed to help us
-    /// with this very task. Unfortunately, there's a bug: `getAlbumList2` is returning the
-    /// album list _without_ any values in the `sortedName` (it is an empty string).
-    /// So for now we are ignoring the incoming `sortedName` and just writing into that property
-    /// ourselves, for convenience.
+    /// A SubsonicAlbum has a `sortedName` property which is supposed to help us
+    /// with this very task, but I don't completely agree with that order. So we simply
+    /// misuse that property as a scratchpad.
     ///
     var sorted: [SubsonicAlbum] {
         self.map { album in
@@ -32,6 +30,14 @@ extension Array where Element == SubsonicAlbum {
 }
 
 extension Array where Element == SubsonicArtist {
+    /// Return a sorted version of an array of SubsonicArtist, in the order in which we wish it
+    /// displayed in the interface (in the Artists / Composers screen). Basically this order is alphabetical
+    /// by `name`, sorted in the way the Finder would do it.
+    ///
+    /// A SubsonicArtist has a `sortedName` property which is supposed to help us
+    /// with this very task, but I don't completely agree with that order. So we simply
+    /// misuse that property as a scratchpad.
+    ///
     var sorted: [SubsonicArtist] {
         self.map { artist in
             var artist = artist
@@ -46,8 +52,8 @@ extension Array where Element == SubsonicArtist {
             }
             return artist
         }
-        // That's it: in a single pass, we've set the sortName of every album.
-        // Now sort the albums by that sortName, "as the Finder would do it".
+        // That's it: in a single pass, we've set the sortName of every artist.
+        // Now sort the artists by that sortName, "as the Finder would do it".
         .sorted { $0.sortName!.localizedStandardCompare($1.sortName!) == .orderedAscending }
     }
 }

@@ -5,9 +5,14 @@ import MediaPlayer
 /// Collection of mockable services used by the app. The sole instance is stored in the
 /// AppDelegate as a global (crude but effective).
 @MainActor
-struct Services {
+final class Services {
+    // I don't like the singleton pattern, but it's an elegant way to ensure there can be only one.
+    static var shared: Services = Services.init()
+    private init() {}
+
     var audioSession: AudioSessionType = AVAudioSession.sharedInstance()
     var backgroundTaskOperationMaker: BackgroundTaskOperationMakerType = BackgroundTaskOperationMaker()
+    var cache: CacheType = Cache()
     var currentPlaylist: PlaylistType = Playlist()
     var download: DownloadType = Download(fileManager: FileManager.default)
     var haptic: HapticType = Haptic()

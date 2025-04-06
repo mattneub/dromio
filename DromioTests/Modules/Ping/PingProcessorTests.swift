@@ -201,17 +201,17 @@ struct PingProcessorTests {
         #expect(coordinator.playlistState == .init(offlineMode: true))
     }
 
-    @Test("receive pickServer: if no servers, calls showAlert and stops", .mockCaches)
+    @Test("receive pickServer: if no servers, calls showAlert and stops", .mockCache)
     func pickServerNoServer() async throws {
         await subject.receive(.pickServer)
         #expect(coordinator.methodsCalled == ["showAlert(title:message:)"])
         #expect(coordinator.title == "No server to choose.")
         #expect(coordinator.message == "Tap Enter Server Info if you want to add a server.")
-        let mockCaches = try #require(caches as? MockCaches)
-        #expect(mockCaches.methodsCalled.isEmpty)
+        let mockCache = try #require(services.cache as? MockCache)
+        #expect(mockCache.methodsCalled.isEmpty)
     }
 
-    @Test("receive pickServer: if servers, calls showActionSheet, if nil response, stops", .mockCaches)
+    @Test("receive pickServer: if servers, calls showActionSheet, if nil response, stops", .mockCache)
     func pickServerNoChoice() async throws {
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
@@ -222,11 +222,11 @@ struct PingProcessorTests {
         #expect(coordinator.title == "Pick a server to use:")
         #expect(coordinator.options == ["u@h", "uu@hh"])
         #expect(persistence.methodsCalled.count == 1)
-        let mockCaches = try #require(caches as? MockCaches)
-        #expect(mockCaches.methodsCalled.isEmpty)
+        let mockCache = try #require(services.cache as? MockCache)
+        #expect(mockCache.methodsCalled.isEmpty)
     }
 
-    @Test("receive pickServer: if servers, calls showActionSheet, if one is chosen, brings it to front, saves, sets current server, clears playlist and downloads, calls doPing", .mockCaches)
+    @Test("receive pickServer: if servers, calls showActionSheet, if one is chosen, brings it to front, saves, sets current server, clears playlist and downloads, calls doPing", .mockCache)
     func pickServer() async throws {
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
@@ -246,8 +246,8 @@ struct PingProcessorTests {
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"))
         #expect(currentPlaylist.methodsCalled == ["clear()"])
         #expect(await download.methodsCalled == ["clear()"])
-        let mockCaches = try #require(caches as? MockCaches)
-        #expect(mockCaches.methodsCalled == ["clear()"])
+        let mockCache = try #require(services.cache as? MockCache)
+        #expect(mockCache.methodsCalled == ["clear()"])
         await #while(presenter.statesPresented.isEmpty)
         #expect(presenter.statesPresented.first?.status == .empty)
     }
@@ -259,7 +259,7 @@ struct PingProcessorTests {
         #expect(coordinator.delegate === subject)
     }
 
-    @Test("userEdited: puts the new server info first in the list, sets the current server, clears current playlist and downloads, calls ping", .mockCaches)
+    @Test("userEdited: puts the new server info first in the list, sets the current server, clears current playlist and downloads, calls ping", .mockCache)
     func userEdited() async throws {
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
@@ -275,8 +275,8 @@ struct PingProcessorTests {
         ])
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hhh", port: 1, username: "uuu", password: "p", version: "v"))
         #expect(currentPlaylist.methodsCalled == ["clear()"])
-        let mockCaches = try #require(caches as? MockCaches)
-        #expect(mockCaches.methodsCalled == ["clear()"])
+        let mockCache = try #require(services.cache as? MockCache)
+        #expect(mockCache.methodsCalled == ["clear()"])
         await #while(presenter.statesPresented.isEmpty)
         #expect(await download.methodsCalled == ["clear()"])
         #expect(presenter.statesPresented.first?.status == .empty)

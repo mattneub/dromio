@@ -19,8 +19,9 @@ final class AlbumsProcessor: Processor {
                 state.animateSpinner = true
                 await presenter?.present(state)
                 await presenter?.receive(.tearDownSearcher)
-                let albums = try await caches.fetch(\.albumsList) {
-                    try await services.requestMaker.getAlbumList()
+                let albums = try await services.cache.fetch(\.allAlbums) {
+                    let albums = try await services.requestMaker.getAlbumList()
+                    return albums.sorted
                 }
                 state.listType = .allAlbums
                 state.albums = albums
@@ -58,10 +59,10 @@ final class AlbumsProcessor: Processor {
                     switch source {
                     case .artists:
                         let albums = try await services.requestMaker.getAlbumsFor(artistId: id)
-                        state.albums = albums
+                        state.albums = albums.sorted
                     case .composers(let name):
                         let songs = try await services.requestMaker.getSongsBySearch(query: name)
-                        state.albums = albumsForComposer(songs: songs, id: id)
+                        state.albums = albumsForComposer(songs: songs, id: id) // already sorted
                     }
                     await presenter?.present(state)
                     try? await unlessTesting {
@@ -134,7 +135,7 @@ final class AlbumsProcessor: Processor {
         // a song has an albumId so we can unique to those as a set
         let albumsIds = Set(songsByThisComposer.map { $0.albumId })
         // now, using the existing list of albums, we can filter to the albums with those ids
-        let allAlbums = caches.albumsList ?? [] // we know we have it
-        return allAlbums.filter({ albumsIds.contains($0.id)}).sorted
+        let allAlbums = services.cache.allAlbums ?? [] // we know we have it, and it is sorted
+        return allAlbums.filter({ albumsIds.contains($0.id) })
     }
 }
