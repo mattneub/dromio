@@ -54,22 +54,28 @@ final class BackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationType {
     /// - Returns: The value returned by the `whatToDo` function.
     func start() async throws -> T {
         bti = application.beginBackgroundTask { [weak self] in
+            guard let self else { return }
             Task { @MainActor in
-                try? await self?.cleanup?()
-                self?.application.endBackgroundTask(self?.bti ?? .invalid)
+                try? await cleanup?()
+                if bti != .invalid {
+                    application.endBackgroundTask(bti)
+                }
             }
         }
         do {
-            guard bti != .invalid else { throw NSError(domain: "what", code: 0) }
             let result = try await whatToDo()
-            application.endBackgroundTask(bti)
+            if bti != .invalid {
+                application.endBackgroundTask(bti)
+            }
             return result
         } catch {
-            Task { @MainActor in
-                try await self.cleanup?()
-            }
-            application.endBackgroundTask(self.bti)
-            throw error
+            return try await Task { @MainActor in // this way we can throw and return nothing
+                try await cleanup?()
+                if bti != .invalid {
+                    application.endBackgroundTask(bti)
+                }
+                throw error
+            }.value
         }
     }
 }

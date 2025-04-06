@@ -8,13 +8,19 @@ struct BackgroundTaskOperationTests {
     @Test("start: calls application begin background task, calls whatToDo, calls application end background task")
     func start() async throws {
         let application = MockApplication()
-        try await confirmation(expectedCount: 1) { confirmed in
-            let subject = BackgroundTaskOperation(whatToDo: { confirmed() }, cleanup: { throw TestError.codeShouldNotRun }, application: application)
-            try await subject.start()
-            try? await Task.sleep(for: .seconds(0.2))
-        }
-        #expect(application.methodsCalled.contains("beginBackgroundTask(expirationHandler:)"))
-        #expect(application.methodsCalled.contains("endBackgroundTask(_:)"))
+        nonisolated(unsafe) var done = false
+        let subject = BackgroundTaskOperation(
+            whatToDo: {
+                done = true
+            },
+            cleanup: {
+                throw TestError.codeShouldNotRun
+            },
+            application: application
+        )
+        try await subject.start()
+        #expect(done)
+        #expect(application.methodsCalled == ["beginBackgroundTask(expirationHandler:)", "endBackgroundTask(_:)"])
         #expect(application.identifierToReturn == application.identifierAtEnd)
     }
 
@@ -22,32 +28,53 @@ struct BackgroundTaskOperationTests {
     func startWithTimeout() async throws {
         let application = MockApplication()
         application.timeout = true
-        try await confirmation(expectedCount: 2) { confirmed in
-            let subject = BackgroundTaskOperation(whatToDo: { confirmed() }, cleanup: { confirmed() }, application: application)
-            try await subject.start()
-            try? await Task.sleep(for: .seconds(0.2))
+        nonisolated(unsafe) var done = false
+        let task = Task {
+            try await Task.sleep(for: .seconds(1))
         }
-        #expect(application.methodsCalled.contains("beginBackgroundTask(expirationHandler:)"))
-        #expect(application.methodsCalled.contains("endBackgroundTask(_:)"))
+        let subject = BackgroundTaskOperation(
+            whatToDo: {
+                try? await task.value
+            },
+            cleanup: {
+                done = true
+                task.cancel()
+            },
+            application: application
+        )
+        try await subject.start()
+        #expect(done)
+        // extra call to `endBackgroundTask`, because in the test we cannot prevent the `whatToDo`
+        // path from completing normally
+        #expect(application.methodsCalled == ["beginBackgroundTask(expirationHandler:)", "endBackgroundTask(_:)", "endBackgroundTask(_:)"])
         #expect(application.identifierToReturn == application.identifierAtEnd)
     }
 
-    // TODO: Keep an eye on this test, it has flickered and I don't know why
     @Test("start: if `whatToDo` throws, calls cleanup")
     func startWithThrow() async throws {
         let application = MockApplication()
-        application.timeout = true
-        try? await confirmation(expectedCount: 1) { confirmed in
-            let subject = BackgroundTaskOperation(whatToDo: { throw TestError.codeShouldNotRun }, cleanup: { confirmed() }, application: application)
+        nonisolated(unsafe) var done = false
+        let subject = BackgroundTaskOperation(
+            whatToDo: {
+                throw TestError.someActualError
+            },
+            cleanup: {
+                done = true
+            },
+            application: application
+        )
+        await #expect {
             try await subject.start()
-            try? await Task.sleep(for: .seconds(0.2))
+        } throws: { error in
+            (error as? TestError) == TestError.someActualError
         }
-        #expect(application.methodsCalled.contains("beginBackgroundTask(expirationHandler:)"))
-        #expect(application.methodsCalled.contains("endBackgroundTask(_:)"))
+        #expect(done)
+        #expect(application.methodsCalled == ["beginBackgroundTask(expirationHandler:)", "endBackgroundTask(_:)"])
         #expect(application.identifierToReturn == application.identifierAtEnd)
     }
 }
 
 private enum TestError: Error {
     case codeShouldNotRun
+    case someActualError
 }
