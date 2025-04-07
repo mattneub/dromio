@@ -1,38 +1,26 @@
 import Foundation
 
-enum PersistenceKey: String {
-    case currentPlaylist
-    case servers
-}
-
-@MainActor
-protocol UserDefaultsType {
-    func stringArray(forKey: String) -> [String]?
-    func set(_ value: Any?, forKey: String )
-}
-
-extension UserDefaults: UserDefaultsType {}
-
-protocol KeychainType {
-    subscript(key: String) -> String? { get set }
-}
-
-extension Keychain: KeychainType {}
-
+/// Protocol expressing the public face of our Persistence struct.
 @MainActor
 protocol PersistenceType {
-    func save(songList: [SubsonicSong], key: PersistenceKey) throws
-    func loadSongList(key: PersistenceKey) throws -> [SubsonicSong]
+    func saveCurrentPlaylist(songList: [SubsonicSong]) throws
+    func loadCurrentPlaylist() throws -> [SubsonicSong]
     func save(servers: [ServerInfo]) throws
     func loadServers() throws -> [ServerInfo]
 }
 
+/// Struct that implements persistence. There are two kinds; we can save something into
+/// UserDefaults, or we can save something into the keychain. In reality we save only two
+/// things: the current playlist, and the list of servers. When we save/fetch a server,
+/// its password is replaced by a dummy and the real password lives in the keychain.
 @MainActor
 struct Persistence: PersistenceType {
     static var defaults: UserDefaultsType = UserDefaults.standard
     static var keychain: KeychainType = Keychain.shared
 
-    func save(songList: [SubsonicSong], key: PersistenceKey) throws {
+    /// Save the current playlist's songs into user defaults.
+    /// - Parameter songList: Array of songs.
+    func saveCurrentPlaylist(songList: [SubsonicSong]) throws {
         Self.defaults.set(try songList.map { song in
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -41,17 +29,21 @@ struct Persistence: PersistenceType {
             }
             let data = try encoder.encode(song)
             return String(data: data, encoding: .utf8)
-        }, forKey: key.rawValue)
+        }, forKey: PersistenceKey.currentPlaylist.rawValue)
     }
 
-    func loadSongList(key: PersistenceKey) throws -> [SubsonicSong] {
-        let list = Self.defaults.stringArray(forKey: key.rawValue) ?? []
+    /// Fetch the current playlist songs from user defaults.
+    /// - Returns: The list of songs.
+    func loadCurrentPlaylist() throws -> [SubsonicSong] {
+        let list = Self.defaults.stringArray(forKey: PersistenceKey.currentPlaylist.rawValue) ?? []
         return try list.map { song in
             let data = song.data(using: .utf8) ?? Data()
             return try JSONDecoder().decode(SubsonicSong.self, from: data)
         }
     }
 
+    /// Save the list of servers into user defaults, with the passwords going into the keychain.
+    /// - Parameter servers: The list of servers.
     func save(servers: [ServerInfo]) throws {
         Self.defaults.set(try servers.map { server in
             let encoder = JSONEncoder()
@@ -67,6 +59,8 @@ struct Persistence: PersistenceType {
         }
     }
 
+    /// Fetch the list of servers from user defaults, with the passwords coming from the keychain.
+    /// - Returns: The list of servers.
     func loadServers() throws -> [ServerInfo] {
         let list = Self.defaults.stringArray(forKey: PersistenceKey.servers.rawValue) ?? []
         let servers = try list.map { server in
@@ -78,4 +72,10 @@ struct Persistence: PersistenceType {
         }
         return servers
     }
+}
+
+/// Keys for saving/fetching into/from UserDefaults.
+enum PersistenceKey: String {
+    case currentPlaylist
+    case servers
 }

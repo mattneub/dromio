@@ -12,8 +12,8 @@ struct PersistenceTests {
         Persistence.keychain = keychain
     }
 
-    @Test("saveSongList: encodes songs as strings, saves array to defaults")
-    func saveSongList() throws {
+    @Test("saveCurrentPlaylist: encodes songs as strings, saves array to defaults")
+    func saveCurrentPlaylist() throws {
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -27,7 +27,7 @@ struct PersistenceTests {
             duration: 100,
             contributors: nil
         )
-        try subject.save(songList: [song], key: .currentPlaylist)
+        try subject.saveCurrentPlaylist(songList: [song])
         #expect(defaults.key == "currentPlaylist")
         let expected = """
         {
@@ -46,8 +46,8 @@ struct PersistenceTests {
         #expect(result == [expected])
     }
 
-    @Test("loadSongList: decodes songs as strings to array of song")
-    func loadLongList() throws {
+    @Test("loadCurrentPlaylist: decodes songs as strings to array of song")
+    func loadCurrentPlaylist() throws {
         let song = """
         {
           "album" : "Album",
@@ -76,7 +76,7 @@ struct PersistenceTests {
             contributors: nil,
             downloaded: false
         )
-        let result = try subject.loadSongList(key: .currentPlaylist)
+        let result = try subject.loadCurrentPlaylist()
         #expect(defaults.key == "currentPlaylist")
         #expect(result == [expected])
     }

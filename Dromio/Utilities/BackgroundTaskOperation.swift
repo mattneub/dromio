@@ -1,5 +1,6 @@
 import UIKit
 
+/// Protocol describing the public face of our BackgroundTaskOperation, so we can mock it for testing.
 @MainActor
 protocol BackgroundTaskOperationType<T> {
     associatedtype T: Sendable

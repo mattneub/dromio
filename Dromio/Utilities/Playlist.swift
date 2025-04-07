@@ -4,6 +4,7 @@ enum PlaylistError: Error {
     case songAlreadyInList
 }
 
+/// Protocol expressing the public face of our Playlist class.
 @MainActor
 protocol PlaylistType: Sendable {
     var list: [SubsonicSong] { get }
@@ -14,22 +15,24 @@ protocol PlaylistType: Sendable {
     func clear()
 }
 
+/// Class that represents a playlist. It's just a list of songs, plus the ability to edit the list
+/// (set it, append to it, delete a song, move a song, clear the list).
+///
+/// At the moment, this class represents only the _current_ playlist, i.e. the anonymous "Queue" displayed
+/// in the Queue screen of the interface. This is the only thing that can be played. If we ever decide to implement
+/// named playlists, the assumptions in this class will break and it will have to be modified.
 @MainActor
 final class Playlist: PlaylistType {
-    let persistenceKey: PersistenceKey
 
-    /// Source of truth for playlist contents.
+    /// Source of truth for playlist contents. As mentioned above, we simply assume that we are
+    /// the current playlist, because there are no other playlists at the moment.
     var list: [SubsonicSong] {
         get {
-            (try? services.persistence.loadSongList(key: persistenceKey)) ?? []
+            (try? services.persistence.loadCurrentPlaylist()) ?? []
         }
         set {
-            try? services.persistence.save(songList: newValue, key: persistenceKey)
+            try? services.persistence.saveCurrentPlaylist(songList: newValue)
         }
-    }
-
-    init(persistenceKey: PersistenceKey = .currentPlaylist) {
-        self.persistenceKey = persistenceKey
     }
     
     /// Set the entire list to the given list.

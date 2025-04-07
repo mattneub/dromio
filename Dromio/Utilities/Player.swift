@@ -3,26 +3,7 @@ import AVFoundation
 import MediaPlayer
 import Combine
 
-@MainActor
-protocol QueuePlayerType: AnyObject {
-    var currentItem: AVPlayerItem? { get }
-    var actionAtItemEnd: AVPlayer.ActionAtItemEnd { get set }
-    func removeAllItems()
-    func play()
-    func pause()
-    func insert(_: AVPlayerItem, after: AVPlayerItem?)
-    func currentTime() -> CMTime
-    var rate: Float { get set }
-    func addPeriodicTimeObserver(
-        forInterval interval: CMTime,
-        queue: dispatch_queue_t?,
-        using block: @escaping @Sendable (CMTime) -> Void
-    ) -> Any
-    func removeTimeObserver(_ observer: Any)
-}
-
-extension AVQueuePlayer: QueuePlayerType {}
-
+/// Protocol expressing the public face of our Player class.
 @MainActor
 protocol PlayerType {
     var currentSongIdPublisher: CurrentValueSubject<String?, Never> { get }
@@ -35,53 +16,62 @@ protocol PlayerType {
     func foregrounding()
 }
 
+/// Class that handles playing songs.
+///
+/// This is far and away the most complex single type
+/// in the app; it has many kinds of work to do, because it must respond to the user
+/// asking to play a sequence, asking to play / pause in the app, and asking to play / pause
+/// in the remove command center, and it must update the now playing info center and manage
+/// the audio session. In addition, it publishes updates on what the player is doing, so that
+/// other parts of the app can subscribe and stay apprised of what is happening.
 @MainActor
 final class Player: NSObject, PlayerType {
-    /// The _real_ player.
+    /// The _real_ player. Set in the initializer.
     let player: any QueuePlayerType
 
     /// Function that obtains a reference to the remote command center. In this way we can be
     /// handed this function on initialization by the app or (with a mock) by the tests,
     /// without keeping a reference to the command center itself.
-    var commandCenterMaker: (@Sendable () -> any RemoteCommandCenterType)?
+    private let commandCenterMaker: (@Sendable () -> any RemoteCommandCenterType)
 
     /// Observation of the queue player's current item, so we are notified when it changes.
-    var queuePlayerCurrentItemObservation: NSKeyValueObservation?
+    private var queuePlayerCurrentItemObservation: NSKeyValueObservation?
 
     /// Observation of the queue player's rate, so we are notified when it changes. We need this
     /// for the edge case where the user removes an earphones route while we are playing. The
     /// docs specifically call this out: "To observe this player behavior," [i.e. the user disconnects headphones],
     /// "key-value observe the player’s rate property so that you can update your user interface
     /// as the player pauses playback.
-    var queuePlayerRateObservation: NSKeyValueObservation?
-
-    /// Public publisher of the current item. He who has ears to hear, let him hear.
-    var currentSongIdPublisher = CurrentValueSubject<String?, Never>(nil)
-
-    /// Public publisher of the current player state.
-    var playerStatePublisher = CurrentValueSubject<PlayerState, Never>(.empty)
-
-    /// List of all songs we've ever been handed, accessed by song id. Thus, if we know the id
-    /// of a song, we know its title and artist. But if a song is in the queue, we have its URL.
-    /// But its URL, stripped of its extension, is its id.
-    var knownSongs = [String: SubsonicSong]()
+    private var queuePlayerRateObservation: NSKeyValueObservation?
 
     /// Observation of the audio session interruption notification, so we are notified when interruption
     /// starts or ends.
-    var interruptionObservation: (any NSObjectProtocol)?
+    private var interruptionObservation: (any NSObjectProtocol)?
 
-    /// Observation of the player periodically while it has items.
-    var periodicObservation: Any?
+    /// Observation of the player periodically while it has items. We are currently not using this,
+    /// and with luck we will not have to use it.
+    private var periodicObservation: Any?
+
+    /// Public publisher of the current item. Who has ears to hear, let him hear.
+    var currentSongIdPublisher = CurrentValueSubject<String?, Never>(nil)
+
+    /// Public publisher of the current player state. Who has ears to hear, let him hear.
+    var playerStatePublisher = CurrentValueSubject<PlayerState, Never>(.empty)
+
+    /// List of all songs we've ever been handed, accessed by song id. Thus, if we know the id
+    /// of a song, we know its title and artist. Well, if a song is in the queue, we have its URL —
+    /// and its URL, stripped of its extension, is its id. See `currentSongId`, below.
+    var knownSongs = [String: SubsonicSong]()
 
     init(player: any QueuePlayerType, commandCenterMaker: @Sendable @escaping () -> any RemoteCommandCenterType) {
         self.player = player
         self.commandCenterMaker = commandCenterMaker
         super.init()
         // configure the command center
-        let commandCenter = self.commandCenterMaker?()
-        commandCenter?.play.addTarget(self, action: #selector(doPlay(_:)))
-        commandCenter?.pause.addTarget(self, action: #selector(doPause(_:)))
-        commandCenter?.changePlaybackPosition.isEnabled = false
+        let commandCenter = self.commandCenterMaker()
+        commandCenter.play.addTarget(self, action: #selector(doPlay(_:)))
+        commandCenter.pause.addTarget(self, action: #selector(doPause(_:)))
+        commandCenter.changePlaybackPosition.isEnabled = false
         // prepare our various observations
         queuePlayerCurrentItemObservation = (player as? AVPlayer)?.observe(\.currentItem, options: [.new]) { [weak self] _, item in
             Task {
@@ -127,13 +117,13 @@ final class Player: NSObject, PlayerType {
     }
 
     deinit {
-        let commandCenter = commandCenterMaker?()
-        commandCenter?.play.removeTarget(self)
-        commandCenter?.pause.removeTarget(self)
+        let commandCenter = commandCenterMaker()
+        commandCenter.play.removeTarget(self)
+        commandCenter.pause.removeTarget(self)
     }
 
-    /// Called when the player's current item changes.
-    func adjustNowPlayingItemToCurrentItem() {
+    /// Called by observations, when the player's current item or rate changes.
+    private func adjustNowPlayingItemToCurrentItem() {
         if currentSong != nil {
             doPlay(updateOnly: true)
         } else if player.currentItem == nil {

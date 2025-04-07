@@ -27,7 +27,6 @@ struct PlaylistTests {
         )
         subject.list = [song1]
         #expect(persistence.songList == [song1])
-        #expect(persistence.key == .currentPlaylist)
     }
 
     @Test("retrieving list retrieves from defaults")
@@ -47,7 +46,6 @@ struct PlaylistTests {
         )
         persistence.songList = [song1]
         #expect(subject.list == [song1])
-        #expect(persistence.key == .currentPlaylist)
     }
 
     @Test("setList: sets the list")

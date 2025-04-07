@@ -1,12 +1,12 @@
 /*
- This is the basis for our mini-Pentimento architecture. A view or view controller is a presenter;
- the logic goes into the corresponding processor. A view or view controller sends an _action_ to
- the processor via `receive`. The processor sends a _state_ to the presenter via `present`.
+ This is the basis for our mini-Pentimento modular architecture (see https://livefront.com/pentimento/):
 
- Sometimes we want the presenter to _do_ something rather than expressing a static state. For that,
- the processor sends an _effect_ to the presenter via `receive`.
+ * A view or view controller is a presenter; the logic goes into the corresponding processor.
+ * A view or view controller sends an _action_ to the processor via `receive`, in response to the user.
+ * The processor sends a _state_ to the presenter via `present`; the presenter portrays it in the interface.
+ * Sometimes the processor may send an _effect_ to the presenter via `receive` to make it perform a
+   behavior without the overhead of a state presentation.
 
- See https://livefront.com/pentimento/
  */
 
 /// Protocol for classes with a `receive` method; this allows us to slot a mock in place of

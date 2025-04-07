@@ -18,16 +18,6 @@ final class MockApplication: ApplicationType {
         return identifierToReturn
     }
 
-    func beginBackgroundTask(withName taskName: String?, expirationHandler: (@MainActor @Sendable () -> Void)?) -> UIBackgroundTaskIdentifier {
-        methodsCalled.append(#function)
-        if timeout {
-            Task {
-                expirationHandler?()
-            }
-        }
-        return identifierToReturn
-    }
-
     func endBackgroundTask(_ identifier: UIBackgroundTaskIdentifier) {
         methodsCalled.append(#function)
         identifierAtEnd = identifier

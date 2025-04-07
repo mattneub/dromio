@@ -1,5 +1,6 @@
 import Foundation
 
+/// Protocol describing our Cache class, so we can mock it for testing.
 @MainActor
 protocol CacheType {
     var allAlbums: [SubsonicAlbum]? { get set }
@@ -28,13 +29,16 @@ final class Cache: CacheType {
     /// For the composer-filtered version of `allArtists`
     var artistsWhoAreComposers: [SubsonicArtist]?
 
-    /// The heart of the cache, implementing memoization. You give me the keypath of one of my properties and a
-    /// function that returns its type. If I already have that property value, I just return it; if not,
-    /// I perform your function, set my property to the result, and return the result.
+    /// The heart of the cache, implementing memoization.
     /// - Parameters:
     ///   - key: Keypath within Cache.
-    ///   - using: Method to call to get the value if we don't already have it.
+    ///   - using: Method to call to obtain the value if we don't already have it.
     /// - Returns: The value requested, either from our property or from calling the given method.
+    ///
+    /// The principle here is very simple. You give me the keypath of one of my properties and a
+    /// function that returns its type. Then:
+    ///   * If I already have that property value, I just return it.
+    ///   * If not, I perform your function, set my property to the result, and return the result.
     ///
     func fetch<T: Sendable>(
         _ key: ReferenceWritableKeyPath<Cache, Optional<T>>,
@@ -49,6 +53,7 @@ final class Cache: CacheType {
         }
     }
 
+    /// Clear the cache by nilifying and thus erasing any data we've been maintaining.
     func clear() {
         allAlbums = nil
         allArtists = nil

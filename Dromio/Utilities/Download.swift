@@ -1,26 +1,5 @@
 import Foundation
 
-enum DownloadError: Error {
-    case noSuffix
-    case ranOutOfTime
-}
-
-/// Protocol that wraps the File Manager, for testing purposes.
-protocol FileManagerType: Sendable {
-    func moveItem(
-        at srcURL: URL,
-        to dstURL: URL
-    ) throws
-    func removeItem(at URL: URL) throws
-    func contentsOfDirectory(
-        at url: URL,
-        includingPropertiesForKeys keys: [URLResourceKey]?,
-        options mask: FileManager.DirectoryEnumerationOptions
-    ) throws -> [URL]
-}
-
-extension FileManager: FileManagerType, @retroactive @unchecked Sendable {}
-
 /// Public face of our Download type.
 protocol DownloadType: Actor {
     init(fileManager: FileManagerType)
@@ -50,8 +29,8 @@ actor Download: DownloadType {
     /// - Parameter song: The song to be downloaded.
     /// - Returns: The URL where the downloaded song is stored in the downloads directory.
     ///
-    /// The downloaded data goes into the temporary directory. There, we rename it using
-    /// the song's id plus its original suffix. Thus we can always access a downloaded song.
+    /// The downloaded data arrives into the temporary directory. There, we rename it using
+    /// the song's id plus its original suffix, and move it to downloads directory.
     func download(song: SubsonicSong) async throws -> URL {
         if let url = try downloadedURL(for: song) {
             return url
@@ -147,3 +126,10 @@ actor Download: DownloadType {
         }
     }
 }
+
+/// Errors that our Download can throw.
+enum DownloadError: Error {
+    case noSuffix
+    case ranOutOfTime
+}
+

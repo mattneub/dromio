@@ -1,7 +1,13 @@
 import Foundation
 
-/// See https://github.com/dagostini/DAKeychain
-final class Keychain: @unchecked Sendable {
+/// Protocol expressing the public face of our Keychain class.
+protocol KeychainType {
+    subscript(key: String) -> String? { get set }
+}
+
+/// Class that acts as a gateway to the keychain so we can store user passwords securely.
+/// Not really my code. See https://github.com/dagostini/DAKeychain
+final class Keychain: KeychainType, @unchecked Sendable {
 
     private init() {}
     public static let shared = Keychain()

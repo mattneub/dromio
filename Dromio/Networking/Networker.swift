@@ -7,36 +7,9 @@ enum NetworkerError: Error, Equatable {
     case message(String)
 }
 
-/// Protocol wrapping URLSession so we can mock it.
-@MainActor
-protocol URLSessionType: Sendable {
-    func allTasks() async -> [URLSessionTaskType]
-
-    func data(
-        for request: URLRequest,
-        delegate: (any URLSessionTaskDelegate)?
-    ) async throws -> (Data, URLResponse)
-
-    func download(
-        for request: URLRequest,
-        delegate: (any URLSessionTaskDelegate)?
-    ) async throws -> (URL, URLResponse)
-}
-
-extension URLSession: URLSessionType {
-    func allTasks() async -> [URLSessionTaskType] { await allTasks }
-}
-
-/// Protocol wrapping URLSessionTask so we can mock it.
-@MainActor
-protocol URLSessionTaskType {
-    func cancel()
-}
-
-extension URLSessionTask: URLSessionTaskType {}
-
 /// Protocol defining the public face of our Networker.
-@MainActor protocol NetworkerType: Sendable {
+@MainActor
+protocol NetworkerType: Sendable {
     func clear() async
     func performRequest(url: URL) async throws -> Data
     func performDownloadRequest(url: URL) async throws -> URL

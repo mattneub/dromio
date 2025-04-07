@@ -1,5 +1,7 @@
 import UIKit
 
+/// View that draws itself as a simple horizontal "thermometer", filling itself from the left
+/// up to a specified percentage.
 final class ThermometerView: UIView {
     static var thermometerFillColor = UIColor { traitCollection in
         if traitCollection.userInterfaceStyle == .light {
@@ -19,6 +21,7 @@ final class ThermometerView: UIView {
         isOpaque = false
     }
 
+    /// Percentage of fill, as a fraction of 1.
     var progress: Double = 0 {
         didSet {
             setNeedsDisplay()
