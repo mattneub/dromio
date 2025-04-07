@@ -285,6 +285,7 @@ final class Player: NSObject, PlayerType {
     /// away from someone else who may have it. If the user wants to resume playing, that's what
     /// the playpause button is for.
     func foregrounding() {
+        try? services.audioSession.setCategory(.playback, mode: .default, options: [])
         if player.rate > 0 {
             doPlay(updateOnly: true)
         }

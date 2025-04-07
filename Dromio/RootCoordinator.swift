@@ -3,25 +3,12 @@ import UIKit
 /// Protocol embodying the public interface for the root coordinator.
 @MainActor
 protocol RootCoordinatorType: AnyObject {
-    // Processors are rooted here. They are all expressed as protocols, for testability.
-
-    var pingProcessor: (any Processor<PingAction, PingState, Void>)? { get }
-    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
-    var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)? { get }
-    var artistsProcessor: (any Processor<ArtistsAction, ArtistsState, ArtistsEffect>)? { get }
-    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)? { get }
-    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)? { get }
-    var serverProcessor: (any Processor<ServerAction, ServerState, Void>)? { get }
-
-    // The root coordinator also needs a reference to the true root view controller.
-
-    var rootViewController: UIViewController? { get set }
-
     /// Create the entire initial interface and modules, rooted in the given window.
     /// - Parameter window: The window
     func createInitialInterface(window: UIWindow)
 
     /// Create the Server module and show the view controller.
+    /// - Parameter delegate: Delegate to be contacted on dismissal.
     func showServer(delegate: any ServerDelegate)
 
     /// Dismiss all presented controllers to return to the ping view.
@@ -31,6 +18,7 @@ protocol RootCoordinatorType: AnyObject {
     func showAlbums()
 
     /// Create the Albums module and push the view controller, passing the processor the given state.
+    /// - Parameter state: The state to pass to the processor.
     func showAlbumsForArtist(state: AlbumsState)
 
     /// Create the Album module and show the view controller.
@@ -49,21 +37,30 @@ protocol RootCoordinatorType: AnyObject {
     func dismissArtists()
 
     /// Create the Playlist module and show the view controller.
+    /// - Parameter state: State to pass to the processor.
     func showPlaylist(state: PlaylistState?)
 
     /// Pop the Playlist view controller.
     func popPlaylist()
 
     /// Show a simple alert with an OK button.
+    /// - Parameters:
+    ///   - title: Title of the alert.
+    ///   - message: Message of the alert.
     func showAlert(title: String?, message: String?)
 
     /// Show a simple action sheet.
+    /// - Parameters:
+    ///   - title: Title for the action sheet.
+    ///   - options: Titles of the buttons in the action sheet.
+    /// - Returns: The title of the button that the user tapped, or nil if the user cancelled.
     func showActionSheet(title: String, options: [String]) async -> String?
 }
 
 /// Class of single instance responsible for all view controller manipulation.
 @MainActor
 final class RootCoordinator: RootCoordinatorType {
+    // Processors are rooted here. They are all expressed as protocols, for testability.
 
     var pingProcessor: (any Processor<PingAction, PingState, Void>)?
     var albumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
@@ -75,6 +72,7 @@ final class RootCoordinator: RootCoordinatorType {
     var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)?
     var serverProcessor: (any Processor<ServerAction, ServerState, Void>)?
 
+    /// Reference to the root view controller of the app.
     weak var rootViewController: UIViewController?
 
     func createInitialInterface(window: UIWindow) {

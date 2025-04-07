@@ -440,7 +440,7 @@ struct PlayerTests {
         audioPlayer.time = 30
         audioPlayer.rate = 1
         subject.foregrounding()
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.methodsCalled == ["setCategory(_:mode:options:)", "setActive(_:options:)"])
         #expect(audioSession.active == true)
         #expect(!audioPlayer.methodsCalled.contains("play()")) // *
         #expect(nowPlayingInfo.methodsCalled.contains("playingAt(_:)"))
@@ -454,7 +454,7 @@ struct PlayerTests {
         audioPlayer.rate = 0
         subject.foregrounding()
         #expect(nowPlayingInfo.methodsCalled.isEmpty)
-        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(audioSession.methodsCalled == ["setCategory(_:mode:options:)"])
         #expect(audioPlayer.methodsCalled.isEmpty)
         #expect(subject.playerStatePublisher.value == .empty)
     }

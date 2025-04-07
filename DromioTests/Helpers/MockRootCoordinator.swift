@@ -3,14 +3,6 @@ import UIKit
 
 @MainActor
 final class MockRootCoordinator: RootCoordinatorType {
-    var serverProcessor: (any Processor<ServerAction, ServerState, Void>)?
-    var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)?
-    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
-    var artistsProcessor: (any Processor<ArtistsAction, ArtistsState, ArtistsEffect>)?
-    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)?
-    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
-    var pingProcessor: (any Processor<PingAction, PingState, Void>)?
-    var rootViewController: UIViewController?
     var methodsCalled = [String]()
     var albumId: String?
     var title: String?
