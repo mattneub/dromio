@@ -74,9 +74,9 @@ final class Networker: NetworkerType {
         // system times us out before the download completes, cancel the download in good order.
         let operation = services.backgroundTaskOperationMaker.make { [weak self] in
             guard let self else { fatalError("oop") }
-            logger.log("download started")
+            logger.debug("download started")
             let (url, response) = try await self.session.download(for: request, delegate: DownloadDelegate())
-            logger.log("download finished")
+            logger.debug("download finished")
             return (url, response)
         } cleanup: { [weak self] in
             guard let self else { return }

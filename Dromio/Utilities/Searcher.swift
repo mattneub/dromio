@@ -28,7 +28,7 @@ class Searcher {
             }
             busy = true
             do { // actual work
-                logger.log("setUpSearcher")
+                logger.debug("setUpSearcher")
                 let controller = UISearchController(searchResultsController: nil)
                 self.searchController = controller
                 controller.hidesNavigationBarDuringPresentation = false
@@ -43,7 +43,7 @@ class Searcher {
                 controller.searchBar.autocorrectionType = .no
                 controller.searchBar.spellCheckingType = .no
                 controller.searchBar.inlinePredictionType = .no
-                logger.log("finished setUpSearcher")
+                logger.debug("finished setUpSearcher")
             }
             if !buffer.isEmpty {
                 let nextTask = buffer.removeFirst()
@@ -68,14 +68,14 @@ class Searcher {
             }
             busy = true
             do { // actual work
-                logger.log("tearDownSearcher")
+                logger.debug("tearDownSearcher")
                 controller.isActive = false
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.1))
                 }
                 navigationItem.searchController = nil
                 searchController = nil
-                logger.log("finished tearDownSearcher")
+                logger.debug("finished tearDownSearcher")
             }
             if !buffer.isEmpty {
                 let nextTask = buffer.removeFirst()

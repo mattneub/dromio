@@ -158,6 +158,6 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
     }
 
     deinit {
-        logger.log("farewell from artists")
+        logger.debug("farewell from artists")
     }
 }

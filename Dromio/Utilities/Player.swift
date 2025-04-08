@@ -75,13 +75,13 @@ final class Player: NSObject, PlayerType {
         // prepare our various observations
         queuePlayerCurrentItemObservation = (player as? AVPlayer)?.observe(\.currentItem, options: [.new]) { [weak self] _, item in
             Task {
-                logger.log("current item change: \(String(describing: item.newValue), privacy: .public)")
+                logger.debug("current item change: \(String(describing: item.newValue), privacy: .public)")
                 await self?.adjustNowPlayingItemToCurrentItem()
             }
         }
         queuePlayerRateObservation = (player as? AVPlayer)?.observe(\.rate, options: [.new]) { [weak self] _, item in
             Task {
-                logger.log("rate change: \(String(describing: item.newValue), privacy: .public)")
+                logger.debug("rate change: \(String(describing: item.newValue), privacy: .public)")
                 await self?.adjustNowPlayingItemToCurrentItem()
             }
         }
@@ -98,11 +98,11 @@ final class Player: NSObject, PlayerType {
                 switch type {
                 case .began:
                     unlessTesting {
-                        logger.log("interruption started")
+                        logger.debug("interruption started")
                     }
                 case .ended:
                     unlessTesting {
-                        logger.log("interruption ended")
+                        logger.debug("interruption ended")
                     }
                     if self?.player.rate == 0 {
                         // "prime the pump" by activating session, signalling info center
@@ -130,7 +130,7 @@ final class Player: NSObject, PlayerType {
             removePeriodicObservation()
             services.nowPlayingInfo.clear()
             unlessTesting {
-                logger.log("deactivating session")
+                logger.debug("deactivating session")
             }
             try? services.audioSession.setActive(false, options: [])
             playerStatePublisher.send(.empty)
@@ -171,14 +171,14 @@ final class Player: NSObject, PlayerType {
     ///   - url: URL of the resource. May be local (file) or remote (http(s)).
     ///   - song: SubsonicSong info associated with this URL.
     func play(url: URL, song: SubsonicSong) {
-        logger.log("starting to play")
+        logger.debug("starting to play")
         removePeriodicObservation()
         player.removeAllItems()
         player.insert(AVPlayerItem(url: url), after: nil)
         unlessTesting {
-            logger.log("activating session")
+            logger.debug("activating session")
         }
-        logger.log("playing! \(url, privacy: .public)")
+        logger.debug("playing! \(url, privacy: .public)")
         knownSongs[song.id] = song // order matters
         doPlay(updateOnly: false)
     }
@@ -195,7 +195,7 @@ final class Player: NSObject, PlayerType {
 
     /// Response to the remote command center saying "play".
     @objc func doPlay(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
-        logger.log("doPlay")
+        logger.debug("doPlay")
         doPlay(updateOnly: false)
         return .success
     }
@@ -206,11 +206,11 @@ final class Player: NSObject, PlayerType {
     ///   If false, the caller means _really_ play.
     func doPlay(updateOnly: Bool) {
         unlessTesting {
-            logger.log("activating session")
+            logger.debug("activating session")
         }
         try? services.audioSession.setActive(true, options: [])
         if player.rate == 0 && !updateOnly {
-            logger.log("telling player to play")
+            logger.debug("telling player to play")
             player.play()
             configurePeriodicObservation()
         }
@@ -229,7 +229,7 @@ final class Player: NSObject, PlayerType {
 
     /// Response to the remote command center saying "pause".
     @objc func doPause(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
-        logger.log("doPause")
+        logger.debug("doPause")
         doPause()
         return .success
     }
@@ -261,7 +261,7 @@ final class Player: NSObject, PlayerType {
         knownSongs.removeAll()
         services.nowPlayingInfo.clear()
         unlessTesting {
-            logger.log("deactivating session")
+            logger.debug("deactivating session")
         }
         try? services.audioSession.setActive(false, options: [])
         currentSongIdPublisher.send(nil)
@@ -274,7 +274,7 @@ final class Player: NSObject, PlayerType {
     func backgrounding() {
         if player.rate == 0 {
             unlessTesting {
-                logger.log("deactivating session")
+                logger.debug("deactivating session")
             }
             try? services.audioSession.setActive(false, options: [])
         }
