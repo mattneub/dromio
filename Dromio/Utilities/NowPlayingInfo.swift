@@ -29,6 +29,7 @@ final class NowPlayingInfo: NowPlayingInfoType {
                 centerInfo[key.value] = value
             }
             // now set the entire center now playing info
+            logger.log("telling npi: \(centerInfo, privacy: .public)")
             center.nowPlayingInfo = centerInfo
         }
     }

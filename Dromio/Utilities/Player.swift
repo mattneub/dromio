@@ -210,6 +210,7 @@ final class Player: NSObject, PlayerType {
         }
         try? services.audioSession.setActive(true, options: [])
         if player.rate == 0 && !updateOnly {
+            logger.log("telling player to play")
             player.play()
             configurePeriodicObservation()
         }
