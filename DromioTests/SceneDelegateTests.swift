@@ -18,7 +18,7 @@ import UIKit
     @Test("sceneWillEnterForeground: calls player foregrounding")
     func testForeground() throws {
         let mockAudioSession = MockAudioSession()
-        services.audioSession = mockAudioSession
+        services.audioSessionProvider = AudioSessionProvider { mockAudioSession }
         let player = MockPlayer()
         services.player = player
         let scene = try #require(UIApplication.shared.connectedScenes.first as? UIWindowScene)

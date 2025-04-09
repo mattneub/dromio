@@ -10,7 +10,7 @@ final class Services {
     static var shared: Services = Services.init()
     private init() {}
 
-    var audioSession: AudioSessionType = AVAudioSession.sharedInstance()
+    var audioSessionProvider: AudioSessionProvider = AudioSessionProvider { AVAudioSession.sharedInstance() }
     var backgroundTaskOperationMaker: BackgroundTaskOperationMakerType = BackgroundTaskOperationMaker()
     var cache: CacheType = Cache()
     var currentPlaylist: PlaylistType = Playlist()

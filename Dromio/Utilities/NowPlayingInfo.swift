@@ -1,78 +1,93 @@
 import MediaPlayer
 
 /// Protocol that represents the public face of our NowPlayingInfo type.
+@MainActor
 protocol NowPlayingInfoType {
-    func display(song: SubsonicSong)
-    func playingAt(_: TimeInterval)
-    func pausedAt(_: TimeInterval)
+    func playing(song: SubsonicSong, at: TimeInterval)
+    func paused(song: SubsonicSong, at: TimeInterval)
     func clear()
 }
 
 /// Class that acts as a gateway for talking to the MPNowPlayingInfoCenter.
+@MainActor
 final class NowPlayingInfo: NowPlayingInfoType {
-    /// Reference to the now playing info center to which we are the gateway.
-    var center: NowPlayingInfoCenterType = MPNowPlayingInfoCenter.default()
+    /// Provider for the now playing info center to which we are the gateway.
+    var centerProvider: () -> any NowPlayingInfoCenterType = { MPNowPlayingInfoCenter.default() }
+
+    /// Buffer so that we can avoid hammering the center with the same info multiple times in a row.
+    var previousInfo: [NowPlayingInfoKey: NowPlayingInfoValue]?
 
     /// Dictionary that acts as a setter gateway to the now playing info center's `nowPlayingInfo` dictionary.
-    var info: [NowPlayingInfoKey: Any] {
+    var info: [NowPlayingInfoKey: NowPlayingInfoValue] {
         get { [:] } // dummy getter
         set {
+            if let previousInfo {
+                guard previousInfo != newValue else {
+                    return
+                }
+            }
+            previousInfo = newValue
+            let center = centerProvider()
             var centerInfo = center.nowPlayingInfo ?? [:]
             // If song changed, remove all existing keys before setting any.
-            if let id = newValue[.id] as? String {
-                if (center.nowPlayingInfo?[NowPlayingInfoKey.id.value] as? String) != id {
+            if let id = newValue[.id], case .string(let idValue) = id {
+                if (center.nowPlayingInfo?[NowPlayingInfoKey.id.value] as? String) != idValue {
                     centerInfo = [:]
                 }
             }
             // set all incoming keys and values
             for (key, value) in newValue {
-                centerInfo[key.value] = value
+                centerInfo[key.value] = switch value {
+                case .string(let stringValue): stringValue
+                case .double(let doubleValue): doubleValue
+                }
             }
             // now set the entire center now playing info
-            logger.debug("telling npi: \(centerInfo, privacy: .public)")
+            unlessTesting {
+                logger.debug("telling npi: \(centerInfo, privacy: .public)")
+            }
             center.nowPlayingInfo = centerInfo
         }
     }
 
     /// Utility that lets us batch changes to the `info`.
-    func updateInfo(_ handler: (inout [NowPlayingInfoKey: Any]) -> () ) {
+    func updateInfo(_ handler: (inout [NowPlayingInfoKey: NowPlayingInfoValue]) -> () ) {
         var info = self.info
         handler(&info)
         self.info = info
     }
 
-    /// Given a song, set our info gateway for display of its metadata.
-    /// - Parameter song: The song.
-    func display(song: SubsonicSong) {
-        updateInfo { info in
-            info[.artist] = song.artist
-            info[.title] = song.title
-            info[.duration] = song.duration ?? 60
-            info[.id] = song.id
-        }
-    }
-
     /// Set our info gateway to say that the current song is playing at the given time.
     /// - Parameter time: The time (current position within the current song).
-    func playingAt(_ time: TimeInterval) {
+    func playing(song: SubsonicSong, at time: TimeInterval) {
         updateInfo { info in
-            info[.time] = time
-            info[.rate] = 1.0
+            info[.artist] = .string(song.artist ?? "")
+            info[.title] = .string(song.title)
+            info[.duration] = .double(song.duration ?? 60)
+            info[.id] = .string(song.id)
+            info[.time] = .double(time)
+            info[.rate] = .double(1.0)
         }
     }
 
     /// Set our info gateway to say that the current song is paused at the given time.
     /// - Parameter time: The time (current position within the current song).
-    func pausedAt(_ time: TimeInterval) {
+    func paused(song: SubsonicSong, at time: TimeInterval) {
         updateInfo { info in
-            info[.time] = time
-            info[.rate] = 0.0
+            info[.artist] = .string(song.artist ?? "")
+            info[.title] = .string(song.title)
+            info[.duration] = .double(song.duration ?? 60)
+            info[.id] = .string(song.id)
+            info[.time] = .double(time)
+            info[.rate] = .double(0.0)
         }
     }
 
     /// Tell the now playing info center that there is no current song.
     func clear() {
-        center.nowPlayingInfo = nil
+        centerProvider().nowPlayingInfo = nil
+        previousInfo = nil
+        print("telling npi: clear")
     }
 }
 
@@ -89,5 +104,10 @@ struct NowPlayingInfoKey: Hashable {
     static let duration = NowPlayingInfoKey(value: MPMediaItemPropertyPlaybackDuration)
     static let time = NowPlayingInfoKey(value: MPNowPlayingInfoPropertyElapsedPlaybackTime)
     static let rate = NowPlayingInfoKey(value: MPNowPlayingInfoPropertyPlaybackRate)
-    static let id = NowPlayingInfoKey(value: MPNowPlayingInfoPropertyExternalContentIdentifier)
+    static let id = NowPlayingInfoKey(value: "mySecretIdentifier") // using MPNowPlayingInfoPropertyExternalContentIdentifier has bug
+}
+
+enum NowPlayingInfoValue: Equatable {
+    case string(String)
+    case double(Double)
 }

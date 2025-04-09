@@ -2,10 +2,8 @@
 import AVFoundation
 
 final class MockQueuePlayer: QueuePlayerType {
-    var rate: Float = 0
-    
+    var rate = Float(0.0)
     var currentItem: AVPlayerItem?
-
     var actionAtItemEnd: AVPlayer.ActionAtItemEnd = .none
 
     nonisolated(unsafe) var methodsCalled = [String]()
@@ -25,6 +23,7 @@ final class MockQueuePlayer: QueuePlayerType {
 
     func removeAllItems() {
         methodsCalled.append(#function)
+        rate = 0
     }
 
     func insert(_ item: AVPlayerItem, after: AVPlayerItem?) {

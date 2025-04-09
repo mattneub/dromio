@@ -9,19 +9,16 @@ final class MockNowPlayingInfo: NowPlayingInfoType {
     var song: SubsonicSong?
     var time: Double?
 
-    func display(song: SubsonicSong) {
+    func playing(song: SubsonicSong, at time: TimeInterval) {
         methodsCalled.append(#function)
+        self.time = time
         self.song = song
     }
 
-    func playingAt(_ time: TimeInterval) {
+    func paused(song: SubsonicSong, at time: TimeInterval) {
         methodsCalled.append(#function)
         self.time = time
-    }
-
-    func pausedAt(_ time: TimeInterval) {
-        methodsCalled.append(#function)
-        self.time = time
+        self.song = song
     }
 
 

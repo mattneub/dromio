@@ -106,6 +106,7 @@ final class Player: NSObject, PlayerType {
                     }
                     if self?.player.rate == 0 {
                         // "prime the pump" by activating session, signalling info center
+                        logger.debug("priming the pump")
                         self?.doPlay(updateOnly: false)
                         self?.doPause()
                     }
@@ -126,14 +127,8 @@ final class Player: NSObject, PlayerType {
     private func adjustNowPlayingItemToCurrentItem() {
         if currentSong != nil {
             doPlay(updateOnly: true)
-        } else if player.currentItem == nil {
-            removePeriodicObservation()
-            services.nowPlayingInfo.clear()
-            unlessTesting {
-                logger.debug("deactivating session")
-            }
-            try? services.audioSession.setActive(false, options: [])
-            playerStatePublisher.send(.empty)
+        } else if player.currentItem == nil && player.rate == 1 { // reached end of queue
+            clear()
         }
         currentSongIdPublisher.send(currentSongId)
     }
@@ -171,13 +166,12 @@ final class Player: NSObject, PlayerType {
     ///   - url: URL of the resource. May be local (file) or remote (http(s)).
     ///   - song: SubsonicSong info associated with this URL.
     func play(url: URL, song: SubsonicSong) {
-        logger.debug("starting to play")
         removePeriodicObservation()
+        player.pause()
+        services.nowPlayingInfo.clear()
         player.removeAllItems()
         player.insert(AVPlayerItem(url: url), after: nil)
-        unlessTesting {
-            logger.debug("activating session")
-        }
+        player.actionAtItemEnd = .advance
         logger.debug("playing! \(url, privacy: .public)")
         knownSongs[song.id] = song // order matters
         doPlay(updateOnly: false)
@@ -208,21 +202,20 @@ final class Player: NSObject, PlayerType {
         unlessTesting {
             logger.debug("activating session")
         }
-        try? services.audioSession.setActive(true, options: [])
+        try? services.audioSessionProvider.provide().setActive(true, options: [])
         if player.rate == 0 && !updateOnly {
             logger.debug("telling player to play")
             player.play()
             configurePeriodicObservation()
         }
         if let song = currentSong {
-            services.nowPlayingInfo.display(song: song)
-        }
-        if player.rate == 0 {
-            services.nowPlayingInfo.pausedAt(player.currentTime().seconds)
-            playerStatePublisher.send(.paused)
-        } else {
-            services.nowPlayingInfo.playingAt(player.currentTime().seconds)
-            playerStatePublisher.send(.playing)
+            if player.rate == 0 {
+                services.nowPlayingInfo.paused(song: song, at: player.currentTime().seconds)
+                playerStatePublisher.send(.paused)
+            } else {
+                services.nowPlayingInfo.playing(song: song, at: player.currentTime().seconds)
+                playerStatePublisher.send(.playing)
+            }
         }
         currentSongIdPublisher.send(currentSongId)
     }
@@ -234,12 +227,9 @@ final class Player: NSObject, PlayerType {
         return .success
     }
 
-    /// Minor workhorse. Pause the queue player and update the now playing info center.
+    /// Pause the queue player. If playing, this will trigger a rate change which will call `doPlay` to update everything.
     func doPause() {
-        try? services.audioSession.setActive(true, options: [])
         player.pause()
-        services.nowPlayingInfo.pausedAt(player.currentTime().seconds)
-        playerStatePublisher.send(.paused)
     }
 
     /// Public toggle, used by the playpause button in the playlist interface.
@@ -263,7 +253,7 @@ final class Player: NSObject, PlayerType {
         unlessTesting {
             logger.debug("deactivating session")
         }
-        try? services.audioSession.setActive(false, options: [])
+        try? services.audioSessionProvider.provide().setActive(false, options: [])
         currentSongIdPublisher.send(nil)
         playerStatePublisher.send(.empty)
     }
@@ -276,7 +266,7 @@ final class Player: NSObject, PlayerType {
             unlessTesting {
                 logger.debug("deactivating session")
             }
-            try? services.audioSession.setActive(false, options: [])
+            try? services.audioSessionProvider.provide().setActive(false, options: [])
         }
     }
 
@@ -286,7 +276,7 @@ final class Player: NSObject, PlayerType {
     /// away from someone else who may have it. If the user wants to resume playing, that's what
     /// the playpause button is for.
     func foregrounding() {
-        try? services.audioSession.setCategory(.playback, mode: .default, options: [])
+        try? services.audioSessionProvider.provide().setCategory(.playback, mode: .default, options: [])
         if player.rate > 0 {
             doPlay(updateOnly: true)
         }
