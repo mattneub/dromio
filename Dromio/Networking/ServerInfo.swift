@@ -10,8 +10,8 @@ struct ServerInfo: Codable, Equatable {
     let username: String // "u"
     let password: String // used to calculate "t" and "s"
     let version: String // "v"
-    // To specify a server configuration, it is sufficient to combine the username and host.
-    var id: String { username + "@" + host }
+    // To specify a server configuration, it is sufficient to combine the username, the host, and the port.
+    var id: String { username + "@" + host + ":" + String(port) }
 
     /// Copy self, replacing the password with an empty string.
     /// - Returns: The copy.

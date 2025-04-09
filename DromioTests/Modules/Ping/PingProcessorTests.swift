@@ -50,7 +50,7 @@ struct PingProcessorTests {
         await subject.receive(.deleteServer)
         #expect(coordinator.methodsCalled.last == "showActionSheet(title:options:)")
         #expect(coordinator.title == "Pick a server to delete:")
-        #expect(coordinator.options == ["u@h"])
+        #expect(coordinator.options == ["u@h:1"])
         #expect(!persistence.methodsCalled.contains("save(servers:)"))
     }
 
@@ -60,11 +60,11 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
-        coordinator.optionToReturn = "u@h"
+        coordinator.optionToReturn = "u@h:1"
         await subject.receive(.deleteServer)
         #expect(coordinator.methodsCalled.last == "showActionSheet(title:options:)")
         #expect(coordinator.title == "Pick a server to delete:")
-        #expect(coordinator.options == ["u@h", "uu@hh"])
+        #expect(coordinator.options == ["u@h:1", "uu@hh:1"])
         #expect(persistence.methodsCalled.contains("save(servers:)"))
         #expect(persistence.servers == [
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
@@ -220,7 +220,7 @@ struct PingProcessorTests {
         await subject.receive(.pickServer)
         #expect(coordinator.methodsCalled == ["showActionSheet(title:options:)"])
         #expect(coordinator.title == "Pick a server to use:")
-        #expect(coordinator.options == ["u@h", "uu@hh"])
+        #expect(coordinator.options == ["u@h:1", "uu@hh:1"])
         #expect(persistence.methodsCalled.count == 1)
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled.isEmpty)
@@ -232,12 +232,12 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
-        coordinator.optionToReturn = "uu@hh"
+        coordinator.optionToReturn = "uu@hh:1"
         urlMaker.currentServerInfo = nil
         await subject.receive(.pickServer)
         #expect(coordinator.methodsCalled == ["showActionSheet(title:options:)"])
         #expect(coordinator.title == "Pick a server to use:")
-        #expect(coordinator.options == ["u@h", "uu@hh"])
+        #expect(coordinator.options == ["u@h:1", "uu@hh:1"])
         #expect(persistence.methodsCalled.contains("save(servers:)"))
         #expect(persistence.servers == [
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
