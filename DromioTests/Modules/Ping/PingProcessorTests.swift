@@ -11,7 +11,7 @@ struct PingProcessorTests {
     let coordinator = MockRootCoordinator()
     let urlMaker = MockURLMaker()
     let persistence = MockPersistence()
-    let download = MockDownload(fileManager: MockFileManager())
+    let download = MockDownload()
     let currentPlaylist = MockPlaylist()
     let haptic = MockHaptic()
     let player = MockPlayer()

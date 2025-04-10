@@ -2,7 +2,6 @@ import Foundation
 
 /// Public face of our Download type.
 protocol DownloadType: Actor {
-    init(fileManager: FileManagerType)
     func download(song: SubsonicSong) async throws -> URL
     func clear()
     func delete(song: SubsonicSong) throws
@@ -15,12 +14,12 @@ protocol DownloadType: Actor {
 /// stuff going on on the main actor.
 ///
 actor Download: DownloadType {
-    var fileManager: FileManagerType
+    var fileManagerProvider: () -> FileManagerType = { FileManager.default }
 
-    @MainActor
-    init(fileManager: FileManagerType) {
-        self.fileManager = fileManager
+    func setFileManagerProvider(provider: @escaping @Sendable () -> FileManagerType) {
+        self.fileManagerProvider = provider
     }
+
     /// The directory where downloads are stored.
     func downloadsDirectory() -> URL { .cachesDirectory }
 
@@ -46,7 +45,7 @@ actor Download: DownloadType {
         url.appendPathComponent(filename)
         // move it into the downloads directory and return new URL
         let newURL = downloadsDirectory().appending(path: filename, directoryHint: .notDirectory)
-        if let _ = try? fileManager.moveItem(at: url, to: newURL) {
+        if let _ = try? fileManagerProvider().moveItem(at: url, to: newURL) {
             return newURL
         }
         // if that failed (it shouldn't), punt by returning the renamed URL in temp so we are can play _something_
@@ -71,7 +70,7 @@ actor Download: DownloadType {
     /// - Parameter song: The song.
     func delete(song: SubsonicSong) throws {
         guard let url = try downloadedURL(for: song) else { return }
-        try fileManager.removeItem(at: url)
+        try fileManagerProvider().removeItem(at: url)
     }
 
     /// Remove all downloaded songs, both in the downloads directory and in the temp directory.
@@ -83,6 +82,7 @@ actor Download: DownloadType {
     /// Clear the contents of the given directory.
     /// - Parameter directory: The directory.
     private func clear(directory: URL) {
+        let fileManager = fileManagerProvider()
         let contents: [URL] = (try? fileManager.contentsOfDirectory(
             at: directory,
             includingPropertiesForKeys: nil,
@@ -100,7 +100,7 @@ actor Download: DownloadType {
     ///
     func downloadedURL(for song: SubsonicSong) throws -> URL? {
         let filename = try filename(for: song)
-        let contents: [URL] = (try? fileManager.contentsOfDirectory(
+        let contents: [URL] = (try? fileManagerProvider().contentsOfDirectory(
             at: downloadsDirectory(),
             includingPropertiesForKeys: nil,
             options: []

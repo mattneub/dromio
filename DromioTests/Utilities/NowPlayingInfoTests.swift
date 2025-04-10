@@ -13,6 +13,13 @@ struct NowPlayingInfoTests {
         self.center = center
     }
 
+    @Test("center provider, by default, provides the real Now Playing Info Center")
+    func centerProvider() {
+        let subject = NowPlayingInfo()
+        let product = subject.centerProvider()
+        #expect(product === MPNowPlayingInfoCenter.default())
+    }
+
     @Test("info: setting sets the corresponding properties in the now playing info")
     func info() {
         #expect(center.nowPlayingInfo == nil)

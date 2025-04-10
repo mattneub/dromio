@@ -14,6 +14,14 @@ struct NetworkerTests {
         return URLSession(configuration: configuration)
     }()
 
+    @Test("default session is URLSession with config request timeout 10")
+    func session() throws {
+        let subject = Networker()
+        let session = try #require(subject.session as? URLSession)
+        let config = session.configuration
+        #expect(config.timeoutIntervalForRequest == 10)
+    }
+
     @Test("clear: resets the fraction of the progress publisher if it is less than 1")
     func clear() async {
         do {

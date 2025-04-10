@@ -32,7 +32,7 @@ final class Player: NSObject, PlayerType {
     /// Function that obtains a reference to the remote command center. In this way we can be
     /// handed this function on initialization by the app or (with a mock) by the tests,
     /// without keeping a reference to the command center itself.
-    private let commandCenterMaker: (@Sendable () -> any RemoteCommandCenterType)
+    let commandCenterMaker: (@Sendable () -> any RemoteCommandCenterType)
 
     /// Observation of the queue player's current item, so we are notified when it changes.
     private var queuePlayerCurrentItemObservation: NSKeyValueObservation?
@@ -63,7 +63,10 @@ final class Player: NSObject, PlayerType {
     /// and its URL, stripped of its extension, is its id. See `currentSongId`, below.
     var knownSongs = [String: SubsonicSong]()
 
-    init(player: any QueuePlayerType, commandCenterMaker: @Sendable @escaping () -> any RemoteCommandCenterType) {
+    init(
+        player: any QueuePlayerType = AVQueuePlayer(),
+        commandCenterMaker: @Sendable @escaping () -> any RemoteCommandCenterType = { MPRemoteCommandCenter.shared() }
+    ) {
         self.player = player
         self.commandCenterMaker = commandCenterMaker
         super.init()

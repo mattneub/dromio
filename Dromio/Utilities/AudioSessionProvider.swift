@@ -4,7 +4,7 @@ import AVFoundation
 @MainActor
 final class AudioSessionProvider {
     private let provider: () -> any AudioSessionType
-    init(provider: @escaping () -> any AudioSessionType) {
+    init(provider: @escaping () -> any AudioSessionType = { AVAudioSession.sharedInstance() }) {
         self.provider = provider
     }
     func provide() -> any AudioSessionType {

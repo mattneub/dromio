@@ -7,9 +7,6 @@ actor MockDownload: DownloadType {
     var methodsCalled = [String]()
     nonisolated(unsafe) var bools: [String: Bool] = [:]
 
-    @MainActor
-    init(fileManager: any FileManagerType) {}
-
     func download(song: SubsonicSong) async throws -> URL {
         methodsCalled.append(#function)
         self.song = song

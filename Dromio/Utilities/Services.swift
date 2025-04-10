@@ -10,16 +10,16 @@ final class Services {
     static var shared: Services = Services.init()
     private init() {}
 
-    var audioSessionProvider: AudioSessionProvider = AudioSessionProvider { AVAudioSession.sharedInstance() }
+    var audioSessionProvider: AudioSessionProvider = AudioSessionProvider()
     var backgroundTaskOperationMaker: BackgroundTaskOperationMakerType = BackgroundTaskOperationMaker()
     var cache: CacheType = Cache()
     var currentPlaylist: PlaylistType = Playlist()
-    var download: DownloadType = Download(fileManager: FileManager.default)
+    var download: DownloadType = Download()
     var haptic: HapticType = Haptic()
     var networker: NetworkerType = Networker()
     var nowPlayingInfo: NowPlayingInfoType = NowPlayingInfo()
     var persistence: PersistenceType = Persistence()
-    var player: PlayerType = Player(player: AVQueuePlayer(), commandCenterMaker: { MPRemoteCommandCenter.shared() })
+    var player: PlayerType = Player()
     var requestMaker: RequestMakerType = RequestMaker()
     var responseValidator: ResponseValidatorType = ResponseValidator()
     var urlMaker: URLMakerType = URLMaker()

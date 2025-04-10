@@ -14,7 +14,8 @@ struct DownloadTests {
 
     @Test("downloadsDirectory is Caches")
     func downloadsDirectory() async throws {
-        let subject = Download(fileManager: mockFileManager)
+        let subject = Download()
+        await subject.setFileManagerProvider(provider: { mockFileManager })
         let url = await subject.downloadsDirectory()
         #expect(url.lastPathComponent == "Caches")
     }
@@ -34,7 +35,8 @@ struct DownloadTests {
             duration: nil,
             contributors: nil
         )
-        let subject = Download(fileManager: mockFileManager)
+        let subject = Download()
+        await subject.setFileManagerProvider(provider: { mockFileManager })
         await #expect {
             try await subject.download(song: song)
         } throws: { error in
@@ -44,7 +46,8 @@ struct DownloadTests {
 
     @Test("download: song already in cache, by id and suffix, returns its url")
     func downloadSongExists() async throws {
-        let subject = Download(fileManager: mockFileManager)
+        let subject = Download()
+        await subject.setFileManagerProvider(provider: { mockFileManager })
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -71,7 +74,8 @@ struct DownloadTests {
 
     @Test("download: song not already in cache, downloads, names by id and suffix, moves, returns its url")
     func downloadSongNotExists() async throws {
-        let subject = Download(fileManager: mockFileManager)
+        let subject = Download()
+        await subject.setFileManagerProvider(provider: { mockFileManager })
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -104,7 +108,8 @@ struct DownloadTests {
 
     @Test("download: song not already in cache, downloads, names by id and suffix, moves — if move throws, returns tmp URL")
     func downloadSongMoveFails() async throws {
-        let subject = Download(fileManager: mockFileManager)
+        let subject = Download()
+        await subject.setFileManagerProvider(provider: { mockFileManager })
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -138,7 +143,8 @@ struct DownloadTests {
 
     @Test("download: if requestMaker throws on download, rethrows")
     func downloadSongRequestMakerError() async throws {
-        let subject = Download(fileManager: mockFileManager)
+        let subject = Download()
+        await subject.setFileManagerProvider(provider: { mockFileManager })
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -164,7 +170,8 @@ struct DownloadTests {
 
     @Test("clear: empties the caches directory and the temporary directory")
     func clear() async throws {
-        let subject = Download(fileManager: mockFileManager)
+        let subject = Download()
+        await subject.setFileManagerProvider(provider: { mockFileManager })
         do { // two files in caches, none in temp
             let url = await subject.downloadsDirectory()
             let file = url.appendingPathComponent("test.txt")
@@ -218,7 +225,8 @@ struct DownloadTests {
 
     @Test("downloadedURL(for:): returns URL if file for song exists in downloads dir, nil if not")
     func downloadedURL() async throws {
-        let subject = Download(fileManager: mockFileManager)
+        let subject = Download()
+        await subject.setFileManagerProvider(provider: { mockFileManager })
         let url = await subject.downloadsDirectory()
         let file = url.appendingPathComponent("1.mp3")
         mockFileManager.urls = [url: [file]]
@@ -268,7 +276,8 @@ struct DownloadTests {
 
     @Test("isDownloaded: behaves as expected")
     func isDownloaded() async throws {
-        let subject = Download(fileManager: mockFileManager)
+        let subject = Download()
+        await subject.setFileManagerProvider(provider: { mockFileManager })
         let url = await subject.downloadsDirectory()
         let file = url.appendingPathComponent("1.mp3")
         mockFileManager.urls = [url: [file]]
@@ -318,7 +327,8 @@ struct DownloadTests {
 
     @Test("delete: deletes the given song's file; if there is no such file, no attempt to delete")
     func delete() async throws {
-        let subject = Download(fileManager: mockFileManager)
+        let subject = Download()
+        await subject.setFileManagerProvider(provider: { mockFileManager })
         let url = await subject.downloadsDirectory()
         let file = url.appendingPathComponent("2.mp3")
         mockFileManager.urls = [url: [file]]

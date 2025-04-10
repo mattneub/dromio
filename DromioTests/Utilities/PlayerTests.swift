@@ -23,6 +23,14 @@ struct PlayerTests {
         services.player = MockPlayer() // because otherwise two players exists, messing up our notification/observation tests
     }
 
+    @Test("default configuration has an AVQueuePlayer and provides the remote command center")
+    func defaultConfig() {
+        let subject = Player()
+        #expect(subject.player is AVQueuePlayer)
+        let center = subject.commandCenterMaker()
+        #expect(center === MPRemoteCommandCenter.shared())
+    }
+
     @Test("initializer: sets up remote command center, deinit: tears it down")
     func initializer() async throws {
         let commandCenter = MockRemoteCommandCenter()
