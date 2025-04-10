@@ -14,8 +14,13 @@ protocol DownloadType: Actor {
 /// stuff going on on the main actor.
 ///
 actor Download: DownloadType {
+    /// Function that provides a reference to the file manager, wrapped in a protocol for testing.
+    /// By default, the function returns the default file manager, and that is all the app needs.
     var fileManagerProvider: () -> FileManagerType = { FileManager.default }
 
+    /// Method that allows the `fileManagerProvider` function to be replaced. Should not be called
+    /// except by a test that needs to mock the file manager.
+    /// - Parameter provider: The replacement provider function.
     func setFileManagerProvider(provider: @escaping @Sendable () -> FileManagerType) {
         self.fileManagerProvider = provider
     }

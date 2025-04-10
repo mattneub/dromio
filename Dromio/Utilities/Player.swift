@@ -32,7 +32,7 @@ final class Player: NSObject, PlayerType {
     /// Function that obtains a reference to the remote command center. In this way we can be
     /// handed this function on initialization by the app or (with a mock) by the tests,
     /// without keeping a reference to the command center itself.
-    let commandCenterMaker: (@Sendable () -> any RemoteCommandCenterType)
+    let commandCenterProvider: (@Sendable () -> any RemoteCommandCenterType)
 
     /// Observation of the queue player's current item, so we are notified when it changes.
     private var queuePlayerCurrentItemObservation: NSKeyValueObservation?
@@ -62,16 +62,23 @@ final class Player: NSObject, PlayerType {
     /// of a song, we know its title and artist. Well, if a song is in the queue, we have its URL —
     /// and its URL, stripped of its extension, is its id. See `currentSongId`, below.
     var knownSongs = [String: SubsonicSong]()
-
+    
+    /// Initializer.
+    /// - Parameters:
+    ///   - player: A queue player, wrapped in a protocol for testing. By default, this will be
+    ///     an AVQueuePlayer, and the app should not override this; only a test should use this parameter.
+    ///   - commandCenterProvider: A function that provides a reference to the command center, wrapped in a
+    ///     protocol for testing. By default, this function return the shared remote command center, and
+    ///     the app should not override this; only a test should use this parameter.
     init(
         player: any QueuePlayerType = AVQueuePlayer(),
-        commandCenterMaker: @Sendable @escaping () -> any RemoteCommandCenterType = { MPRemoteCommandCenter.shared() }
+        commandCenterProvider: @Sendable @escaping () -> any RemoteCommandCenterType = { MPRemoteCommandCenter.shared() }
     ) {
         self.player = player
-        self.commandCenterMaker = commandCenterMaker
+        self.commandCenterProvider = commandCenterProvider
         super.init()
         // configure the command center
-        let commandCenter = self.commandCenterMaker()
+        let commandCenter = self.commandCenterProvider()
         commandCenter.play.addTarget(self, action: #selector(doPlay(_:)))
         commandCenter.pause.addTarget(self, action: #selector(doPause(_:)))
         commandCenter.changePlaybackPosition.isEnabled = false
@@ -121,7 +128,7 @@ final class Player: NSObject, PlayerType {
     }
 
     deinit {
-        let commandCenter = commandCenterMaker()
+        let commandCenter = commandCenterProvider()
         commandCenter.play.removeTarget(self)
         commandCenter.pause.removeTarget(self)
     }

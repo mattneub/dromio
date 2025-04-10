@@ -14,7 +14,7 @@ struct PlayerTests {
 
     init() {
         let commandCenter = MockRemoteCommandCenter()
-        subject = Player(player: audioPlayer, commandCenterMaker: { commandCenter })
+        subject = Player(player: audioPlayer, commandCenterProvider: { commandCenter })
         self.commandCenter = commandCenter
         let audioSession = MockAudioSession()
         services.audioSessionProvider = .init { audioSession }
@@ -27,14 +27,14 @@ struct PlayerTests {
     func defaultConfig() {
         let subject = Player()
         #expect(subject.player is AVQueuePlayer)
-        let center = subject.commandCenterMaker()
+        let center = subject.commandCenterProvider()
         #expect(center === MPRemoteCommandCenter.shared())
     }
 
     @Test("initializer: sets up remote command center, deinit: tears it down")
     func initializer() async throws {
         let commandCenter = MockRemoteCommandCenter()
-        var subject: Player? = Player(player: audioPlayer, commandCenterMaker: { commandCenter })
+        var subject: Player? = Player(player: audioPlayer, commandCenterProvider: { commandCenter })
         let play = try #require(commandCenter.play as? MockCommand)
         #expect(play.methodsCalled.contains("addTarget(_:action:)"))
         #expect(play.target is Player)
@@ -96,7 +96,7 @@ struct PlayerTests {
     @Test("if the queue player changes current item, calls now playing info `playing`, sets playerState and currentSongIdPublisher, activates")
     func itemChanges() async {
         subject.playerStatePublisher.value = .empty
-        let subject = Player(player: AVQueuePlayer(), commandCenterMaker: { commandCenter }) // real player!
+        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }) // real player!
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
             title: "Title",
@@ -125,7 +125,7 @@ struct PlayerTests {
 
     @Test("if the queue player changes current item to nil, calls clear, deactivates session, sets playerState and currentSongIdPublisher")
     func itemChangesToNil() async {
-        let subject = Player(player: AVQueuePlayer(), commandCenterMaker: { commandCenter }) // real player!
+        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }) // real player!
         subject.playerStatePublisher.value = .playing
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
@@ -154,7 +154,7 @@ struct PlayerTests {
 
     @Test("if the queue player changes rate to 0, calls now playing info `paused`, sets playerState and currentSongIdPublisher, activates")
     func rateChangesToZero() async {
-        let subject = Player(player: AVQueuePlayer(), commandCenterMaker: { commandCenter }) // real player!
+        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }) // real player!
         subject.playerStatePublisher.value = .playing
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",

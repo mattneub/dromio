@@ -3,6 +3,12 @@ import UIKit
 /// Protocol describing a type that is a factory for our BackgroundTaskOperation.
 @MainActor
 protocol BackgroundTaskOperationMakerType {
+    /// Create an instance of BackgroundTaskOperation, fully initialized, and wrapped in its
+    /// protocol for testing purposes.
+    /// - Parameters:
+    ///   - whatToDo: The `whatToDo` function for the BackgroundTaskOperation's initializer.
+    ///   - cleanup: The `cleanup` function for the BackgroundTaskOperation's initializer.
+    /// - Returns: The BackgroundTaskOperation, fully initialized.
     func make<T: Sendable>(
         whatToDo: @Sendable @escaping () async throws -> T,
         cleanup: (@Sendable () async throws -> ())?
@@ -29,7 +35,7 @@ final class BackgroundTaskOperationMaker: BackgroundTaskOperationMakerType {
         return BackgroundTaskOperation<T>(
             whatToDo: whatToDo,
             cleanup: cleanup,
-            application: UIApplication.shared
+            application: UIApplication.shared // The real BackgroundTaskOperation takes the real application.
         )
     }
 }
