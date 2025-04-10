@@ -33,6 +33,10 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITab
         await updateTableView(data: state.songs)
     }
 
+    func indexPath(forDatum datum: String) -> IndexPath? {
+        datasource.indexPath(for: datum)
+    }
+
     // MARK: - Table view contents
 
     /// Data to be displayed by the table view.
@@ -155,5 +159,5 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITab
     func willPresentSearchController(_ searchController: UISearchController) {
         originalData = data
     }
-
 }
+

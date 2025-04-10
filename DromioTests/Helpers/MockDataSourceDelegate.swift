@@ -8,6 +8,8 @@ final class MockDataSourceDelegate<StateType, ActionType, EffectType>: NSObject,
     var processor: (any Receiver<ActionType>)?
     var state: StateType?
     var tableView: UITableView?
+    var datum: String?
+    var indexPath: IndexPath?
 
     var datasource: UITableViewDiffableDataSource<String, String>!
 
@@ -24,6 +26,12 @@ final class MockDataSourceDelegate<StateType, ActionType, EffectType>: NSObject,
     func present(_ state: StateType) {
         methodsCalled.append(#function)
         self.state = state
+    }
+
+    func indexPath(forDatum datum: String) -> IndexPath? {
+        methodsCalled.append(#function)
+        self.datum = datum
+        return self.indexPath
     }
 
     func updateSearchResults(for searchController: UISearchController) {

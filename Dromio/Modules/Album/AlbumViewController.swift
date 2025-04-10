@@ -79,6 +79,9 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
 
     func receive(_ effect: AlbumEffect) async {
         switch effect {
+        case .animate(let song):
+            guard let indexPath = dataSourceDelegate?.indexPath(forDatum: song.id) else { return }
+            await animate(indexPath: indexPath)
         case .animatePlaylist:
             navigationItem.rightBarButtonItem?.addSymbolEffect(.bounce, options: .nonRepeating)
         case .deselectAll:
@@ -92,6 +95,35 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
         case .setUpSearcher:
             await searcher.setUpSearcher(navigationItem: navigationItem, tableView: tableView, updater: dataSourceDelegate)
         }
+    }
+
+    /// Private utility that animates a snapshot of the given row to the (approximate) position of the
+    /// left bar button item (a bar button item has no frame so we have to guess where it is).
+    /// - Parameter row: The row.
+    private func animate(indexPath: IndexPath) async {
+        func hyp(_ p1: CGPoint, _ p2: CGPoint) -> CGFloat {
+            let a = p1.x - p2.x
+            let b = p1.y - p2.y
+            return (a*a + b*b).squareRoot()
+        }
+        guard let cell = tableView.cellForRow(at: indexPath) else { return }
+        guard let window = cell.window else { return }
+        guard let navigationController else { return }
+        guard let snapshot = cell.snapshotView(afterScreenUpdates: true) else { return }
+        let navBar = navigationController.navigationBar
+        let navBarFrame = navBar.convert(navBar.bounds, to: nil) // window coordinates
+        let initialFrame = cell.convert(cell.bounds, to: nil) // window coordinates
+        snapshot.frame = initialFrame
+        window.addSubview(snapshot)
+        let initialCenter = snapshot.center
+        let finalCenter = CGPoint(x: navBarFrame.maxX - 30 - navBar.safeAreaInsets.right, y: navBarFrame.minY + 20) // or thereabouts
+        let distance = hyp(initialCenter, finalCenter)
+        let duration = 0.5 * (distance / tableView.bounds.height) // good enough
+        await UIView.animate(withDuration: duration, delay: 0, options: [.curveEaseIn]) {
+            snapshot.center = finalCenter
+            snapshot.transform = .init(scaleX: 0.1, y: 0.1)
+        }
+        snapshot.removeFromSuperview()
     }
 
     @objc func showPlaylist() {

@@ -39,17 +39,21 @@ final class AlbumProcessor: Processor {
                 await presenter?.present(state)
             }
         case .tapped(let song):
+            var success = false
             do {
                 try services.currentPlaylist.append(song)
                 services.haptic.success()
-                await presenter?.receive(.animatePlaylist)
+                success = true
             } catch {
-                services.haptic.failure()
             }
             try? await unlessTesting {
-                try? await Task.sleep(for: .seconds(0.3))
+                try? await Task.sleep(for: .seconds(0.2))
             }
             await presenter?.receive(.deselectAll)
+            if success {
+                await presenter?.receive(.animate(song: song))
+                await presenter?.receive(.animatePlaylist)
+            }
         case .showPlaylist:
             coordinator?.showPlaylist(state: nil)
         }

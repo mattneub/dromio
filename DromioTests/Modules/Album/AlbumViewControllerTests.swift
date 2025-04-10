@@ -147,6 +147,27 @@ struct AlbumViewControllerTests {
         // I don't see how to test this: you can't ask a bar button item whether it has a symbol effect
     }
 
+    @Test("receive animateSong: calls `indexPath(forDatum:), animates")
+    func receiveAnimateSong() async throws {
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        await subject.receive(.animate(song: song))
+        #expect(mockDataSourceDelegate.methodsCalled.last == "indexPath(forDatum:)")
+        #expect(mockDataSourceDelegate.datum == "1")
+        // And I don't know how to test the animation.
+    }
+
     @Test("receive deselectAll: tells the table view to select nil")
     func receiveDeselectAll() async {
         subject.tableView.selectRow(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .none)

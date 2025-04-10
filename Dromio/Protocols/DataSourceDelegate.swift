@@ -17,6 +17,22 @@ protocol DataSourceDelegate<ProcessorAction, State, Received>: NSObjectProtocol,
     /// Initializer.
     /// - Parameter tableView: The table view whose `dataSource` and `delegate` we will set.
     init(tableView: UITableView)
+
+    /// Given a piece of string data, returns the corresponding index path.
+    /// - Parameter forDatum: The datum.
+    /// - Returns: The index path, or nil if there is none.
+    /// Assumes that some string is uniquely determinative of the data (e.g. its `id`). This is
+    /// true throughout the app, which uses the data `id` as the item identifier type of
+    /// the diffable data source, but it is still rather a bold assumption; however, I didn't want
+    /// to add yet another generic type.
+    func indexPath(forDatum: String) -> IndexPath?
+}
+
+/// Extension which allows adopters not to implement `indexPath(forDatum:)`.
+extension DataSourceDelegate {
+    func indexPath(forDatum: String) -> IndexPath? {
+        return nil
+    }
 }
 
 /// Protocol combining two built-in types: it can update results for a UISearchController and can function as its delegate.
