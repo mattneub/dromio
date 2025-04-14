@@ -165,11 +165,15 @@ struct RootCoordinatorTests {
         await #while(subject.rootViewController?.presentedViewController?.presentedViewController == nil)
         let navigationController = try #require(subject.rootViewController?.presentedViewController?.presentedViewController as? UINavigationController)
         let artistsViewController = try #require(navigationController.children.first as? ArtistsViewController)
+        let mockAlbumsProcessor = MockProcessor<AlbumsAction, AlbumsState, AlbumsEffect>()
+        subject.albumsProcessor = mockAlbumsProcessor
         // ok, that was preparation, here we go
         subject.dismissArtists()
         await #while(subject.rootViewController?.presentedViewController?.presentedViewController != nil)
         #expect(navigationController.presentingViewController == nil)
         #expect(artistsViewController.view?.window == nil)
+        await #while(mockAlbumsProcessor.thingsReceived.isEmpty)
+        #expect(mockAlbumsProcessor.thingsReceived == [.allAlbums])
     }
 
     @Test("showPlaylist: pushes playlist view controller onto base level, configures module")

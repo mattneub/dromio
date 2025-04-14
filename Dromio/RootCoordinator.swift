@@ -157,6 +157,10 @@ final class RootCoordinator: RootCoordinatorType {
     }
 
     func dismissArtists() {
+        Task {
+            // artificial data fetch simulation, to make the transition less abrupt
+            await albumsProcessor?.receive(.allAlbums)
+        }
         (artistsProcessor?.presenter as? UIViewController)?.dismiss(animated: unlessTesting(true))
     }
 
