@@ -1,4 +1,5 @@
 import UIKit
+import SwiftUI
 
 extension UIView {
     /// Get a list of subviews of a given type, recursing or not. By default, only non-hidden views
@@ -36,6 +37,20 @@ extension UIView {
     static func animate(withDuration duration: Double, delay: Double, options: UIView.AnimationOptions, animations: @escaping () -> Void) async {
         await withCheckedContinuation { continuation in
             UIView.animate(withDuration: duration, delay: delay, options: options, animations: animations) { _ in
+                continuation.resume(returning: ())
+            }
+        }
+    }
+
+    /// Async version of `animate` with SwiftUI Animation.
+    /// There is no completion handler; if there is something to do
+    /// after the animation ends, just do it after awaiting the call.
+    /// - Parameters:
+    ///   - animation: The SwiftUI Animation.
+    ///   - changes: Function containing animatable changes to commit to the views.
+    static func animate(_ animation: Animation, changes: () -> Void) async {
+        await withCheckedContinuation { continuation in
+            UIView.animate(animation, changes: changes) {
                 continuation.resume(returning: ())
             }
         }
