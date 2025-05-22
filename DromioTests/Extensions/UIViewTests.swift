@@ -1,6 +1,7 @@
 @testable import Dromio
 import Testing
 import UIKit
+import SwiftUI
 
 @MainActor
 struct UIViewTests {
@@ -32,4 +33,32 @@ struct UIViewTests {
         #expect(view.subviews(ofType: UISwitch.self).count == 1)
         #expect(view.subviews(ofType: UISwitch.self, recursing: false).count == 0)
     }
+
+    @Test("animate(withDuration:): calls base animate(withDuration:)")
+    func animate() async {
+        let view = MockUIView()
+        await MockUIView.animate(withDuration: 0.1, delay: 0.2, options: .curveEaseOut, animations: { view.backgroundColor = .red })
+        #expect(MockUIView.duration == 0.1)
+        #expect(MockUIView.delay == 0.2)
+        #expect(MockUIView.options == .curveEaseOut)
+        #expect(view.backgroundColor == .red)
+        #expect(MockUIView.completion != nil) // because we inject `continuation(resume:)`
+    }
+}
+
+final class MockUIView: UIView {
+    static var duration: TimeInterval = 0
+    static var delay: TimeInterval = 0
+    static var options: UIView.AnimationOptions = []
+    static var completion: ((Bool) -> Void)? = nil
+    static var animation: Animation?
+    override static func animate(withDuration duration: TimeInterval, delay: TimeInterval, options: UIView.AnimationOptions = [], animations: @escaping () -> Void, completion: ((Bool) -> Void)? = nil) {
+        self.duration = duration
+        self.delay = delay
+        self.options = options
+        self.completion = completion
+        animations()
+        completion?(true)
+    }
+    // unfortunately I can't do that for the SwiftUI version because it is declared in an extension :(
 }

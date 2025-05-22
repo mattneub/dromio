@@ -36,7 +36,7 @@ extension UIView {
     ///
     static func animate(withDuration duration: Double, delay: Double, options: UIView.AnimationOptions, animations: @escaping () -> Void) async {
         await withCheckedContinuation { continuation in
-            UIView.animate(withDuration: duration, delay: delay, options: options, animations: animations) { _ in
+            Self.animate(withDuration: duration, delay: delay, options: options, animations: animations) { _ in
                 continuation.resume(returning: ())
             }
         }
@@ -50,7 +50,7 @@ extension UIView {
     ///   - changes: Function containing animatable changes to commit to the views.
     static func animate(_ animation: Animation, changes: () -> Void) async {
         await withCheckedContinuation { continuation in
-            UIView.animate(animation, changes: changes) {
+            Self.animate(animation, changes: changes) {
                 continuation.resume(returning: ())
             }
         }
