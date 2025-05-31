@@ -122,7 +122,7 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                user: .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: false),
+                user: .init(adminRole: true, scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: false),
                 error: nil
             )
         )
@@ -133,7 +133,7 @@ struct RequestMakerTests {
         #expect(urlMaker.additional == nil)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
-        #expect(user == .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: false))
+        #expect(user == .init(adminRole: true, scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: false))
     }
 
     @Test("getUser: rethrows urlMaker throw")
@@ -175,7 +175,7 @@ struct RequestMakerTests {
                 type: "navidrome",
                 serverVersion: "1",
                 openSubsonic: true,
-                user: .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: false),
+                user: .init(adminRole: true, scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: false),
                 error: nil
             )
         )

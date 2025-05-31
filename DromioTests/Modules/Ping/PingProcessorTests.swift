@@ -26,7 +26,7 @@ struct PingProcessorTests {
         services.player = player
         subject.presenter = presenter
         subject.coordinator = coordinator
-        requestMaker.user = .init(scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: true)
+        requestMaker.user = .init(adminRole: true, scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: true)
     }
 
     @Test("receive choices: sets the status to choices, clears the player")
@@ -120,17 +120,43 @@ struct PingProcessorTests {
         #expect(userHasJukeboxRole == true)
     }
 
+    @Test("receive doPing: sets global user jukebox info to false if user not admin")
+    func receiveDoPingGetUserNotAdmin() async {
+        userHasJukeboxRole = true
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        requestMaker.user = .init(adminRole: false, scrobblingEnabled: true, downloadRole: true, streamRole: true, jukeboxRole: true)
+        await subject.receive(.doPing)
+        #expect(requestMaker.methodsCalled[1] == "getUser()")
+        #expect(userHasJukeboxRole == false)
+    }
+
+    @Test("receive doPing: sets global user jukebox info to false if user not jukebox")
+    func receiveDoPingGetUserNotJukebox() async {
+        userHasJukeboxRole = true
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        requestMaker.user = .init(adminRole: true, scrobblingEnabled: true, downloadRole: true, streamRole: true, jukeboxRole: false)
+        await subject.receive(.doPing)
+        #expect(requestMaker.methodsCalled[1] == "getUser()")
+        #expect(userHasJukeboxRole == false)
+    }
+
     @Test("receive doPing: with no issues call networker getUser, barfs if user cannot stream and download")
     func receiveDoPingGetUserNoDownload() async {
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
-        requestMaker.user = .init(scrobblingEnabled: false, downloadRole: false, streamRole: true, jukeboxRole: true)
+        requestMaker.user = .init(adminRole: true, scrobblingEnabled: false, downloadRole: false, streamRole: true, jukeboxRole: true)
         await subject.receive(.doPing)
         #expect(presenter.statePresented?.status == .failure(message: "User needs stream and download privileges."))
         #expect(coordinator.methodsCalled.isEmpty)
-        requestMaker.user = .init(scrobblingEnabled: false, downloadRole: true, streamRole: false, jukeboxRole: true)
+        requestMaker.user = .init(adminRole: true, scrobblingEnabled: false, downloadRole: true, streamRole: false, jukeboxRole: true)
         await subject.receive(.doPing)
         #expect(presenter.statePresented?.status == .failure(message: "User needs stream and download privileges."))
         #expect(coordinator.methodsCalled.isEmpty)

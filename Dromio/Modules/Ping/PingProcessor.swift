@@ -56,7 +56,7 @@ final class PingProcessor: Processor {
             guard user.downloadRole && user.streamRole else {
                 throw NetworkerError.message("User needs stream and download privileges.")
             }
-            userHasJukeboxRole = user.jukeboxRole
+            userHasJukeboxRole = user.jukeboxRole && user.adminRole
             state.status = .success
             await presenter?.present(state)
             await Task.yield()
