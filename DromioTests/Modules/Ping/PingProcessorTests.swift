@@ -108,7 +108,7 @@ struct PingProcessorTests {
         #expect(presenter.statesPresented[1].status == .unknown)
     }
 
-    @Test("receive doPing: with no ping issues call networker getUser, sets global user jukebox info")
+    @Test("receive doPing: with no ping issues call networker getUser, sets global user jukebox info, calls networker getFolders")
     func receiveDoPingGetUser() async {
         userHasJukeboxRole = false
         persistence.servers = [
@@ -118,6 +118,7 @@ struct PingProcessorTests {
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == true)
+        #expect(requestMaker.methodsCalled[2] == "getFolders()")
     }
 
     @Test("receive doPing: sets global user jukebox info to false if user not admin")
@@ -131,6 +132,7 @@ struct PingProcessorTests {
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == false)
+        #expect(requestMaker.methodsCalled[2] == "getFolders()")
     }
 
     @Test("receive doPing: sets global user jukebox info to false if user not jukebox")
@@ -144,6 +146,7 @@ struct PingProcessorTests {
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == false)
+        #expect(requestMaker.methodsCalled[2] == "getFolders()")
     }
 
     @Test("receive doPing: with no issues call networker getUser, barfs if user cannot stream and download")
@@ -171,6 +174,8 @@ struct PingProcessorTests {
         requestMaker.pingError = nil
         await subject.receive(.doPing)
         #expect(requestMaker.methodsCalled[0] == "ping()")
+        #expect(requestMaker.methodsCalled[1] == "getUser()")
+        #expect(requestMaker.methodsCalled[2] == "getFolders()")
         #expect(presenter.statePresented?.status == .success)
         #expect(coordinator.methodsCalled[0] == "showAlbums()")
     }

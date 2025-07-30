@@ -57,6 +57,11 @@ final class PingProcessor: Processor {
                 throw NetworkerError.message("User needs stream and download privileges.")
             }
             userHasJukeboxRole = user.jukeboxRole && user.adminRole
+            let folders = try await services.requestMaker.getFolders()
+            dump(folders)
+            // TODO: if there is more than one folder, offer the user a choice
+            // TODO: _use_ the user's folder choice in all subsequent calls!
+            // NB Older versions of navidrome will return one folder, id 1, name Music Library
             state.status = .success
             await presenter?.present(state)
             await Task.yield()

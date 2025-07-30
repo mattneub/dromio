@@ -5,6 +5,7 @@ import Foundation
 protocol RequestMakerType: Sendable {
     func ping() async throws
     func getUser() async throws -> SubsonicUser
+    func getFolders() async throws -> [SubsonicFolder]
     func getAlbumList() async throws -> [SubsonicAlbum]
     func getAlbumsRandom() async throws -> [SubsonicAlbum]
     // func getArtists() async throws -> [SubsonicArtist] // probably won't be using this
@@ -84,6 +85,16 @@ final class RequestMaker: RequestMakerType {
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<UserResponse>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)
         return jsonResponse.subsonicResponse.user
+    }
+
+    /// Get list of all music folders. We do this at launch as soon as we have a successful ping,
+    /// so as to know whether we need to offer the user a choice of folders to work with.
+    func getFolders() async throws -> [SubsonicFolder] {
+        let url = try services.urlMaker.urlFor(action: "getMusicFolders")
+        let data = try await services.networker.performRequest(url: url)
+        let jsonResponse = try JSONDecoder().decode(SubsonicResponse<FoldersResponse>.self, from: data)
+        try await services.responseValidator.validateResponse(jsonResponse)
+        return jsonResponse.subsonicResponse.musicFolders.musicFolder
     }
 
     /// Get a list of all albums.

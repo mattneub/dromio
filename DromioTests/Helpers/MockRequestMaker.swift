@@ -5,6 +5,7 @@ import Foundation
 final class MockRequestMaker: RequestMakerType {
     var albumList = [SubsonicAlbum]()
     var artistList = [SubsonicArtist]()
+    var folderList = [SubsonicFolder(id: 1, name: "Music Folder")]
     var songList = [SubsonicSong]()
     var albumId: String?
     var songId: String?
@@ -32,6 +33,14 @@ final class MockRequestMaker: RequestMakerType {
         }
         guard let user else { fatalError("You forgot to provide a `user`.") }
         return user
+    }
+
+    func getFolders() async throws -> [SubsonicFolder] {
+        methodsCalled.append(#function)
+        if let pingError {
+            throw pingError
+        }
+        return folderList
     }
 
     func getAlbumList() async throws -> [SubsonicAlbum] {

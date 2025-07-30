@@ -188,6 +188,81 @@ struct RequestMakerTests {
         }
     }
 
+    @Test("getFolders: calls url maker with action getMusicFolders, calls networker, calls validator")
+    func getFolders() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: FoldersResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                musicFolders: .init(musicFolder: [.init(id: 1, name: "Music Folder")]),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        let folders = try await subject.getFolders()
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.action == "getMusicFolders")
+        #expect(urlMaker.additional == nil)
+        #expect(networker.methodsCalled == ["performRequest(url:)"])
+        #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
+        #expect(folders == [.init(id: 1, name: "Music Folder")])
+    }
+
+    @Test("getFolders: rethrows urlMaker throw")
+    func getFoldersUrlMakerThrow() async throws {
+        urlMaker.errorToThrow = NetworkerError.message("oops")
+        await #expect {
+            try await subject.getFolders()
+        } throws: { error in
+            error as! NetworkerError == .message("oops")
+        }
+    }
+
+    @Test("getFolders: rethrows networker throw")
+    func getFoldersNetworkerThrow() async throws {
+        networker.errorToThrow = NetworkerError.message("darn")
+        await #expect {
+            try await subject.getFolders()
+        } throws: { error in
+            error as! NetworkerError == .message("darn")
+        }
+    }
+
+    @Test("getFolders: rethrows decode error")
+    func getFoldersDecoderThrow() async throws {
+        networker.dataToReturn = [try! JSONEncoder().encode(#"{"howdy": "hey"}"#)]
+        await #expect {
+            try await subject.getFolders()
+        } throws: { error in
+            error is DecodingError
+        }
+    }
+
+    @Test("getFolders: rethrows validator error")
+    func getFoldersValidatorThrow() async throws {
+        let payload = SubsonicResponse(
+            subsonicResponse: FoldersResponse(
+                status: "ok",
+                version: "1",
+                type: "navidrome",
+                serverVersion: "1",
+                openSubsonic: true,
+                musicFolders: .init(musicFolder: [.init(id: 1, name: "Music Folder")]),
+                error: nil
+            )
+        )
+        networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        responseValidator.errorToThrow = NetworkerError.message("yipes")
+        await #expect {
+            try await subject.getFolders()
+        } throws: { error in
+            error as! NetworkerError == .message("yipes")
+        }
+    }
+
     @Test("getAlbumList: calls url maker with action getAlbumList2 and additional, calls networker, calls validator, returns list")
     func getAlbumList() async throws {
         let payload = SubsonicResponse(
