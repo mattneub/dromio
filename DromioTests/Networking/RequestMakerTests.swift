@@ -277,10 +277,11 @@ struct RequestMakerTests {
             )
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        currentFolder = 2
         let list = try await subject.getAlbumList()
         #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
         #expect(urlMaker.action == "getAlbumList2")
-        let expectedAdditional: KeyValuePairs = ["type": "alphabeticalByName", "size": "500", "offset": "0"]
+        let expectedAdditional: KeyValuePairs = ["type": "alphabeticalByName", "size": "500", "offset": "0", "musicFolderId": "2"]
         let additional = try #require(urlMaker.additional)
         #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
         #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
@@ -386,10 +387,11 @@ struct RequestMakerTests {
             )
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        currentFolder = 2
         let list = try await subject.getAlbumsRandom()
         #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
         #expect(urlMaker.action == "getAlbumList2")
-        let expectedAdditional: KeyValuePairs = ["type": "random", "size": "20"]
+        let expectedAdditional: KeyValuePairs = ["type": "random", "size": "20", "musicFolderId": "2"]
         let additional = try #require(urlMaker.additional)
         #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
         #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
@@ -544,6 +546,7 @@ struct RequestMakerTests {
             )
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        currentFolder = 2
         let list = try await subject.getArtistsBySearch()
         #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
         #expect(urlMaker.action == "search3")
@@ -553,6 +556,7 @@ struct RequestMakerTests {
             "albumCount": "0",
             "artistCount": "500",
             "artistOffset": "0",
+            "musicFolderId": "2"
         ]
         let additional = try #require(urlMaker.additional)
         #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
@@ -659,6 +663,7 @@ struct RequestMakerTests {
             )
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
+        currentFolder = 2
         let list = try await subject.getSongsBySearch(query: "Matt")
         #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
         #expect(urlMaker.action == "search3")
@@ -668,6 +673,7 @@ struct RequestMakerTests {
             "artistCount": "0",
             "songCount": "500",
             "songOffset": "0",
+            "musicFolderId": "2"
         ]
         let additional = try #require(urlMaker.additional)
         #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })

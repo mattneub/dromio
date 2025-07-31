@@ -5,7 +5,7 @@ import Foundation
 final class MockRequestMaker: RequestMakerType {
     var albumList = [SubsonicAlbum]()
     var artistList = [SubsonicArtist]()
-    var folderList = [SubsonicFolder(id: 1, name: "Music Folder")]
+    var folderList = [SubsonicFolder]()
     var songList = [SubsonicSong]()
     var albumId: String?
     var songId: String?

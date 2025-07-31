@@ -119,6 +119,7 @@ final class RequestMaker: RequestMakerType {
                 "type": "alphabeticalByName",
                 "size": String(chunk),
                 "offset": String(offset),
+                "musicFolderId": String(currentFolder)
             ]
         )
         let data = try await services.networker.performRequest(url: url)
@@ -135,6 +136,7 @@ final class RequestMaker: RequestMakerType {
             additional: [
                 "type": "random",
                 "size": "20",
+                "musicFolderId": String(currentFolder)
             ]
         )
         let data = try await services.networker.performRequest(url: url)
@@ -149,6 +151,7 @@ final class RequestMaker: RequestMakerType {
     /// We are not currently using this. The reason is that its idea of an "artist" is defined at
     /// the level of the album, which doesn't interest me.
     ///
+    /*
     func getArtists() async throws -> [SubsonicArtist] {
         let url = try services.urlMaker.urlFor(
             action: "getArtists"
@@ -161,7 +164,8 @@ final class RequestMaker: RequestMakerType {
         let arrayOfArtist = arrayOfArrayOfArtist.flatMap { $0 }
         return arrayOfArtist
     }
-    
+     */
+
     /// Get a list of all artists, meaning _really_ a list of _all_ artists in the full sense that
     /// Navidrome understands it, i.e. having the "artist" or "composer" role.
     /// - Returns: The list of artists.
@@ -186,6 +190,7 @@ final class RequestMaker: RequestMakerType {
                 "albumCount": "0",
                 "artistCount": String(chunk),
                 "artistOffset": String(offset),
+                "musicFolderId": String(currentFolder)
             ]
         )
         let data = try await services.networker.performRequest(url: url)
@@ -216,6 +221,7 @@ final class RequestMaker: RequestMakerType {
                 "artistCount": "0",
                 "songCount": String(chunk),
                 "songOffset": String(offset),
+                "musicFolderId": String(currentFolder)
             ]
         )
         let data = try await services.networker.performRequest(url: url)

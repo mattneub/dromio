@@ -9,6 +9,12 @@ var services: Services = Services.shared
 @MainActor
 var userHasJukeboxRole = false
 
+/// Global info about available music folders: which ones exist and which one is current.
+@MainActor
+var folders = [SubsonicFolder]()
+@MainActor
+var currentFolder: Int = 1
+
 let logger = Logger(subsystem: "dromio", category: "debugging")
 
 @main

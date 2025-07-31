@@ -57,11 +57,8 @@ final class PingProcessor: Processor {
                 throw NetworkerError.message("User needs stream and download privileges.")
             }
             userHasJukeboxRole = user.jukeboxRole && user.adminRole
-            let folders = try await services.requestMaker.getFolders()
-            dump(folders)
-            // TODO: if there is more than one folder, offer the user a choice
-            // TODO: _use_ the user's folder choice in all subsequent calls!
-            // NB Older versions of navidrome will return one folder, id 1, name Music Library
+            folders = try await services.requestMaker.getFolders() // older versions return one folder with id 1
+            currentFolder = folders.first?.id ?? 1
             state.status = .success
             await presenter?.present(state)
             await Task.yield()
@@ -115,6 +112,7 @@ final class PingProcessor: Processor {
         }
 
         let index = servers.firstIndex(where: { $0.id == serverId }) ?? 0
+        // TODO: if index really is 0, i.e. servers was not empty and this is the first one, do not clear playlist and cache
         let server = servers.remove(at: index)
         servers.insert(server, at: 0)
         try? services.persistence.save(servers: servers)

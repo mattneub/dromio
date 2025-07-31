@@ -119,6 +119,25 @@ struct PingProcessorTests {
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
+        #expect(folders == [])
+        #expect(currentFolder == 1)
+    }
+
+    @Test("receive doPing: with no ping issues calls networker getFolders, sets folder globals")
+    func receiveDoPingGetFolders() async {
+        userHasJukeboxRole = false
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        let returnedFolders: [SubsonicFolder] = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
+        requestMaker.folderList = returnedFolders
+        await subject.receive(.doPing)
+        #expect(requestMaker.methodsCalled[1] == "getUser()")
+        #expect(userHasJukeboxRole == true)
+        #expect(requestMaker.methodsCalled[2] == "getFolders()")
+        #expect(folders == returnedFolders)
+        #expect(currentFolder == 1) // because it is first
     }
 
     @Test("receive doPing: sets global user jukebox info to false if user not admin")
