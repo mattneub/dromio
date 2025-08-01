@@ -116,11 +116,11 @@ final class RequestMaker: RequestMakerType {
         let url = try services.urlMaker.urlFor(
             action: "getAlbumList2",
             additional: [
-                "type": "alphabeticalByName",
-                "size": String(chunk),
-                "offset": String(offset),
-                "musicFolderId": String(currentFolder)
-            ]
+                URLQueryItem(name: "type", value: "alphabeticalByName"),
+                URLQueryItem(name: "size", value: String(chunk)),
+                URLQueryItem(name: "offset", value: String(offset)),
+            ],
+            folderRestrictable: true
         )
         let data = try await services.networker.performRequest(url: url)
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<AlbumList2Response>.self, from: data)
@@ -134,10 +134,10 @@ final class RequestMaker: RequestMakerType {
         let url = try services.urlMaker.urlFor(
             action: "getAlbumList2",
             additional: [
-                "type": "random",
-                "size": "20",
-                "musicFolderId": String(currentFolder)
-            ]
+                URLQueryItem(name: "type", value: "random"),
+                URLQueryItem(name: "size", value: "20"),
+            ],
+            folderRestrictable: true
         )
         let data = try await services.networker.performRequest(url: url)
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<AlbumList2Response>.self, from: data)
@@ -185,13 +185,13 @@ final class RequestMaker: RequestMakerType {
         let url = try services.urlMaker.urlFor(
             action: "search3",
             additional: [
-                "query": "",
-                "songCount": "0",
-                "albumCount": "0",
-                "artistCount": String(chunk),
-                "artistOffset": String(offset),
-                "musicFolderId": String(currentFolder)
-            ]
+                URLQueryItem(name: "query", value: ""),
+                URLQueryItem(name: "songCount", value: "0"),
+                URLQueryItem(name: "albumCount", value: "0"),
+                URLQueryItem(name: "artistCount", value: String(chunk)),
+                URLQueryItem(name: "artistOffset", value: String(offset)),
+            ],
+            folderRestrictable: true
         )
         let data = try await services.networker.performRequest(url: url)
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<Search3Response>.self, from: data)
@@ -216,13 +216,13 @@ final class RequestMaker: RequestMakerType {
         let url = try services.urlMaker.urlFor(
             action: "search3",
             additional: [
-                "query": query,
-                "albumCount": "0",
-                "artistCount": "0",
-                "songCount": String(chunk),
-                "songOffset": String(offset),
-                "musicFolderId": String(currentFolder)
-            ]
+                URLQueryItem(name: "query", value: query),
+                URLQueryItem(name: "albumCount", value: "0"),
+                URLQueryItem(name: "artistCount", value: "0"),
+                URLQueryItem(name: "songCount", value: String(chunk)),
+                URLQueryItem(name: "songOffset", value: String(offset)),
+            ],
+            folderRestrictable: true
         )
         let data = try await services.networker.performRequest(url: url)
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<Search3Response>.self, from: data)
@@ -239,7 +239,7 @@ final class RequestMaker: RequestMakerType {
         let url = try services.urlMaker.urlFor(
             action: "getArtist",
             additional: [
-                "id": artistId,
+                URLQueryItem(name: "id", value: artistId),
             ]
         )
         let data = try await services.networker.performRequest(url: url)
@@ -255,7 +255,9 @@ final class RequestMaker: RequestMakerType {
     func getSongsFor(albumId: String) async throws -> [SubsonicSong] {
         let url = try services.urlMaker.urlFor(
             action: "getAlbum",
-            additional: ["id": albumId]
+            additional: [
+                URLQueryItem(name: "id", value: albumId),
+            ]
         )
         let data = try await services.networker.performRequest(url: url)
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<AlbumResponse>.self, from: data)
@@ -269,7 +271,9 @@ final class RequestMaker: RequestMakerType {
     func download(songId: String) async throws -> URL {
         let url = try services.urlMaker.urlFor(
             action: "download",
-            additional: ["id": songId]
+            additional: [
+                URLQueryItem(name: "id", value: songId),
+            ]
         )
         return try await services.networker.performDownloadRequest(url: url)
     }
@@ -282,7 +286,9 @@ final class RequestMaker: RequestMakerType {
     func stream(songId: String) async throws -> URL {
         let url = try services.urlMaker.urlFor(
             action: "stream",
-            additional: ["id": songId]
+            additional: [
+                URLQueryItem(name: "id", value: songId),
+            ]
         )
         return url
     }
@@ -293,11 +299,11 @@ final class RequestMaker: RequestMakerType {
     ///   - songId: Optionally, a songId. This is used only with the `.add` action.
     /// - Returns: A status object, which we are not currently using for anything.
     func jukebox(action: JukeboxAction, songId: String?) async throws -> JukeboxStatus? {
-        let additional: KeyValuePairs<String, String> = if let songId {[
-            "action": action.rawValue,
-            "id": songId,
+        let additional: [URLQueryItem] = if let songId {[
+            URLQueryItem(name: "action", value: action.rawValue),
+            URLQueryItem(name: "id", value: songId),
         ]} else {[
-            "action": action.rawValue,
+            URLQueryItem(name: "action", value: action.rawValue),
         ]}
         let url = try services.urlMaker.urlFor(
             action: "jukeboxControl",
@@ -318,7 +324,9 @@ final class RequestMaker: RequestMakerType {
     func scrobble(songId: String) async throws {
         let url = try services.urlMaker.urlFor(
             action: "scrobble",
-            additional: ["id": songId]
+            additional: [
+                URLQueryItem(name: "id", value: songId),
+            ]
         )
         _ = try await services.networker.performRequest(url: url)
     }

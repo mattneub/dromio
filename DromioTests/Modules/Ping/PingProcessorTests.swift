@@ -120,7 +120,7 @@ struct PingProcessorTests {
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
         #expect(folders == [])
-        #expect(currentFolder == 1)
+        #expect(currentFolder == nil)
     }
 
     @Test("receive doPing: with no ping issues calls networker getFolders, sets folder globals")
@@ -137,7 +137,7 @@ struct PingProcessorTests {
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
         #expect(folders == returnedFolders)
-        #expect(currentFolder == 1) // because it is first
+        #expect(currentFolder == nil)
     }
 
     @Test("receive doPing: sets global user jukebox info to false if user not admin")
@@ -298,6 +298,32 @@ struct PingProcessorTests {
         #expect(await download.methodsCalled == ["clear()"])
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"])
+        await #while(presenter.statesPresented.isEmpty)
+        #expect(presenter.statesPresented.first?.status == .empty)
+    }
+
+    @Test("receive pickServer: if servers, calls showActionSheet, if current one is chosen, no save, no set, no clear playlist, no clear downloads, calls doPing", .mockCache)
+    func pickServerSameAsCurrentServer() async throws {
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        coordinator.optionToReturn = "u@h:1"
+        urlMaker.currentServerInfo = ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v")
+        await subject.receive(.pickServer)
+        #expect(coordinator.methodsCalled == ["showActionSheet(title:options:)"])
+        #expect(coordinator.title == "Pick a server to use:")
+        #expect(coordinator.options == ["u@h:1", "uu@hh:1"])
+        #expect(!persistence.methodsCalled.contains("save(servers:)"))
+        #expect(persistence.servers == [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ])
+        #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"))
+        #expect(currentPlaylist.methodsCalled.isEmpty)
+        #expect(await download.methodsCalled.isEmpty)
+        let mockCache = try #require(services.cache as? MockCache)
+        #expect(mockCache.methodsCalled == ["clear()"]) // but the cache _is_ cleared
         await #while(presenter.statesPresented.isEmpty)
         #expect(presenter.statesPresented.first?.status == .empty)
     }

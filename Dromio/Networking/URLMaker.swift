@@ -4,11 +4,18 @@ import Foundation
 @MainActor
 protocol URLMakerType {
     var currentServerInfo: ServerInfo? { get set }
-    func urlFor(action: String, additional: KeyValuePairs<String, String>?) throws -> URL
+    func urlFor(
+        action: String,
+        additional: [URLQueryItem]?,
+        folderRestrictable: Bool
+    ) throws -> URL
 }
 extension URLMakerType {
     func urlFor(action: String) throws -> URL {
-        try urlFor(action: action, additional: nil)
+        try urlFor(action: action, additional: nil, folderRestrictable: false)
+    }
+    func urlFor(action: String, additional: [URLQueryItem]) throws -> URL {
+        try urlFor(action: action, additional: additional, folderRestrictable: false)
     }
 }
 
@@ -23,10 +30,12 @@ final class URLMaker: URLMakerType {
     /// Generate a URL, using the parameters and the information in `currentServerInfo`.
     /// - Parameters:
     ///   - action: String name of the "action", the verb defined by the API.
-    ///   - additional: Ordered dictionary of additional key/value pairs specific to this "action".
+    ///   - additional: Array of additional query items specific to this "action".
+    ///   - folderRestrictable: Whether to limit to the current music folder if there is one; this
+    ///       is equivalent to stating whether this action takes an optional music folder id. Default false.
     /// - Returns: The URL. Throws if the URL cannot be formed.
     ///
-    func urlFor(action: String, additional: KeyValuePairs<String, String>? = nil) throws -> URL {
+    func urlFor(action: String, additional: [URLQueryItem]? = nil, folderRestrictable: Bool = false) throws -> URL {
         guard let serverInfo = currentServerInfo else {
             throw NetworkerError.message("There is no current server.")
         }
@@ -38,20 +47,17 @@ final class URLMaker: URLMakerType {
         urlComponents.host = serverInfo.host
         urlComponents.port = serverInfo.port
         urlComponents.path = "/rest/\(action).view"
-        var queries: [URLQueryItem] = [
+        urlComponents.queryItems = [
             .init(name: "u", value: serverInfo.username),
             .init(name: "s", value: hashAndSalt.salt),
             .init(name: "t", value: hashAndSalt.hash),
             .init(name: "v", value: serverInfo.version),
             .init(name: "c", value: client),
             .init(name: "f", value: format)
-        ]
-        if let additional {
-            for (key, value) in additional {
-                queries.append(.init(name: key, value: value))
-            }
+        ] + (additional ?? [])
+        if folderRestrictable, let folderId = currentFolder {
+            urlComponents.queryItems?.append(.init(name: "musicFolderId", value: String(folderId)))
         }
-        urlComponents.queryItems = queries
         guard let url = urlComponents.url else {
             throw NetworkerError.message("We created a malformed URL.")
         }

@@ -55,9 +55,10 @@ struct RequestMakerTests {
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         try await subject.ping()
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "ping")
         #expect(urlMaker.additional == nil)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
     }
@@ -128,9 +129,10 @@ struct RequestMakerTests {
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         let user = try await subject.getUser()
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "getUser")
         #expect(urlMaker.additional == nil)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
         #expect(user == .init(adminRole: true, scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: false))
@@ -203,9 +205,10 @@ struct RequestMakerTests {
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         let folders = try await subject.getFolders()
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "getMusicFolders")
         #expect(urlMaker.additional == nil)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
         #expect(folders == [.init(id: 1, name: "Music Folder")])
@@ -279,12 +282,16 @@ struct RequestMakerTests {
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         currentFolder = 2
         let list = try await subject.getAlbumList()
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "getAlbumList2")
-        let expectedAdditional: KeyValuePairs = ["type": "alphabeticalByName", "size": "500", "offset": "0", "musicFolderId": "2"]
+        let expectedAdditional: [URLQueryItem] = [
+            .init(name: "type", value: "alphabeticalByName"),
+            .init(name: "size", value: "500"),
+            .init(name: "offset", value: "0"),
+        ]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == true)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
         #expect(list == [SubsonicAlbum(id: "1", name: "title", sortName: nil, artist: "Artist", songCount: 10, song: nil)])
@@ -389,12 +396,15 @@ struct RequestMakerTests {
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         currentFolder = 2
         let list = try await subject.getAlbumsRandom()
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "getAlbumList2")
-        let expectedAdditional: KeyValuePairs = ["type": "random", "size": "20", "musicFolderId": "2"]
+        let expectedAdditional: [URLQueryItem] = [
+            .init(name: "type", value: "random"),
+            .init(name: "size", value: "20"),
+        ]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == true)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
         #expect(list == [SubsonicAlbum(id: "1", name: "title", sortName: nil, artist: "Artist", songCount: 10, song: nil)])
@@ -468,12 +478,12 @@ struct RequestMakerTests {
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         let list = try await subject.getAlbumsFor(artistId: "1")
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "getArtist")
-        let expectedAdditional: KeyValuePairs = ["id": "1"]
+        let expectedAdditional: [URLQueryItem] = [.init(name: "id", value: "1")]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
         #expect(list == [album])
@@ -548,19 +558,18 @@ struct RequestMakerTests {
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         currentFolder = 2
         let list = try await subject.getArtistsBySearch()
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "search3")
-        let expectedAdditional: KeyValuePairs = [
-            "query": "",
-            "songCount": "0",
-            "albumCount": "0",
-            "artistCount": "500",
-            "artistOffset": "0",
-            "musicFolderId": "2"
+        let expectedAdditional: [URLQueryItem] = [
+            .init(name: "query", value: ""),
+            .init(name: "songCount", value: "0"),
+            .init(name: "albumCount", value: "0"),
+            .init(name: "artistCount", value: "500"),
+            .init(name: "artistOffset", value: "0"),
         ]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == true)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
         #expect(list == [SubsonicArtist(id: "1", name: "Prince", albumCount: 3, album: nil, roles: ["artist"], sortName: "prince")])
@@ -665,19 +674,18 @@ struct RequestMakerTests {
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         currentFolder = 2
         let list = try await subject.getSongsBySearch(query: "Matt")
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "search3")
-        let expectedAdditional: KeyValuePairs = [
-            "query": "Matt",
-            "albumCount": "0",
-            "artistCount": "0",
-            "songCount": "500",
-            "songOffset": "0",
-            "musicFolderId": "2"
+        let expectedAdditional: [URLQueryItem] = [
+            .init(name: "query", value: "Matt"),
+            .init(name: "albumCount", value: "0"),
+            .init(name: "artistCount", value: "0"),
+            .init(name: "songCount", value: "500"),
+            .init(name: "songOffset", value: "0"),
         ]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == true)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
         #expect(list == [.init(id: "1", title: "Song", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)])
@@ -800,12 +808,12 @@ struct RequestMakerTests {
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         let list = try await subject.getSongsFor(albumId: "1")
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "getAlbum")
-        let expectedAdditional: KeyValuePairs = ["id": "1"]
+        let expectedAdditional: [URLQueryItem] = [.init(name: "id", value: "1")]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
         #expect(
@@ -902,12 +910,12 @@ struct RequestMakerTests {
     func download() async throws {
         networker.urlToReturn = URL(string: "file://myfile")!
         let url = try await subject.download(songId: "1")
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "download")
-        let expectedAdditional: KeyValuePairs = ["id": "1"]
+        let expectedAdditional: [URLQueryItem] = [.init(name: "id", value: "1")]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performDownloadRequest(url:)"])
         #expect(url == URL(string: "file://myfile")!)
     }
@@ -936,12 +944,12 @@ struct RequestMakerTests {
     func stream() async throws {
         urlMaker.urlToReturn = URL(string: "http://example.com")!
         let url = try await subject.stream(songId: "1")
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "stream")
-        let expectedAdditional: KeyValuePairs = ["id": "1"]
+        let expectedAdditional: [URLQueryItem] = [.init(name: "id", value: "1")]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(urlMaker.folderRestrictable == false)
+        #expect(additional == expectedAdditional)
         #expect(networker.methodsCalled.isEmpty)
         #expect(url == URL(string: "http://example.com")!)
     }
@@ -973,12 +981,12 @@ struct RequestMakerTests {
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         let result = try await subject.jukebox(action: .start)
         #expect(result == status)
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "jukeboxControl")
-        let expectedAdditional: KeyValuePairs = ["action": "start"]
+        let expectedAdditional: [URLQueryItem] = [.init(name: "action", value: "start")]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
     }
@@ -1000,12 +1008,12 @@ struct RequestMakerTests {
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         let result = try await subject.jukebox(action: .stop)
         #expect(result == status)
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "jukeboxControl")
-        let expectedAdditional: KeyValuePairs = ["action": "stop"]
+        let expectedAdditional: [URLQueryItem] = [.init(name: "action", value: "stop")]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
     }
@@ -1027,12 +1035,12 @@ struct RequestMakerTests {
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         let result = try await subject.jukebox(action: .clear)
         #expect(result == status)
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "jukeboxControl")
-        let expectedAdditional: KeyValuePairs = ["action": "clear"]
+        let expectedAdditional: [URLQueryItem] = [.init(name: "action", value: "clear")]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
     }
@@ -1054,12 +1062,15 @@ struct RequestMakerTests {
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
         let result = try await subject.jukebox(action: .add, songId: "1")
         #expect(result == status)
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "jukeboxControl")
-        let expectedAdditional: KeyValuePairs = ["action": "add", "id": "1"]
+        let expectedAdditional: [URLQueryItem] = [
+            .init(name: "action", value: "add"),
+            .init(name: "id", value: "1"),
+        ]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
     }
@@ -1120,12 +1131,12 @@ struct RequestMakerTests {
     @Test("scrobble: calls url maker with action scrobble and additional id")
     func scrobble() async throws {
         try await subject.scrobble(songId: "4")
-        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:)"])
+        #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "scrobble")
-        let expectedAdditional: KeyValuePairs = ["id": "4"]
+        let expectedAdditional: [URLQueryItem] = [.init(name: "id", value: "4")]
         let additional = try #require(urlMaker.additional)
-        #expect(expectedAdditional.map { $0.key } == additional.map { $0.key })
-        #expect(expectedAdditional.map { $0.value } == additional.map { $0.value })
+        #expect(additional == expectedAdditional)
+        #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
     }
 }

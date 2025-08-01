@@ -58,7 +58,7 @@ final class PingProcessor: Processor {
             }
             userHasJukeboxRole = user.jukeboxRole && user.adminRole
             folders = try await services.requestMaker.getFolders() // older versions return one folder with id 1
-            currentFolder = folders.first?.id ?? 1
+            currentFolder = nil // by default, use all folders
             state.status = .success
             await presenter?.present(state)
             await Task.yield()
@@ -111,15 +111,16 @@ final class PingProcessor: Processor {
             return
         }
 
-        let index = servers.firstIndex(where: { $0.id == serverId }) ?? 0
-        // TODO: if index really is 0, i.e. servers was not empty and this is the first one, do not clear playlist and cache
-        let server = servers.remove(at: index)
-        servers.insert(server, at: 0)
-        try? services.persistence.save(servers: servers)
-        services.urlMaker.currentServerInfo = server
-        services.currentPlaylist.clear()
         services.cache.clear()
-        await services.download.clear()
+        if serverId != services.urlMaker.currentServerInfo?.id { // i.e. changed servers
+            let index = servers.firstIndex(where: { $0.id == serverId }) ?? 0
+            let server = servers.remove(at: index)
+            servers.insert(server, at: 0)
+            try? services.persistence.save(servers: servers)
+            services.urlMaker.currentServerInfo = server
+            services.currentPlaylist.clear()
+            await services.download.clear()
+        }
         Task {
             await receive(.doPing)
         }
