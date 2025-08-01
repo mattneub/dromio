@@ -9,6 +9,9 @@ final class AlbumsProcessor: Processor {
     /// Reference to the view controller, set by coordinator on creation.
     weak var presenter: (any ReceiverPresenter<AlbumsEffect, AlbumsState>)?
 
+    /// Cycler, so that we can dispatch actions to ourself and test that we did so.
+    lazy var cycler: Cycler = Cycler(processor: self)
+
     /// State to be presented to the presenter.
     var state: AlbumsState = AlbumsState()
 
@@ -53,7 +56,7 @@ final class AlbumsProcessor: Processor {
             // how we fetch the initial data depends on what "mode" of albums this is
             switch state.listType {
             case .allAlbums:
-                await receive(.allAlbums)
+                await cycler.receive(.allAlbums)
             case .albumsForArtist(let id, let source):
                 do {
                     switch source {

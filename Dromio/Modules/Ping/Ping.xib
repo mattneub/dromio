@@ -2,7 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_9" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23720"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -13,6 +13,7 @@
                 <outlet property="deleteServerButton" destination="vHJ-u8-kXz" id="2e6-L0-p3a"/>
                 <outlet property="failureLabel" destination="Mpo-fM-QrY" id="T3o-wH-boo"/>
                 <outlet property="offlineModeButton" destination="s7r-7V-AD6" id="8vA-sb-Ou9"/>
+                <outlet property="pickFolderButton" destination="xlr-og-uyn" id="mZM-QV-pz3"/>
                 <outlet property="pickServerButton" destination="Fqj-F7-Fqc" id="3DB-3m-ttK"/>
                 <outlet property="pingingLabel" destination="1WM-wj-KSO" id="0CD-H9-PQg"/>
                 <outlet property="reenterButton" destination="uMr-C9-MHs" id="1Iz-QZ-Amk"/>
@@ -26,7 +27,7 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="baT-sF-97w" customClass="PingView" customModule="Dromio" customModuleProvider="target">
-                    <rect key="frame" x="16" y="154" width="408" height="400"/>
+                    <rect key="frame" x="16" y="154" width="408" height="430"/>
                     <subviews>
                         <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Failure!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mpo-fM-QrY">
                             <rect key="frame" x="33" y="87.333333333333343" width="342" height="25.333333333333329"/>
@@ -63,7 +64,7 @@
                             </connections>
                         </button>
                         <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vHJ-u8-kXz">
-                            <rect key="frame" x="140.33333333333334" y="246.66666666666669" width="127.33333333333334" height="35"/>
+                            <rect key="frame" x="140.33333333333334" y="297.66666666666669" width="127.33333333333334" height="35"/>
                             <state key="normal" title="Button"/>
                             <buttonConfiguration key="configuration" style="plain" title="Delete Server"/>
                             <connections>
@@ -71,30 +72,40 @@
                             </connections>
                         </button>
                         <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="s7r-7V-AD6">
-                            <rect key="frame" x="143" y="297.66666666666669" width="122.33333333333331" height="35"/>
+                            <rect key="frame" x="143" y="348.66666666666669" width="122.33333333333331" height="35"/>
                             <state key="normal" title="Button"/>
                             <buttonConfiguration key="configuration" style="plain" title="Offline Mode"/>
                             <connections>
                                 <action selector="doOfflineModeButton:" destination="-1" eventType="touchUpInside" id="Smw-5W-v5h"/>
                             </connections>
                         </button>
+                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xlr-og-uyn">
+                            <rect key="frame" x="134" y="246.66666666666669" width="140" height="35"/>
+                            <state key="normal" title="Button"/>
+                            <buttonConfiguration key="configuration" style="plain" title="Choose Library"/>
+                            <connections>
+                                <action selector="doPickFolderButton:" destination="-1" eventType="touchUpInside" id="sGR-dh-CZ1"/>
+                            </connections>
+                        </button>
                     </subviews>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
                         <constraint firstItem="1WM-wj-KSO" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="2Gd-BE-yue"/>
-                        <constraint firstAttribute="height" constant="400" id="4L3-us-KBu"/>
+                        <constraint firstAttribute="height" constant="430" id="4L3-us-KBu"/>
                         <constraint firstItem="1WM-wj-KSO" firstAttribute="top" secondItem="baT-sF-97w" secondAttribute="top" constant="32" id="4ey-q9-2jC"/>
+                        <constraint firstItem="xlr-og-uyn" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="8LM-rr-QzU"/>
                         <constraint firstItem="Mpo-fM-QrY" firstAttribute="leading" secondItem="baT-sF-97w" secondAttribute="leading" constant="33" id="8iA-EG-lil"/>
                         <constraint firstItem="Mpo-fM-QrY" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="30" id="Cgp-Wb-cAb"/>
                         <constraint firstItem="Mpo-fM-QrY" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="DYI-E8-pOD"/>
-                        <constraint firstItem="s7r-7V-AD6" firstAttribute="top" secondItem="vHJ-u8-kXz" secondAttribute="bottom" constant="16" id="HdJ-ge-a0W"/>
                         <constraint firstItem="Fqj-F7-Fqc" firstAttribute="top" secondItem="uMr-C9-MHs" secondAttribute="bottom" constant="16" id="Ift-a1-x51"/>
-                        <constraint firstItem="vHJ-u8-kXz" firstAttribute="top" secondItem="Fqj-F7-Fqc" secondAttribute="bottom" constant="16" id="P0m-M2-vKM"/>
+                        <constraint firstItem="s7r-7V-AD6" firstAttribute="top" secondItem="vHJ-u8-kXz" secondAttribute="bottom" constant="16" id="LdD-2H-zdc"/>
                         <constraint firstItem="uMr-C9-MHs" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="Q3G-Kq-BdR"/>
                         <constraint firstItem="NW3-C5-yms" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="YbI-tr-ZYj"/>
                         <constraint firstItem="NW3-C5-yms" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="30" id="f65-TT-9Ot"/>
                         <constraint firstItem="s7r-7V-AD6" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="hOY-vo-0v1"/>
+                        <constraint firstItem="xlr-og-uyn" firstAttribute="top" secondItem="Fqj-F7-Fqc" secondAttribute="bottom" constant="16" id="iH3-vf-z9U"/>
                         <constraint firstItem="vHJ-u8-kXz" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="k9k-je-Ujh"/>
+                        <constraint firstItem="vHJ-u8-kXz" firstAttribute="top" secondItem="xlr-og-uyn" secondAttribute="bottom" constant="16" id="twy-oA-Vg8"/>
                         <constraint firstItem="uMr-C9-MHs" firstAttribute="top" secondItem="Mpo-fM-QrY" secondAttribute="bottom" constant="32" id="u50-Ec-FVE"/>
                         <constraint firstItem="Fqj-F7-Fqc" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="yib-eU-lRH"/>
                     </constraints>

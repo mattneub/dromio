@@ -5,10 +5,12 @@ enum PingAction: Equatable {
     case choices
     /// The user would like to delete a server.
     case deleteServer
-    /// Ping the server, please.
-    case doPing
+    /// Ping the server, please. The argument is the folder id to restrict to, if any.
+    case doPing(Int? = nil)
     /// The user would like to enter offline mode.
     case offlineMode
+    /// The user would like to pick a folder.
+    case pickFolder
     /// The user would like to pick a server.
     case pickServer
     /// The user would like to re-enter the server info.

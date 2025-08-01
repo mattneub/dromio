@@ -13,6 +13,7 @@ struct ArtistsProcessorTests {
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
         services.cache.clear()
+        subject.cycler = MockCycler(processor: subject)
     }
 
     @Test("receive albums: sends dismissArtists to coordinator")
@@ -203,37 +204,22 @@ struct ArtistsProcessorTests {
         #expect(presenter.thingsReceived == [])
     }
 
-    @Test("receive viewIsAppearing: behaves like receiving .allArtists")
-    func receiveViewIsAppearing() async {
-        subject.state.animateSpinner = true
+    @Test("receive viewIsAppearing: sends .allArtists")
+    func receiveViewIsAppearing() async throws {
         subject.state.hasInitialData = false
-        requestMaker.artistList = [
-            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
-            .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
-        ]
         await subject.receive(.viewIsAppearing)
-        #expect(subject.state.hasInitialData)
-        #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
-        #expect(requestMaker.methodsCalled == ["getArtistsBySearch()"])
-        #expect(presenter.statePresented?.listType == .allArtists)
-        #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: "name")])
+        #expect(subject.state.hasInitialData == true)
+        let cycler = try #require(subject.cycler as? MockCycler)
+        #expect(cycler.thingsReceived == [.allArtists])
     }
 
     @Test("receive viewIsAppearing: does nothing if state hasInitialData")
-    func receiveViewIsAppearingHasInitialData() async {
-        subject.state.animateSpinner = true
+    func receiveViewIsAppearingHasInitialData() async throws {
         subject.state.hasInitialData = true
-        requestMaker.artistList = [
-            .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
-            .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
-        ]
         await subject.receive(.viewIsAppearing)
         #expect(subject.state.hasInitialData == true)
-        #expect(subject.state.animateSpinner == true)
-        #expect(presenter.thingsReceived.isEmpty)
-        #expect(requestMaker.methodsCalled.isEmpty)
-        #expect(presenter.statePresented == nil)
+        let cycler = try #require(subject.cycler as? MockCycler)
+        #expect(cycler.thingsReceived.isEmpty)
     }
 
 }

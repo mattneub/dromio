@@ -13,6 +13,7 @@ struct AlbumsProcessorTests {
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
         services.cache.clear()
+        subject.cycler = MockCycler(processor: subject)
     }
 
     @Test("receive allAlbums: starts by presenting spinner animation")
@@ -77,10 +78,24 @@ struct AlbumsProcessorTests {
     func receiveInitialDataSpinner() async {
         subject.state.animateSpinner = false
         subject.state.hasInitialData = false
+        subject.state.listType = .albumsForArtist(id: "1", source: .artists)
         #expect(presenter.statePresented == nil)
         await subject.receive(.initialData)
         #expect(subject.state.hasInitialData == true)
         #expect(presenter.statesPresented.first?.animateSpinner == true)
+        #expect(presenter.statesPresented.last?.animateSpinner == false)
+    }
+
+    @Test("receive initialData: turns on hasInitialData, starts by presenting state with spinner on, ultimately turns it off")
+    func receiveInitialDataSpinner2() async {
+        subject.state.animateSpinner = false
+        subject.state.hasInitialData = false
+        subject.state.listType = .allAlbums // *
+        #expect(presenter.statePresented == nil)
+        await subject.receive(.initialData)
+        #expect(subject.state.hasInitialData == true)
+        #expect(presenter.statesPresented.first?.animateSpinner == true)
+        await subject.receive(.allAlbums) // because that's what the cycler does!
         #expect(presenter.statesPresented.last?.animateSpinner == false)
     }
 
@@ -294,18 +309,16 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
     }
 
-    @Test("receive initialData: if listType is .allAlbums behaves exactly as receiving .allAlbums")
-    func receiveInitialDataAllAlbums() async {
+    @Test("receive initialData: if listType is .allAlbums sends .allAlbums")
+    func receiveInitialDataAllAlbums() async throws {
         subject.state.listType = .allAlbums
-        subject.state.animateSpinner = true
-        requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
-        #expect(presenter.statePresented == nil)
+        subject.state.animateSpinner = false
+        subject.state.hasInitialData = false
         await subject.receive(.initialData)
-        #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.tearDownSearcher, .setUpSearcher, .scrollToZero])
-        #expect(requestMaker.methodsCalled == ["getAlbumList()"])
-        #expect(presenter.statePresented?.listType == .allAlbums)
-        #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
+        #expect(presenter.statesPresented.first?.animateSpinner == true)
+        #expect(presenter.statesPresented.first?.hasInitialData == true)
+        let cycler = try #require(subject.cycler as? MockCycler)
+        #expect(cycler.thingsReceived == [.allAlbums])
     }
 
     @Test("receive randomAlbums: starts by sending `tearDown` and starting the spinner")

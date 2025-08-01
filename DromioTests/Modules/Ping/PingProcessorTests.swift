@@ -27,6 +27,7 @@ struct PingProcessorTests {
         subject.presenter = presenter
         subject.coordinator = coordinator
         requestMaker.user = .init(adminRole: true, scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: true)
+        subject.cycler = MockCycler(processor: subject)
     }
 
     @Test("receive choices: sets the status to choices, clears the player")
@@ -71,16 +72,41 @@ struct PingProcessorTests {
         ])
     }
 
+    @Test("receive deleteServer: if deletes first server, disables pick folder button")
+    func receiveDeleteServerDeletedFirst() async {
+        subject.state.enablePickFolderButton = true
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        coordinator.optionToReturn = "u@h:1"
+        await subject.receive(.deleteServer)
+        #expect(presenter.statePresented?.enablePickFolderButton == false)
+    }
+
+    @Test("receive deleteServer: if deletes non-first server, doesn't disable pick folder button")
+    func receiveDeleteServerDeletedNonFirst() async {
+        subject.state.enablePickFolderButton = true
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+        ]
+        coordinator.optionToReturn = "u@h:1"
+        await subject.receive(.deleteServer)
+        #expect(subject.state.enablePickFolderButton == true)
+        #expect(presenter.statePresented == nil)
+    }
+
     @Test("receive doPing: sets status to empty; if current server is nil, tries to load the server")
     func receiveDoPingNilCurrentServer() async {
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(presenter.statesPresented.first?.status == .empty)
         #expect(persistence.methodsCalled[0] == "loadServers()")
     }
 
     @Test("receive doPing: if current server is nil, and there is no stored server, shows the server interface")
     func receiveDoPingNilCurrentServerNoStored() async {
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(presenter.statesPresented.first?.status == .empty)
         #expect(coordinator.methodsCalled[0] == "showServer(delegate:)")
         #expect(coordinator.delegate === subject)
@@ -92,7 +118,7 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(!coordinator.methodsCalled.contains("showServer(delegate:)"))
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"))
     }
@@ -103,7 +129,7 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled[0] == "ping()")
         #expect(presenter.statesPresented[1].status == .unknown)
     }
@@ -115,7 +141,7 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
@@ -132,12 +158,49 @@ struct PingProcessorTests {
         ]
         let returnedFolders: [SubsonicFolder] = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
         requestMaker.folderList = returnedFolders
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
         #expect(folders == returnedFolders)
         #expect(currentFolder == nil)
+        #expect(presenter.statePresented?.enablePickFolderButton == true)
+    }
+
+    @Test("receive doPing: with no ping issues calls networker getFolders, if fewer than two, no pick folder button enablement")
+    func receiveDoPingGetFoldersFewer() async {
+        userHasJukeboxRole = false
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        let returnedFolders: [SubsonicFolder] = [.init(id: 1, name: "One")]
+        requestMaker.folderList = returnedFolders
+        await subject.receive(.doPing())
+        #expect(requestMaker.methodsCalled[1] == "getUser()")
+        #expect(userHasJukeboxRole == true)
+        #expect(requestMaker.methodsCalled[2] == "getFolders()")
+        #expect(folders == returnedFolders)
+        #expect(currentFolder == nil)
+        #expect(presenter.statePresented?.enablePickFolderButton == false) // *
+    }
+
+    @Test("receive doPing: with no ping issues calls networker getFolders, if restricted folder, sets current folder")
+    func receiveDoPingGetFoldersRestricted() async {
+        userHasJukeboxRole = false
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        let returnedFolders: [SubsonicFolder] = [.init(id: 1, name: "One")]
+        requestMaker.folderList = returnedFolders
+        await subject.receive(.doPing(1)) // *
+        #expect(requestMaker.methodsCalled[1] == "getUser()")
+        #expect(userHasJukeboxRole == true)
+        #expect(requestMaker.methodsCalled[2] == "getFolders()")
+        #expect(folders == returnedFolders)
+        #expect(currentFolder == 1) // *
+        #expect(presenter.statePresented?.enablePickFolderButton == false)
     }
 
     @Test("receive doPing: sets global user jukebox info to false if user not admin")
@@ -148,7 +211,7 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         requestMaker.user = .init(adminRole: false, scrobblingEnabled: true, downloadRole: true, streamRole: true, jukeboxRole: true)
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == false)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
@@ -162,7 +225,7 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         requestMaker.user = .init(adminRole: true, scrobblingEnabled: true, downloadRole: true, streamRole: true, jukeboxRole: false)
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == false)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
@@ -175,11 +238,11 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         requestMaker.user = .init(adminRole: true, scrobblingEnabled: false, downloadRole: false, streamRole: true, jukeboxRole: true)
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(presenter.statePresented?.status == .failure(message: "User needs stream and download privileges."))
         #expect(coordinator.methodsCalled.isEmpty)
         requestMaker.user = .init(adminRole: true, scrobblingEnabled: false, downloadRole: true, streamRole: false, jukeboxRole: true)
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(presenter.statePresented?.status == .failure(message: "User needs stream and download privileges."))
         #expect(coordinator.methodsCalled.isEmpty)
     }
@@ -191,7 +254,7 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         requestMaker.pingError = nil
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled[0] == "ping()")
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
@@ -206,7 +269,7 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         requestMaker.pingError = NetworkerError.message("test")
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled == ["ping()"])
         #expect(presenter.statePresented?.status == .failure(message: "test"))
         #expect(coordinator.methodsCalled.isEmpty)
@@ -222,7 +285,7 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         requestMaker.pingError = MyError(domain: "domain", code: 0)
-        await subject.receive(.doPing)
+        await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled == ["ping()"])
         #expect(presenter.statePresented?.status == .failure(message: "oops"))
         #expect(coordinator.methodsCalled.isEmpty)
@@ -249,6 +312,51 @@ struct PingProcessorTests {
         await subject.receive(.offlineMode)
         #expect(coordinator.methodsCalled == ["showPlaylist(state:)"])
         #expect(coordinator.playlistState == .init(offlineMode: true))
+    }
+
+    @Test("receive pickFolder: calls showActionSheet, if nil response, stops", .mockCache)
+    func pickFolderNoChoice() async throws {
+        folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
+        await subject.receive(.pickFolder)
+        #expect(coordinator.methodsCalled == ["showActionSheet(title:options:)"])
+        #expect(coordinator.title == "Pick a library to use:")
+        #expect(coordinator.options == ["One", "Two", "Use All Libraries"])
+        let mockCache = try #require(services.cache as? MockCache)
+        #expect(mockCache.methodsCalled.isEmpty)
+    }
+
+    @Test("receive pickFolder: if response is Use All Libraries, clear the cache, send .doPing", .mockCache)
+    func pickFolderUseAll() async throws {
+        folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
+        coordinator.optionToReturn = "Use All Libraries"
+        await subject.receive(.pickFolder)
+        let mockCache = try #require(services.cache as? MockCache)
+        #expect(mockCache.methodsCalled == ["clear()"])
+        let cycler = try #require(subject.cycler as? MockCycler)
+        #expect(cycler.thingsReceived == [.doPing()])
+    }
+
+    @Test("receive pickFolder: if response is bad value, clear the cache, send .doPing", .mockCache)
+    func pickFolderBadValue() async throws {
+        folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
+        coordinator.optionToReturn = "Bad Value"
+        await subject.receive(.pickFolder)
+        let mockCache = try #require(services.cache as? MockCache)
+        #expect(mockCache.methodsCalled == ["clear()"])
+        let cycler = try #require(subject.cycler as? MockCycler)
+        #expect(cycler.thingsReceived == [.doPing()])
+    }
+
+    @Test("receive pickFolder: if response is good value, clear the cache, send .doPing with id", .mockCache)
+    func pickFolderGoodValue() async throws {
+        folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
+        coordinator.optionToReturn = "Two"
+        await subject.receive(.pickFolder)
+        let mockCache = try #require(services.cache as? MockCache)
+        #expect(mockCache.methodsCalled == ["clear()"])
+        let cycler = try #require(subject.cycler as? MockCycler)
+        await #while(cycler.thingsReceived.isEmpty)
+        #expect(cycler.thingsReceived == [.doPing(2)])
     }
 
     @Test("receive pickServer: if no servers, calls showAlert and stops", .mockCache)
@@ -298,8 +406,8 @@ struct PingProcessorTests {
         #expect(await download.methodsCalled == ["clear()"])
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"])
-        await #while(presenter.statesPresented.isEmpty)
-        #expect(presenter.statesPresented.first?.status == .empty)
+        let cycler = try #require(subject.cycler as? MockCycler)
+        #expect(cycler.thingsReceived == [.doPing()])
     }
 
     @Test("receive pickServer: if servers, calls showActionSheet, if current one is chosen, no save, no set, no clear playlist, no clear downloads, calls doPing", .mockCache)
@@ -324,8 +432,8 @@ struct PingProcessorTests {
         #expect(await download.methodsCalled.isEmpty)
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"]) // but the cache _is_ cleared
-        await #while(presenter.statesPresented.isEmpty)
-        #expect(presenter.statesPresented.first?.status == .empty)
+        let cycler = try #require(subject.cycler as? MockCycler)
+        #expect(cycler.thingsReceived == [.doPing()])
     }
 
     @Test("receive reenterServerInfo: calls coordinator showServer with self as delegate")
@@ -353,9 +461,9 @@ struct PingProcessorTests {
         #expect(currentPlaylist.methodsCalled == ["clear()"])
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"])
-        await #while(presenter.statesPresented.isEmpty)
         #expect(await download.methodsCalled == ["clear()"])
-        #expect(presenter.statesPresented.first?.status == .empty)
+        let cycler = try #require(subject.cycler as? MockCycler)
+        #expect(cycler.thingsReceived == [.doPing()])
     }
 
     @Test("userEdited: if this server was already in the list, the old version is removed")
@@ -372,7 +480,5 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
         ])
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "pp", version: "v"))
-        await #while(presenter.statesPresented.isEmpty)
-        #expect(presenter.statesPresented.first?.status == .empty)
     }
 }

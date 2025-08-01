@@ -3,6 +3,8 @@
 struct PingState: Equatable {
     var status: PingStatus = .empty
 
+    var enablePickFolderButton = false
+
     /// States that the view can be in.
     enum PingStatus: Equatable {
         case empty // no status (we are looking to see whether we even _have_ a server)

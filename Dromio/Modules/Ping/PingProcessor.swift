@@ -13,6 +13,9 @@ final class PingProcessor: Processor {
     /// The state, to be presented by the presenter.
     var state = PingState()
 
+    /// Cycler, so that we can dispatch actions to ourself and test that we did so.
+    lazy var cycler: Cycler = Cycler(processor: self)
+
     func receive(_ action: PingAction) async {
         switch action {
         case .choices:
@@ -21,10 +24,12 @@ final class PingProcessor: Processor {
             services.player.clear()
         case .deleteServer:
             await deleteServer()
-        case .doPing:
-            await ping()
+        case .doPing(let folderId):
+            await ping(restrictToFolder: folderId)
         case .offlineMode:
             await offlineMode()
+        case .pickFolder:
+            await pickFolder()
         case .pickServer:
             await pickServer()
         case .reenterServerInfo:
@@ -32,8 +37,10 @@ final class PingProcessor: Processor {
         }
     }
 
-    /// Utility saying what to do when we receive .doPing.
-    private func ping() async {
+    /// Utility saying what to do when we receive .doPing. Also called directly by `pickFolder`.
+    /// - Parameter restrictedFolder: Folder ID to restrict to, or `nil` to mean use all libraries.
+    ///
+    private func ping(restrictToFolder restrictedFolder: Int? = nil) async {
         do {
             state.status = .empty
             await presenter?.present(state)
@@ -58,8 +65,9 @@ final class PingProcessor: Processor {
             }
             userHasJukeboxRole = user.jukeboxRole && user.adminRole
             folders = try await services.requestMaker.getFolders() // older versions return one folder with id 1
-            currentFolder = nil // by default, use all folders
+            currentFolder = restrictedFolder
             state.status = .success
+            state.enablePickFolderButton = folders.count > 1
             await presenter?.present(state)
             await Task.yield()
             try? await unlessTesting {
@@ -93,7 +101,36 @@ final class PingProcessor: Processor {
         let index = servers.firstIndex(where: { $0.id == serverId }) ?? 0
         servers.remove(at: index)
         try? services.persistence.save(servers: servers)
-        // and stop; user cannot proceed without explicitly picking a server
+
+        if index == 0 {
+            state.enablePickFolderButton = false
+            await presenter?.present(state)
+        }
+        // and stop; user cannot proceed without explicitly picking a server or folder
+    }
+
+    /// Utility saying what to do when we receive `.pickFolder`.
+    private func pickFolder() async {
+        let useAll = "Use All Libraries"
+        guard let folderName = await coordinator?.showActionSheet(
+            title: "Pick a library to use:",
+            options: folders.map { $0.name } + [useAll]
+        ) else {
+            return
+        }
+
+        services.cache.clear()
+        guard folderName != useAll else {
+            await cycler.receive(.doPing())
+            return
+        }
+        guard let folderId = folders.first(where: { $0.name == folderName })?.id else {
+            await cycler.receive(.doPing()) // shouldn't happen, but let's do _something_
+            return
+        }
+        Task {
+            await cycler.receive(.doPing(folderId))
+        }
     }
 
     /// Utility saying what to do when we receive `.pickServer`.
@@ -122,7 +159,7 @@ final class PingProcessor: Processor {
             await services.download.clear()
         }
         Task {
-            await receive(.doPing)
+            await cycler.receive(.doPing())
         }
     }
 
@@ -155,7 +192,7 @@ extension PingProcessor: ServerDelegate {
         services.cache.clear()
         await services.download.clear()
         Task {
-            await receive(.doPing)
+            await cycler.receive(.doPing())
         }
     }
 }

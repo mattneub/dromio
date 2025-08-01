@@ -20,6 +20,9 @@ class PingViewController: UIViewController, ReceiverPresenter {
     /// Button that lets the user pick a server.
     @IBOutlet var pickServerButton: UIButton!
 
+    /// Button that lets the user pick a music folder.
+    @IBOutlet var pickFolderButton: UIButton!
+
     /// Button that lets the user delete a server.
     @IBOutlet var deleteServerButton: UIButton!
 
@@ -37,7 +40,7 @@ class PingViewController: UIViewController, ReceiverPresenter {
                 return
             }
             firstTime = false
-            await processor?.receive(.doPing)
+            await processor?.receive(.doPing())
         }
     }
 
@@ -48,6 +51,7 @@ class PingViewController: UIViewController, ReceiverPresenter {
         reenterButton.isHidden = true
         pickServerButton.isHidden = true
         deleteServerButton.isHidden = true
+        pickFolderButton.isHidden = true
         offlineModeButton.isHidden = true
         switch state.status {
         case .empty: break
@@ -63,13 +67,16 @@ class PingViewController: UIViewController, ReceiverPresenter {
             reenterButton.isHidden = false
             pickServerButton.isHidden = false
             deleteServerButton.isHidden = false
+            pickFolderButton.isHidden = false
             offlineModeButton.isHidden = false
         case .choices:
             reenterButton.isHidden = false
             pickServerButton.isHidden = false
             deleteServerButton.isHidden = false
+            pickFolderButton.isHidden = false
             offlineModeButton.isHidden = false
         }
+        pickFolderButton.isEnabled = state.enablePickFolderButton && state.status == .choices
     }
 
     @IBAction func doReenterButton (_ sender: UIButton) {
@@ -81,6 +88,12 @@ class PingViewController: UIViewController, ReceiverPresenter {
     @IBAction func doPickServerButton (_ sender: UIButton) {
         Task {
             await processor?.receive(.pickServer)
+        }
+    }
+
+    @IBAction func doPickFolderButton(_ sender: UIButton) {
+        Task {
+            await processor?.receive(.pickFolder)
         }
     }
 

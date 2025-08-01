@@ -28,10 +28,10 @@ struct PingViewControllerTests {
     func viewIsAppearing() async {
         subject.viewIsAppearing(false)
         await #while(processor.thingsReceived.isEmpty)
-        #expect(processor.thingsReceived == [.doPing])
+        #expect(processor.thingsReceived == [.doPing()])
         subject.viewIsAppearing(false)
-        await #while(processor.thingsReceived == [.doPing])
-        #expect(processor.thingsReceived == [.doPing, .choices])
+        await #while(processor.thingsReceived == [.doPing()])
+        #expect(processor.thingsReceived == [.doPing(), .choices])
     }
 
     @Test("present: sets the labels and buttons as expected")
@@ -43,6 +43,7 @@ struct PingViewControllerTests {
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
         #expect(subject.reenterButton.isHidden)
+        #expect(subject.pickFolderButton.isHidden)
         #expect(subject.pickServerButton.isHidden)
         #expect(subject.deleteServerButton.isHidden)
         #expect(subject.offlineModeButton.isHidden)
@@ -52,6 +53,7 @@ struct PingViewControllerTests {
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
         #expect(subject.reenterButton.isHidden)
+        #expect(subject.pickFolderButton.isHidden)
         #expect(subject.pickServerButton.isHidden)
         #expect(subject.deleteServerButton.isHidden)
         #expect(subject.offlineModeButton.isHidden)
@@ -61,6 +63,7 @@ struct PingViewControllerTests {
         #expect(!subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
         #expect(subject.reenterButton.isHidden)
+        #expect(subject.pickFolderButton.isHidden)
         #expect(subject.pickServerButton.isHidden)
         #expect(subject.deleteServerButton.isHidden)
         #expect(subject.offlineModeButton.isHidden)
@@ -71,6 +74,7 @@ struct PingViewControllerTests {
         #expect(!subject.failureLabel.isHidden)
         #expect(subject.failureLabel.text == "oops")
         #expect(!subject.reenterButton.isHidden)
+        #expect(!subject.pickFolderButton.isHidden)
         #expect(!subject.pickServerButton.isHidden)
         #expect(!subject.deleteServerButton.isHidden)
         #expect(!subject.offlineModeButton.isHidden)
@@ -80,9 +84,24 @@ struct PingViewControllerTests {
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
         #expect(!subject.reenterButton.isHidden)
+        #expect(!subject.pickFolderButton.isHidden)
         #expect(!subject.pickServerButton.isHidden)
         #expect(!subject.deleteServerButton.isHidden)
         #expect(!subject.offlineModeButton.isHidden)
+    }
+
+    @Test("present: enables the pickFolderButton as expected")
+    func presentPickFolderButton() async {
+        subject.loadViewIfNeeded()
+
+        await subject.present(.init(status: .empty, enablePickFolderButton: true))
+        #expect(!subject.pickFolderButton.isEnabled)
+
+        await subject.present(.init(status: .choices, enablePickFolderButton: false))
+        #expect(!subject.pickFolderButton.isEnabled)
+
+        await subject.present(.init(status: .choices, enablePickFolderButton: true))
+        #expect(subject.pickFolderButton.isEnabled)
     }
 
     @Test("doReenterButton: sends processor reenterServerInfo")

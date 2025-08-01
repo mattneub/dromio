@@ -9,6 +9,9 @@ final class ArtistsProcessor: Processor {
     /// Reference to the view controller, set by coordinator on creation.
     weak var presenter: (any ReceiverPresenter<ArtistsEffect, ArtistsState>)?
 
+    /// Cycler, so that we can dispatch actions to ourself and test that we did so.
+    lazy var cycler: Cycler = Cycler(processor: self)
+
     /// State to be presented to the presenter.
     var state: ArtistsState = ArtistsState()
 
@@ -99,7 +102,7 @@ final class ArtistsProcessor: Processor {
                 return
             }
             state.hasInitialData = true
-            await receive(.allArtists)
+            await cycler.receive(.allArtists)
         }
     }
 }
