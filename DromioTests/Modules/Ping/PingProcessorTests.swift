@@ -152,7 +152,7 @@ struct PingProcessorTests {
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
-        #expect(folders == [])
+        #expect(subject.state.folders == [])
     }
 
     @Test("receive doPing: with no ping issues calls networker getFolders, sets folder globals")
@@ -169,7 +169,7 @@ struct PingProcessorTests {
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
-        #expect(folders == returnedFolders)
+        #expect(subject.state.folders == returnedFolders)
         #expect(persistence.methodsCalled.contains("save(currentFolder:)"))
         #expect(persistence.currentFolder == nil)
         #expect(presenter.statePresented?.enablePickFolderButton == true)
@@ -189,7 +189,7 @@ struct PingProcessorTests {
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
-        #expect(folders == returnedFolders)
+        #expect(subject.state.folders == returnedFolders)
         #expect(persistence.methodsCalled.contains("save(currentFolder:)"))
         #expect(persistence.currentFolder == nil)
         #expect(presenter.statePresented?.enablePickFolderButton == false) // *
@@ -209,7 +209,7 @@ struct PingProcessorTests {
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
-        #expect(folders == returnedFolders)
+        #expect(subject.state.folders == returnedFolders)
         #expect(persistence.methodsCalled.contains("save(currentFolder:)"))
         #expect(persistence.currentFolder == 1) // *
         #expect(presenter.statePresented?.enablePickFolderButton == false)
@@ -229,7 +229,7 @@ struct PingProcessorTests {
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
-        #expect(folders == returnedFolders)
+        #expect(subject.state.folders == returnedFolders)
         #expect(persistence.methodsCalled.contains("save(currentFolder:)"))
         #expect(persistence.currentFolder == nil) // *
         #expect(presenter.statePresented?.enablePickFolderButton == false)
@@ -366,7 +366,7 @@ struct PingProcessorTests {
 
     @Test("receive pickFolder: calls showActionSheet, if nil response, stops", .mockCache)
     func pickFolderNoChoice() async throws {
-        folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
+        subject.state.folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
         await subject.receive(.pickFolder)
         #expect(coordinator.methodsCalled == ["showActionSheet(title:options:)"])
         #expect(coordinator.title == "Pick a library to use:")
@@ -378,7 +378,7 @@ struct PingProcessorTests {
     @Test("receive pickFolder: if response is Use All Libraries, clear the cache, save nil, send .doPing", .mockCache)
     func pickFolderUseAll() async throws {
         persistence.currentFolder = 100
-        folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
+        subject.state.folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
         coordinator.optionToReturn = "Use All Libraries"
         await subject.receive(.pickFolder)
         let mockCache = try #require(services.cache as? MockCache)
@@ -392,7 +392,7 @@ struct PingProcessorTests {
     @Test("receive pickFolder: if response is bad value, clear the cache, save nil, send .doPing", .mockCache)
     func pickFolderBadValue() async throws {
         persistence.currentFolder = 100
-        folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
+        subject.state.folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
         coordinator.optionToReturn = "Bad Value"
         await subject.receive(.pickFolder)
         let mockCache = try #require(services.cache as? MockCache)
@@ -406,7 +406,7 @@ struct PingProcessorTests {
     @Test("receive pickFolder: if response is good value, clear the cache, save value, send .doPing with id", .mockCache)
     func pickFolderGoodValue() async throws {
         persistence.currentFolder = 100
-        folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
+        subject.state.folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
         coordinator.optionToReturn = "Two"
         await subject.receive(.pickFolder)
         let mockCache = try #require(services.cache as? MockCache)
