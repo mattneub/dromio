@@ -12,8 +12,8 @@ var userHasJukeboxRole = false
 /// Global info about available music folders: which ones exist and which (if any) is current.
 @MainActor
 var folders = [SubsonicFolder]()
-@MainActor
-var currentFolder: Int?
+//@MainActor
+//var currentFolder: Int?
 
 let logger = Logger(subsystem: "dromio", category: "debugging")
 

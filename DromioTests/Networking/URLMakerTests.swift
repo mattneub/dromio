@@ -5,6 +5,12 @@ import Foundation
 @MainActor
 struct URLMakerTests {
     let subject = URLMaker()
+    let persistence = MockPersistence()
+
+    init() {
+        services.persistence = persistence
+        persistence.currentFolder = nil
+    }
 
     @Test("subject is born with a nil current server")
     func nilCurrentServer() {
@@ -84,7 +90,7 @@ struct URLMakerTests {
 
     @Test("urlFor(action:) adds musicFolderId query item if folder restrictable and current folder is non-nil")
     func folderRestrictable() throws {
-        currentFolder = 2 // *
+        persistence.currentFolder = 2
         subject.currentServerInfo = .init(scheme: "scheme", host: "host", port: 1, username: "username", password: "password", version: "version")
         let url = try subject.urlFor(action: "action", additional: [
             .init(name: "nickname", value: "mattski"),
@@ -128,7 +134,7 @@ struct URLMakerTests {
 
     @Test("urlFor(action:) doesn't add musicFolderId query item if not folder restrictable and current folder is non-nil")
     func folderRestrictableNot() throws {
-        currentFolder = 2 // *
+        persistence.currentFolder = 2
         subject.currentServerInfo = .init(scheme: "scheme", host: "host", port: 1, username: "username", password: "password", version: "version")
         let url = try subject.urlFor(action: "action", additional: [
             .init(name: "nickname", value: "mattski"),
@@ -169,7 +175,6 @@ struct URLMakerTests {
 
     @Test("urlFor(action:) doesn't add musicFolderId query item if folder restrictable but current folder is nil")
     func folderRestrictableButCurrentFolderNil() throws {
-        currentFolder = nil // *
         subject.currentServerInfo = .init(scheme: "scheme", host: "host", port: 1, username: "username", password: "password", version: "version")
         let url = try subject.urlFor(action: "action", additional: [
             .init(name: "nickname", value: "mattski"),

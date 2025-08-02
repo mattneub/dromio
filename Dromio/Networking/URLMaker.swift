@@ -55,7 +55,7 @@ final class URLMaker: URLMakerType {
             .init(name: "c", value: client),
             .init(name: "f", value: format)
         ] + (additional ?? [])
-        if folderRestrictable, let folderId = currentFolder {
+        if folderRestrictable, let folderId = services.persistence.loadCurrentFolder() {
             urlComponents.queryItems?.append(.init(name: "musicFolderId", value: String(folderId)))
         }
         guard let url = urlComponents.url else {

@@ -280,7 +280,6 @@ struct RequestMakerTests {
             )
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
-        currentFolder = 2
         let list = try await subject.getAlbumList()
         #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "getAlbumList2")
@@ -394,7 +393,6 @@ struct RequestMakerTests {
             )
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
-        currentFolder = 2
         let list = try await subject.getAlbumsRandom()
         #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "getAlbumList2")
@@ -556,7 +554,6 @@ struct RequestMakerTests {
             )
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
-        currentFolder = 2
         let list = try await subject.getArtistsBySearch()
         #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "search3")
@@ -672,7 +669,6 @@ struct RequestMakerTests {
             )
         )
         networker.dataToReturn = [try! JSONEncoder().encode(payload)]
-        currentFolder = 2
         let list = try await subject.getSongsBySearch(query: "Matt")
         #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "search3")

@@ -53,6 +53,7 @@ struct PingProcessorTests {
         #expect(coordinator.title == "Pick a server to delete:")
         #expect(coordinator.options == ["u@h:1"])
         #expect(!persistence.methodsCalled.contains("save(servers:)"))
+        #expect(!persistence.methodsCalled.contains("save(currentFolder:)"))
     }
 
     @Test("receive deleteServer: if servers, call coordinator showActionSheet, deletes given server from servers list")
@@ -72,8 +73,9 @@ struct PingProcessorTests {
         ])
     }
 
-    @Test("receive deleteServer: if deletes first server, disables pick folder button")
+    @Test("receive deleteServer: if deletes first server, disables pick folder button, set current folder to nil")
     func receiveDeleteServerDeletedFirst() async {
+        persistence.currentFolder = 100
         subject.state.enablePickFolderButton = true
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
@@ -82,10 +84,13 @@ struct PingProcessorTests {
         coordinator.optionToReturn = "u@h:1"
         await subject.receive(.deleteServer)
         #expect(presenter.statePresented?.enablePickFolderButton == false)
+        #expect(persistence.methodsCalled.contains("save(currentFolder:)"))
+        #expect(persistence.currentFolder == nil)
     }
 
-    @Test("receive deleteServer: if deletes non-first server, doesn't disable pick folder button")
+    @Test("receive deleteServer: if deletes non-first server, doesn't disable pick folder button, doesn't change current folder")
     func receiveDeleteServerDeletedNonFirst() async {
+        persistence.currentFolder = 100
         subject.state.enablePickFolderButton = true
         persistence.servers = [
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
@@ -95,6 +100,8 @@ struct PingProcessorTests {
         await subject.receive(.deleteServer)
         #expect(subject.state.enablePickFolderButton == true)
         #expect(presenter.statePresented == nil)
+        #expect(!persistence.methodsCalled.contains("save(currentFolder:)"))
+        #expect(persistence.currentFolder == 100)
     }
 
     @Test("receive doPing: sets status to empty; if current server is nil, tries to load the server")
@@ -146,11 +153,11 @@ struct PingProcessorTests {
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
         #expect(folders == [])
-        #expect(currentFolder == nil)
     }
 
     @Test("receive doPing: with no ping issues calls networker getFolders, sets folder globals")
     func receiveDoPingGetFolders() async {
+        persistence.currentFolder = 100
         userHasJukeboxRole = false
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
@@ -163,12 +170,14 @@ struct PingProcessorTests {
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
         #expect(folders == returnedFolders)
-        #expect(currentFolder == nil)
+        #expect(persistence.methodsCalled.contains("save(currentFolder:)"))
+        #expect(persistence.currentFolder == nil)
         #expect(presenter.statePresented?.enablePickFolderButton == true)
     }
 
     @Test("receive doPing: with no ping issues calls networker getFolders, if fewer than two, no pick folder button enablement")
     func receiveDoPingGetFoldersFewer() async {
+        persistence.currentFolder = 100
         userHasJukeboxRole = false
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
@@ -181,12 +190,14 @@ struct PingProcessorTests {
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
         #expect(folders == returnedFolders)
-        #expect(currentFolder == nil)
+        #expect(persistence.methodsCalled.contains("save(currentFolder:)"))
+        #expect(persistence.currentFolder == nil)
         #expect(presenter.statePresented?.enablePickFolderButton == false) // *
     }
 
     @Test("receive doPing: with no ping issues calls networker getFolders, if restricted folder, sets current folder")
     func receiveDoPingGetFoldersRestricted() async {
+        persistence.currentFolder = 100
         userHasJukeboxRole = false
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
@@ -199,12 +210,14 @@ struct PingProcessorTests {
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
         #expect(folders == returnedFolders)
-        #expect(currentFolder == 1) // *
+        #expect(persistence.methodsCalled.contains("save(currentFolder:)"))
+        #expect(persistence.currentFolder == 1) // *
         #expect(presenter.statePresented?.enablePickFolderButton == false)
     }
 
     @Test("receive doPing: with no ping issues calls networker getFolders, if restricted folder bad, sets current folder to nil")
     func receiveDoPingGetFoldersRestrictedBad() async {
+        persistence.currentFolder = 100
         userHasJukeboxRole = false
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
@@ -217,7 +230,8 @@ struct PingProcessorTests {
         #expect(userHasJukeboxRole == true)
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
         #expect(folders == returnedFolders)
-        #expect(currentFolder == nil) // *
+        #expect(persistence.methodsCalled.contains("save(currentFolder:)"))
+        #expect(persistence.currentFolder == nil) // *
         #expect(presenter.statePresented?.enablePickFolderButton == false)
     }
 
@@ -432,6 +446,7 @@ struct PingProcessorTests {
 
     @Test("receive pickServer: if servers, calls showActionSheet, if one is chosen, brings it to front, saves, sets current server, clears playlist and downloads, calls doPing", .mockCache)
     func pickServer() async throws {
+        persistence.currentFolder = 100
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
@@ -447,6 +462,8 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
         ])
+        #expect(persistence.methodsCalled.contains("save(currentFolder:)"))
+        #expect(persistence.currentFolder == nil)
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"))
         #expect(currentPlaylist.methodsCalled == ["clear()"])
         #expect(await download.methodsCalled == ["clear()"])
@@ -458,6 +475,7 @@ struct PingProcessorTests {
 
     @Test("receive pickServer: if servers, calls showActionSheet, if current one is chosen, no save, no set, no clear playlist, no clear downloads, calls doPing", .mockCache)
     func pickServerSameAsCurrentServer() async throws {
+        persistence.currentFolder = 100
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
@@ -473,13 +491,15 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ])
+        #expect(!persistence.methodsCalled.contains("save(currentFolder:)"))
+        #expect(persistence.currentFolder == 100)
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"))
         #expect(currentPlaylist.methodsCalled.isEmpty)
         #expect(await download.methodsCalled.isEmpty)
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"]) // but the cache _is_ cleared
         let cycler = try #require(subject.cycler as? MockCycler)
-        #expect(cycler.thingsReceived == [.doPing()])
+        #expect(cycler.thingsReceived == [.doPing(100)])
     }
 
     @Test("receive reenterServerInfo: calls coordinator showServer with self as delegate")
@@ -489,20 +509,22 @@ struct PingProcessorTests {
         #expect(coordinator.delegate === subject)
     }
 
-    @Test("userEdited: puts the new server info first in the list, sets the current server, clears current playlist and downloads, calls ping", .mockCache)
+    @Test("userEdited: puts the new server info first in the list, sets the current server, clears current folder, clears current playlist and downloads, calls ping", .mockCache)
     func userEdited() async throws {
+        persistence.currentFolder = 100
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         let newServer = ServerInfo(scheme: "http", host: "hhh", port: 1, username: "uuu", password: "p", version: "v")
         await subject.userEdited(serverInfo: newServer)
-        #expect(persistence.methodsCalled.last == "save(servers:)")
+        #expect(persistence.methodsCalled.suffix(2) == ["save(servers:)", "save(currentFolder:)"])
         #expect(persistence.servers == [
             ServerInfo(scheme: "http", host: "hhh", port: 1, username: "uuu", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ])
+        #expect(persistence.currentFolder == nil)
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hhh", port: 1, username: "uuu", password: "p", version: "v"))
         #expect(currentPlaylist.methodsCalled == ["clear()"])
         let mockCache = try #require(services.cache as? MockCache)
@@ -520,7 +542,7 @@ struct PingProcessorTests {
         ]
         let newServer = ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "pp", version: "v")
         await subject.userEdited(serverInfo: newServer)
-        #expect(persistence.methodsCalled.last == "save(servers:)")
+        #expect(persistence.methodsCalled.suffix(2) == ["save(servers:)", "save(currentFolder:)"])
         #expect(persistence.servers == [
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "pp", version: "v"),
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),

@@ -67,11 +67,12 @@ final class PingProcessor: Processor {
             }
             userHasJukeboxRole = user.jukeboxRole && user.adminRole
             folders = try await services.requestMaker.getFolders() // older versions return one folder with id 1
-            currentFolder = if folders.firstIndex(where: { $0.id == restrictedFolder }) != nil {
+            let currentFolder: Int? = if folders.firstIndex(where: { $0.id == restrictedFolder }) != nil {
                 restrictedFolder
             } else {
                 nil
             }
+            services.persistence.save(currentFolder: currentFolder)
             state.status = .success
             state.enablePickFolderButton = folders.count > 1
             await presenter?.present(state)
@@ -109,6 +110,7 @@ final class PingProcessor: Processor {
         try? services.persistence.save(servers: servers)
 
         if index == 0 {
+            services.persistence.save(currentFolder: nil)
             state.enablePickFolderButton = false
             await presenter?.present(state)
         }
@@ -163,12 +165,13 @@ final class PingProcessor: Processor {
             let server = servers.remove(at: index)
             servers.insert(server, at: 0)
             try? services.persistence.save(servers: servers)
+            services.persistence.save(currentFolder: nil)
             services.urlMaker.currentServerInfo = server
             services.currentPlaylist.clear()
             await services.download.clear()
         }
         Task {
-            await cycler.receive(.doPing())
+            await cycler.receive(.doPing(services.persistence.loadCurrentFolder()))
         }
     }
 
@@ -196,6 +199,7 @@ extension PingProcessor: ServerDelegate {
         }
         servers.insert(serverInfo, at: 0) // new server becomes first, i.e. default
         try? services.persistence.save(servers: servers)
+        services.persistence.save(currentFolder: nil)
         services.urlMaker.currentServerInfo = serverInfo
         services.currentPlaylist.clear()
         services.cache.clear()
