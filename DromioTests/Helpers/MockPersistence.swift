@@ -6,6 +6,7 @@ final class MockPersistence: PersistenceType {
     var methodsCalled = [String]()
     var songList: [SubsonicSong]?
     var servers: [ServerInfo]?
+    var currentFolder: Int?
 
     func saveCurrentPlaylist(songList: [SubsonicSong]) throws {
         methodsCalled.append(#function)
@@ -25,6 +26,16 @@ final class MockPersistence: PersistenceType {
     func loadServers() throws -> [ServerInfo] {
         methodsCalled.append(#function)
         return self.servers ?? []
+    }
+
+    func save(currentFolder: Int?) {
+        methodsCalled.append(#function)
+        self.currentFolder = currentFolder
+    }
+
+    func loadCurrentFolder() -> Int? {
+        methodsCalled.append(#function)
+        return self.currentFolder
     }
 
 }

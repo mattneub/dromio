@@ -7,6 +7,8 @@ enum PingAction: Equatable {
     case deleteServer
     /// Ping the server, please. The argument is the folder id to restrict to, if any.
     case doPing(Int? = nil)
+    /// The app is launching.
+    case launch
     /// The user would like to enter offline mode.
     case offlineMode
     /// The user would like to pick a folder.

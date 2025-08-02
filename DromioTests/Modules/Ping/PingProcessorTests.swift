@@ -203,6 +203,24 @@ struct PingProcessorTests {
         #expect(presenter.statePresented?.enablePickFolderButton == false)
     }
 
+    @Test("receive doPing: with no ping issues calls networker getFolders, if restricted folder bad, sets current folder to nil")
+    func receiveDoPingGetFoldersRestrictedBad() async {
+        userHasJukeboxRole = false
+        persistence.servers = [
+            ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
+            ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
+        ]
+        let returnedFolders: [SubsonicFolder] = [.init(id: 2, name: "Two")]
+        requestMaker.folderList = returnedFolders
+        await subject.receive(.doPing(1)) // *
+        #expect(requestMaker.methodsCalled[1] == "getUser()")
+        #expect(userHasJukeboxRole == true)
+        #expect(requestMaker.methodsCalled[2] == "getFolders()")
+        #expect(folders == returnedFolders)
+        #expect(currentFolder == nil) // *
+        #expect(presenter.statePresented?.enablePickFolderButton == false)
+    }
+
     @Test("receive doPing: sets global user jukebox info to false if user not admin")
     func receiveDoPingGetUserNotAdmin() async {
         userHasJukeboxRole = true
@@ -291,6 +309,24 @@ struct PingProcessorTests {
         #expect(coordinator.methodsCalled.isEmpty)
     }
 
+    @Test("receive launch: fetches current folder from persistence, calls .doPing")
+    func receiveLaunch() async throws {
+        persistence.currentFolder = 2
+        await subject.receive(.launch)
+        #expect(persistence.methodsCalled.first == "loadCurrentFolder()")
+        let cycler = try #require(subject.cycler as? MockCycler)
+        #expect(cycler.thingsReceived == [.doPing(2)])
+    }
+
+    @Test("receive launch: fetches current folder from persistence, calls .doPing")
+    func receiveLaunchNil() async throws {
+        persistence.currentFolder = nil
+        await subject.receive(.launch)
+        #expect(persistence.methodsCalled.first == "loadCurrentFolder()")
+        let cycler = try #require(subject.cycler as? MockCycler)
+        #expect(cycler.thingsReceived == [.doPing(nil)])
+    }
+
     @Test("receive offlineMode: intersects current playlist with downloads, balks with alert if empty")
     func offlineModePlaylistAndDownloads() async {
         currentPlaylist.list = [
@@ -325,35 +361,45 @@ struct PingProcessorTests {
         #expect(mockCache.methodsCalled.isEmpty)
     }
 
-    @Test("receive pickFolder: if response is Use All Libraries, clear the cache, send .doPing", .mockCache)
+    @Test("receive pickFolder: if response is Use All Libraries, clear the cache, save nil, send .doPing", .mockCache)
     func pickFolderUseAll() async throws {
+        persistence.currentFolder = 100
         folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
         coordinator.optionToReturn = "Use All Libraries"
         await subject.receive(.pickFolder)
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"])
+        #expect(persistence.methodsCalled.first == "save(currentFolder:)")
+        #expect(persistence.currentFolder == nil)
         let cycler = try #require(subject.cycler as? MockCycler)
         #expect(cycler.thingsReceived == [.doPing()])
     }
 
-    @Test("receive pickFolder: if response is bad value, clear the cache, send .doPing", .mockCache)
+    @Test("receive pickFolder: if response is bad value, clear the cache, save nil, send .doPing", .mockCache)
     func pickFolderBadValue() async throws {
+        persistence.currentFolder = 100
         folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
         coordinator.optionToReturn = "Bad Value"
         await subject.receive(.pickFolder)
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"])
+        #expect(persistence.methodsCalled.first == "save(currentFolder:)")
+        #expect(persistence.currentFolder == nil)
         let cycler = try #require(subject.cycler as? MockCycler)
         #expect(cycler.thingsReceived == [.doPing()])
     }
 
-    @Test("receive pickFolder: if response is good value, clear the cache, send .doPing with id", .mockCache)
+    @Test("receive pickFolder: if response is good value, clear the cache, save value, send .doPing with id", .mockCache)
     func pickFolderGoodValue() async throws {
+        persistence.currentFolder = 100
         folders = [.init(id: 1, name: "One"), .init(id: 2, name: "Two")]
         coordinator.optionToReturn = "Two"
         await subject.receive(.pickFolder)
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"])
+        await #while(persistence.methodsCalled.isEmpty)
+        #expect(persistence.methodsCalled.first == "save(currentFolder:)")
+        #expect(persistence.currentFolder == 2)
         let cycler = try #require(subject.cycler as? MockCycler)
         await #while(cycler.thingsReceived.isEmpty)
         #expect(cycler.thingsReceived == [.doPing(2)])

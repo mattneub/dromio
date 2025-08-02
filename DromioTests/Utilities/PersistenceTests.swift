@@ -135,4 +135,30 @@ struct PersistenceTests {
         )
         #expect(result[0] == expected)
     }
+
+    @Test("save(currentFolder:) saves value to defaults")
+    func saveCurrentFolder() {
+        subject.save(currentFolder: 2)
+        #expect(defaults.methodsCalled == ["set(_:forKey:)"])
+        #expect(defaults.key == "currentFolder")
+        #expect(defaults.value as? Int == 2)
+        subject.save(currentFolder: nil)
+        #expect(defaults.methodsCalled == ["set(_:forKey:)", "set(_:forKey:)"])
+        #expect(defaults.key == "currentFolder")
+        #expect(defaults.value == nil)
+    }
+
+    @Test("loadCurrentFolder() fetches value from defaults")
+    func loadCurrentFolder() {
+        defaults.value = nil
+        var result = subject.loadCurrentFolder()
+        #expect(defaults.methodsCalled == ["object(forKey:)"])
+        #expect(defaults.key == "currentFolder")
+        #expect(result == nil)
+        defaults.value = 2
+        result = subject.loadCurrentFolder()
+        #expect(defaults.methodsCalled == ["object(forKey:)", "object(forKey:)"])
+        #expect(defaults.key == "currentFolder")
+        #expect(result == 2)
+    }
 }

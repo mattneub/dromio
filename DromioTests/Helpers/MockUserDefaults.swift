@@ -19,4 +19,11 @@ final class MockUserDefaults: UserDefaultsType {
         self.value = value
         self.key = key
     }
+
+    func object(forKey key: String) -> Any? {
+        methodsCalled.append(#function)
+        self.key = key
+        return value
+    }
+
 }

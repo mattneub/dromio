@@ -24,14 +24,14 @@ struct PingViewControllerTests {
         #expect(subject.offlineModeButton.isHidden)
     }
 
-    @Test("viewIsAppearing: sends doPing to processor the first time, then choices")
+    @Test("viewIsAppearing: sends launch to processor the first time, then choices")
     func viewIsAppearing() async {
         subject.viewIsAppearing(false)
         await #while(processor.thingsReceived.isEmpty)
-        #expect(processor.thingsReceived == [.doPing()])
+        #expect(processor.thingsReceived == [.launch])
         subject.viewIsAppearing(false)
-        await #while(processor.thingsReceived == [.doPing()])
-        #expect(processor.thingsReceived == [.doPing(), .choices])
+        await #while(processor.thingsReceived == [.launch])
+        #expect(processor.thingsReceived == [.launch, .choices])
     }
 
     @Test("present: sets the labels and buttons as expected")

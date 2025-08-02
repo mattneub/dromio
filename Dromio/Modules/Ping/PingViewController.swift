@@ -40,7 +40,7 @@ class PingViewController: UIViewController, ReceiverPresenter {
                 return
             }
             firstTime = false
-            await processor?.receive(.doPing())
+            await processor?.receive(.launch)
         }
     }
 

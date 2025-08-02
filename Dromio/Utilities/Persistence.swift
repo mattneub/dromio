@@ -7,6 +7,8 @@ protocol PersistenceType {
     func loadCurrentPlaylist() throws -> [SubsonicSong]
     func save(servers: [ServerInfo]) throws
     func loadServers() throws -> [ServerInfo]
+    func save(currentFolder: Int?)
+    func loadCurrentFolder() -> Int?
 }
 
 /// Struct that implements persistence. There are two kinds; we can save something into
@@ -72,10 +74,19 @@ struct Persistence: PersistenceType {
         }
         return servers
     }
+
+    func save(currentFolder: Int?) {
+        Self.defaults.set(currentFolder, forKey: PersistenceKey.currentFolder.rawValue)
+    }
+
+    func loadCurrentFolder() -> Int? {
+        Self.defaults.object(forKey: PersistenceKey.currentFolder.rawValue) as? Int
+    }
 }
 
 /// Keys for saving/fetching into/from UserDefaults.
 enum PersistenceKey: String {
+    case currentFolder
     case currentPlaylist
     case servers
 }

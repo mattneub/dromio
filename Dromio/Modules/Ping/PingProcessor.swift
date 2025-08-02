@@ -26,6 +26,8 @@ final class PingProcessor: Processor {
             await deleteServer()
         case .doPing(let folderId):
             await ping(restrictToFolder: folderId)
+        case .launch:
+            await cycler.receive(.doPing(services.persistence.loadCurrentFolder()))
         case .offlineMode:
             await offlineMode()
         case .pickFolder:
@@ -65,7 +67,11 @@ final class PingProcessor: Processor {
             }
             userHasJukeboxRole = user.jukeboxRole && user.adminRole
             folders = try await services.requestMaker.getFolders() // older versions return one folder with id 1
-            currentFolder = restrictedFolder
+            currentFolder = if folders.firstIndex(where: { $0.id == restrictedFolder }) != nil {
+                restrictedFolder
+            } else {
+                nil
+            }
             state.status = .success
             state.enablePickFolderButton = folders.count > 1
             await presenter?.present(state)
@@ -121,14 +127,17 @@ final class PingProcessor: Processor {
 
         services.cache.clear()
         guard folderName != useAll else {
+            services.persistence.save(currentFolder: nil)
             await cycler.receive(.doPing())
             return
         }
         guard let folderId = folders.first(where: { $0.name == folderName })?.id else {
+            services.persistence.save(currentFolder: nil)
             await cycler.receive(.doPing()) // shouldn't happen, but let's do _something_
             return
         }
         Task {
+            services.persistence.save(currentFolder: folderId)
             await cycler.receive(.doPing(folderId))
         }
     }
