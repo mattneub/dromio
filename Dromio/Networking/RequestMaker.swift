@@ -1,7 +1,6 @@
 import Foundation
 
 /// Protocol defining the public face of our RequestMaker.
-@MainActor
 protocol RequestMakerType: Sendable {
     func ping() async throws
     func getUser() async throws -> SubsonicUser
@@ -31,7 +30,6 @@ extension RequestMakerType {
 /// from and subservient to this class, and are expressed as separate services, partly for clarity
 /// of factoring and partly because it makes everything sooooo much more testable.
 ///
-@MainActor
 final class RequestMaker: RequestMakerType {
 
     /// Utility method for looping through paginated network calls that fetch an array of some entity T, such

@@ -7,10 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3F91B01D2D83601400B096AB /* InlineSnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3F91B01C2D83601400B096AB /* InlineSnapshotTesting */; };
-		3F91B01F2D83601400B096AB /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3F91B01E2D83601400B096AB /* SnapshotTesting */; };
-		3F91B0212D83601400B096AB /* SnapshotTestingCustomDump in Frameworks */ = {isa = PBXBuildFile; productRef = 3F91B0202D83601400B096AB /* SnapshotTestingCustomDump */; };
-		3FAB3F602D64CDED007323B0 /* WaitWhile in Frameworks */ = {isa = PBXBuildFile; productRef = 3FAB3F5F2D64CDED007323B0 /* WaitWhile */; };
+		3FCBDC492EF8C69200B62B52 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3FCBDC482EF8C69200B62B52 /* SnapshotTesting */; };
+		3FCBDC4C2EF8C6B500B62B52 /* WaitWhile in Frameworks */ = {isa = PBXBuildFile; productRef = 3FCBDC4B2EF8C6B500B62B52 /* WaitWhile */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -60,10 +58,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3F91B0212D83601400B096AB /* SnapshotTestingCustomDump in Frameworks */,
-				3F91B01F2D83601400B096AB /* SnapshotTesting in Frameworks */,
-				3F91B01D2D83601400B096AB /* InlineSnapshotTesting in Frameworks */,
-				3FAB3F602D64CDED007323B0 /* WaitWhile in Frameworks */,
+				3FCBDC492EF8C69200B62B52 /* SnapshotTesting in Frameworks */,
+				3FCBDC4C2EF8C6B500B62B52 /* WaitWhile in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,10 +113,8 @@
 			);
 			name = DromioTests;
 			packageProductDependencies = (
-				3FAB3F5F2D64CDED007323B0 /* WaitWhile */,
-				3F91B01C2D83601400B096AB /* InlineSnapshotTesting */,
-				3F91B01E2D83601400B096AB /* SnapshotTesting */,
-				3F91B0202D83601400B096AB /* SnapshotTestingCustomDump */,
+				3FCBDC482EF8C69200B62B52 /* SnapshotTesting */,
+				3FCBDC4B2EF8C6B500B62B52 /* WaitWhile */,
 			);
 			productName = DromioTests;
 			productReference = 3F0AB6892D64C243001D5DAF /* DromioTests.xctest */;
@@ -156,7 +150,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1620;
-				LastUpgradeCheck = 1630;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					3F0AB6882D64C243001D5DAF = {
 						CreatedOnToolsVersion = 16.2;
@@ -178,8 +172,8 @@
 			mainGroup = 3F8BE7802D62A3BE009A9DD1;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				3FAB3F5E2D64CDED007323B0 /* XCRemoteSwiftPackageReference "WaitWhile" */,
-				3F91B01B2D83601400B096AB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				3FCBDC472EF8C69200B62B52 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */,
+				3FCBDC4A2EF8C6B500B62B52 /* XCRemoteSwiftPackageReference "WaitWhile" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 3F8BE78A2D62A3BE009A9DD1 /* Products */;
@@ -243,9 +237,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.neuburg.matt.DromioTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
@@ -262,9 +259,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.neuburg.matt.DromioTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -287,7 +287,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -295,6 +295,8 @@
 				MARKETING_VERSION = 0.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.neuburg.matt.Dromio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -316,7 +318,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -324,6 +326,8 @@
 				MARKETING_VERSION = 0.2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.neuburg.matt.Dromio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -389,6 +393,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -447,6 +452,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -485,15 +491,15 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		3F91B01B2D83601400B096AB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
+		3FCBDC472EF8C69200B62B52 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.18.1;
+				minimumVersion = 1.18.7;
 			};
 		};
-		3FAB3F5E2D64CDED007323B0 /* XCRemoteSwiftPackageReference "WaitWhile" */ = {
+		3FCBDC4A2EF8C6B500B62B52 /* XCRemoteSwiftPackageReference "WaitWhile" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/mattneub/WaitWhile";
 			requirement = {
@@ -504,24 +510,14 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		3F91B01C2D83601400B096AB /* InlineSnapshotTesting */ = {
+		3FCBDC482EF8C69200B62B52 /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3F91B01B2D83601400B096AB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
-			productName = InlineSnapshotTesting;
-		};
-		3F91B01E2D83601400B096AB /* SnapshotTesting */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3F91B01B2D83601400B096AB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
+			package = 3FCBDC472EF8C69200B62B52 /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
 		};
-		3F91B0202D83601400B096AB /* SnapshotTestingCustomDump */ = {
+		3FCBDC4B2EF8C6B500B62B52 /* WaitWhile */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3F91B01B2D83601400B096AB /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
-			productName = SnapshotTestingCustomDump;
-		};
-		3FAB3F5F2D64CDED007323B0 /* WaitWhile */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3FAB3F5E2D64CDED007323B0 /* XCRemoteSwiftPackageReference "WaitWhile" */;
+			package = 3FCBDC4A2EF8C6B500B62B52 /* XCRemoteSwiftPackageReference "WaitWhile" */;
 			productName = WaitWhile;
 		};
 /* End XCSwiftPackageProductDependency section */

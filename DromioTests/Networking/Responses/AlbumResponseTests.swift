@@ -2,7 +2,6 @@
 import Testing
 import Foundation
 
-@MainActor
 final class AlbumResponseTests {
     @Test("decodes actual json")
     func albumList2Response() throws {

@@ -2,7 +2,6 @@
 import Testing
 import UIKit
 
-@MainActor
 struct PingViewTests {
     @Test("Getting background color gets layer background color")
     func getBackgroundColor() {

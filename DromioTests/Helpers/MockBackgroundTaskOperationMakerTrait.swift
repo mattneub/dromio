@@ -1,13 +1,22 @@
 @testable import Dromio
 import Testing
 
-@MainActor
 struct MockBackgroundTaskOperationMakerTrait: TestTrait, TestScoping {
-    func provideScope(for test: Test, testCase: Test.Case?, performing function: @Sendable () async throws -> Void) async throws {
+    @MainActor
+    func setOperationMaker() {
         let mockBackgroundTaskOperationMaker = MockBackgroundTaskOperationMaker()
         services.backgroundTaskOperationMaker = mockBackgroundTaskOperationMaker
-        try await function()
+    }
+
+    @MainActor
+    func resetOperationMaker() {
         services.backgroundTaskOperationMaker = BackgroundTaskOperationMaker()
+    }
+
+    func provideScope(for test: Test, testCase: Test.Case?, performing function: @concurrent @Sendable () async throws -> Void) async throws {
+        await setOperationMaker()
+        try await function()
+        await resetOperationMaker()
     }
 }
 

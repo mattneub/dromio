@@ -3,7 +3,6 @@ import Testing
 import WaitWhile
 import Foundation
 
-@MainActor
 struct PlaylistProcessorTests {
     let subject = PlaylistProcessor()
     let presenter = MockReceiverPresenter<PlaylistEffect, PlaylistState>()
@@ -47,7 +46,7 @@ struct PlaylistProcessorTests {
         #expect(playlist.methodsCalled == ["clear()"])
         #expect(player.methodsCalled == ["clear()"])
         #expect(networker.methodsCalled == ["clear()"])
-        await #expect(download.methodsCalled == ["clear()"])
+        #expect(download.methodsCalled == ["clear()"])
         #expect(presenter.statePresented?.songs == [])
         await #while(coordinator.methodsCalled.isEmpty)
         #expect(coordinator.methodsCalled == ["popPlaylist()"])
@@ -59,7 +58,7 @@ struct PlaylistProcessorTests {
         await subject.receive(.clear)
         #expect(haptic.methodsCalled == ["impact()"])
         #expect(playlist.methodsCalled.isEmpty)
-        #expect((await download.methodsCalled).isEmpty)
+        #expect(download.methodsCalled.isEmpty)
         #expect(coordinator.methodsCalled.isEmpty)
         #expect(requestMaker.methodsCalled == ["jukebox(action:songId:)", "jukebox(action:songId:)"])
         #expect(requestMaker.actions == [.stop, .clear])
@@ -95,8 +94,8 @@ struct PlaylistProcessorTests {
         await subject.receive(.delete(1))
         #expect(player.methodsCalled.last == "clear()")
         #expect(networker.methodsCalled == ["clear()"])
-        #expect(await download.methodsCalled.last == "delete(song:)")
-        #expect(await download.song?.id == "2")
+        #expect(download.methodsCalled.last == "delete(song:)")
+        #expect(download.song?.id == "2")
         #expect(playlist.methodsCalled.last == "delete(song:)")
         #expect(playlist.song?.id == "2")
         #expect(presenter.statePresented?.animate == true)
@@ -456,6 +455,7 @@ struct PlaylistProcessorTests {
         networker.progress.send((id: "2", fraction: 0.5))
         await #while(!presenter.thingsReceived.contains(.progress("2", 0.5)))
         #expect(presenter.thingsReceived.contains(.progress("2", 0.5)))
+        presenter.statePresented = nil
         player.currentSongIdPublisher.send("10")
         await #while(presenter.statePresented == nil)
         #expect(presenter.statePresented?.currentSongId == "10")
@@ -472,8 +472,10 @@ struct PlaylistProcessorTests {
     @Test("receive initialData: current song id and player state pipelines remove duplicates")
     func removeDuplicates() async {
         await subject.receive(.initialData)
-        await #while(presenter.statesPresented.isEmpty)
+        try? await Task.sleep(for: .seconds(0.2))
+        presenter.statesPresented = []
         player.currentSongIdPublisher.send("10")
+        try? await Task.sleep(for: .seconds(0.2))
         player.currentSongIdPublisher.send("10")
         try? await Task.sleep(for: .seconds(0.2))
         let relevantStates = presenter.statesPresented.filter { $0.currentSongId == "10" }
@@ -818,7 +820,7 @@ struct PlaylistProcessorTests {
         subject.state.songs = [song, song2, song3]
         await subject.receive(.tapped(song))
         #expect(requestMaker.methodsCalled == ["stream(songId:)"])
-        await #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
+        #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
         #expect(player.methodsCalled == ["clear()", "play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
         #expect(player.urls.map { $0.scheme } == ["http", "file", "file"])
         #expect(presenter.statePresented?.songs.filter { $0.downloaded == true }.count == 3)
@@ -870,7 +872,7 @@ struct PlaylistProcessorTests {
         subject.state.songs = [song, song2, song3]
         await subject.receive(.tapped(song))
         #expect(requestMaker.methodsCalled.isEmpty)
-        await #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
+        #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
         #expect(player.methodsCalled == ["clear()", "play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
         #expect(player.urls.map { $0.scheme } == ["file", "file", "file"])
         #expect(presenter.statePresented?.songs.filter { $0.downloaded == true }.count == 3)
@@ -973,7 +975,7 @@ struct PlaylistProcessorTests {
         await subject.receive(.tapped(song))
         #expect(haptic.methodsCalled.isEmpty)
         #expect(requestMaker.methodsCalled.isEmpty)
-        await #expect(download.methodsCalled.isEmpty)
+        #expect(download.methodsCalled.isEmpty)
         #expect(player.methodsCalled.isEmpty)
         #expect(networker.methodsCalled.isEmpty)
         let mockBackgroundTaskOperationMaker = try #require(services.backgroundTaskOperationMaker as? MockBackgroundTaskOperationMaker)

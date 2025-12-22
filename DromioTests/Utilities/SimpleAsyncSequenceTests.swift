@@ -2,7 +2,6 @@
 import Testing
 import Foundation
 
-@MainActor
 struct SimpleAsyncSequenceTests {
     @Test("Initializer: forms a correct sequence")
     func initializer() async {

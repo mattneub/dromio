@@ -2,7 +2,6 @@
 import Testing
 import WaitWhile
 
-@MainActor
 struct AlbumProcessorTests {
     let subject = AlbumProcessor()
     let presenter = MockReceiverPresenter<AlbumEffect, AlbumState>()
@@ -64,7 +63,7 @@ struct AlbumProcessorTests {
             )]
         )
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
+        #expect(presenter.thingsReceived == [.scrollToZero])
     }
 
     @Test("receive initialData: does nothing state hasInitialData")

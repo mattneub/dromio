@@ -1,7 +1,6 @@
 import Foundation
 
 /// Protocol expressing the public face of our Persistence struct.
-@MainActor
 protocol PersistenceType {
     func saveCurrentPlaylist(songList: [SubsonicSong]) throws
     func loadCurrentPlaylist() throws -> [SubsonicSong]
@@ -15,7 +14,6 @@ protocol PersistenceType {
 /// UserDefaults, or we can save something into the keychain. In reality we save only two
 /// things: the current playlist, and the list of servers. When we save/fetch a server,
 /// its password is replaced by a dummy and the real password lives in the keychain.
-@MainActor
 struct Persistence: PersistenceType {
     static var defaults: UserDefaultsType = UserDefaults.standard
     static var keychain: KeychainType = Keychain.shared

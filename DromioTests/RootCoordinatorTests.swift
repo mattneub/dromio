@@ -3,7 +3,6 @@ import Testing
 import UIKit
 import WaitWhile
 
-@MainActor
 struct RootCoordinatorTests {
     let requestMaker = MockRequestMaker()
 
@@ -78,6 +77,7 @@ struct RootCoordinatorTests {
         await #while(subject.rootViewController?.presentedViewController == nil)
         let navigationController = try #require(subject.rootViewController?.presentedViewController as? UINavigationController)
         #expect(navigationController.modalPresentationStyle == .fullScreen)
+        #expect(navigationController.isToolbarHidden == false)
         let albumsViewController = try #require(navigationController.children.first as? AlbumsViewController)
         let albumsProcessor = try #require(subject.albumsProcessor as? AlbumsProcessor)
         #expect(albumsViewController.processor === albumsProcessor)
@@ -144,6 +144,7 @@ struct RootCoordinatorTests {
         let navigationController = try #require(subject.rootViewController?.presentedViewController?.presentedViewController as? UINavigationController)
         #expect(navigationController.modalPresentationStyle == .fullScreen)
         #expect(navigationController.modalTransitionStyle == .crossDissolve)
+        #expect(navigationController.isToolbarHidden == false)
         let artistsViewController = try #require(navigationController.children.first as? ArtistsViewController)
         let artistsProcessor = try #require(subject.artistsProcessor as? ArtistsProcessor)
         #expect(artistsViewController.processor === artistsProcessor)
@@ -323,7 +324,6 @@ struct RootCoordinatorTests {
     }
 }
 
-@MainActor
 class MockServerDelegate: ServerDelegate {
     var methodsCalled = [String]()
     var serverInfo: ServerInfo?

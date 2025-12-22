@@ -2,7 +2,6 @@
 import Testing
 import UIKit
 
-@MainActor
 struct PlaylistCellContentConfigurationTests {
     @Test("Setting the content view's configuration configures the view correctly")
     func contentView() throws {

@@ -1,7 +1,7 @@
 import MediaPlayer
 
 /// Protocol describing an MPRemoteCommand, so we can mock it for testing.
-protocol RemoteCommandType: AnyObject {
+protocol RemoteCommandType: AnyObject, Sendable {
     func addTarget(_: Any, action: Selector)
     func removeTarget(_: Any?)
     var isEnabled: Bool { get set }

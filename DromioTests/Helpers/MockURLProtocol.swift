@@ -1,7 +1,7 @@
 import Foundation
 
-@MainActor
-class MockURLProtocol: URLProtocol, @unchecked Sendable {
+nonisolated
+class MockURLProtocol: @MainActor URLProtocol, @unchecked Sendable {
     override class func canInit(with task: URLSessionTask) -> Bool {
         true
     }
@@ -10,11 +10,11 @@ class MockURLProtocol: URLProtocol, @unchecked Sendable {
         request
     }
 
-    static var requestHandler: (@Sendable (URLRequest) throws -> (URLResponse, Data))?
+    nonisolated(unsafe) static var requestHandler: (@Sendable (URLRequest) throws -> (URLResponse, Data))?
 
     override func startLoading() {
         Task {
-            if let (response, data) = try? await MockURLProtocol.requestHandler?(request) {
+            if let (response, data) = try? MockURLProtocol.requestHandler?(request) {
                 print("mock url protocol is handling this")
                 client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
                 client?.urlProtocol(self, didLoad: data)

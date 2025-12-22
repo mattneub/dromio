@@ -1,7 +1,6 @@
 import AVFoundation
 
 /// Protocol that wraps AVQueuePlayer, so we can mock it for testing.
-@MainActor
 protocol QueuePlayerType: AnyObject {
     var currentItem: AVPlayerItem? { get }
     var actionAtItemEnd: AVPlayer.ActionAtItemEnd { get set }

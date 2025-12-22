@@ -1,7 +1,6 @@
 import Foundation
 
 /// Processor containing logic for the AlbumViewController.
-@MainActor
 final class AlbumProcessor: Processor {
     /// Reference to the coordinator, set by coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
@@ -26,7 +25,6 @@ final class AlbumProcessor: Processor {
                 let songs = try await services.requestMaker.getSongsFor(albumId: albumId)
                 state.songs = songs
                 await presenter?.present(state)
-                await presenter?.receive(.setUpSearcher)
                 await presenter?.receive(.scrollToZero)
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.2))

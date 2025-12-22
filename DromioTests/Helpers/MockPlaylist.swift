@@ -1,14 +1,13 @@
 @testable import Dromio
 import Foundation
 
-@MainActor
 final class MockPlaylist: PlaylistType {
-    var list = [SubsonicSong]()
-    var methodsCalled = [String]()
-    var errorToThrow: (any Error)?
-    var song: SubsonicSong?
-    var fromRow: Int?
-    var toRow: Int?
+    nonisolated(unsafe) var list = [SubsonicSong]()
+    nonisolated(unsafe) var methodsCalled = [String]()
+    nonisolated(unsafe) var errorToThrow: (any Error)?
+    nonisolated(unsafe) var song: SubsonicSong?
+    nonisolated(unsafe) var fromRow: Int?
+    nonisolated(unsafe) var toRow: Int?
 
     func append(_ song: SubsonicSong) throws {
         methodsCalled.append(#function)

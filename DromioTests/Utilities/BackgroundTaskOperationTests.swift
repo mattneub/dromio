@@ -2,7 +2,6 @@
 import Testing
 import UIKit
 
-@MainActor
 struct BackgroundTaskOperationTests {
 
     @Test("start: calls application begin background task, calls whatToDo, calls application end background task")

@@ -1,7 +1,6 @@
 import UIKit
 
 /// Class that functions as data source and delegate for AlbumViewController table view.
-@MainActor
 final class AlbumDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITableViewDelegate {
 
     /// Processor to whom we can send action messages.

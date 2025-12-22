@@ -4,7 +4,9 @@ import Foundation
 
 struct FileCleanupTrait: TestTrait, SuiteTrait, TestScoping {
     let isRecursive = true
-    func provideScope(for test: Test, testCase: Test.Case?, performing function: @Sendable () async throws -> Void) async throws {
+
+    // see discussion at https://github.com/swiftlang/swift/issues/85161
+    func provideScope(for test: Test, testCase: Test.Case?, performing function: @concurrent @Sendable () async throws -> Void) async throws {
         try await function()
         print("cleanup!")
         let fileManager = FileManager.default

@@ -3,7 +3,6 @@ import Testing
 import UIKit
 import SwiftUI
 
-@MainActor
 struct UIViewTests {
     @Test("subviews(ofType:) returns array of type, recursing or not, including hidden or not")
     func subviewsOfType() {

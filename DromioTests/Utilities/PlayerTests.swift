@@ -4,7 +4,6 @@ import AVFoundation
 import MediaPlayer
 import WaitWhile
 
-@MainActor
 struct PlayerTests {
     var subject: Player!
     let audioPlayer = MockQueuePlayer()

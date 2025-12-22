@@ -1,6 +1,6 @@
 @testable import Dromio
 
-@MainActor
+nonisolated
 final class MockCache: CacheType {
     var allAlbums: [SubsonicAlbum]?
     var allArtists: [SubsonicArtist]?

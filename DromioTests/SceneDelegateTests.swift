@@ -2,7 +2,7 @@
 import Testing
 import UIKit
 
-@MainActor struct SceneDelegateTests {
+struct SceneDelegateTests {
     @Test("bootstrap: tells the root coordinator to create the interface")
     func testBootstrap() async throws {
         let scene = try #require(UIApplication.shared.connectedScenes.first as? UIWindowScene)

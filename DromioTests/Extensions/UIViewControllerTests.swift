@@ -3,7 +3,6 @@ import UIKit
 import Testing
 import WaitWhile
 
-@MainActor
 struct UIViewControllerTests {
     @Test("ultimatePresented: works as expected")
     func ultimatePresented() async {

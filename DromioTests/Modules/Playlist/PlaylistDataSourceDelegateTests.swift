@@ -3,7 +3,6 @@ import Testing
 import UIKit
 import WaitWhile
 
-@MainActor
 struct PlaylistDataSourceDelegateTests {
     var subject: PlaylistDataSourceDelegate!
     let tableView = UITableView()

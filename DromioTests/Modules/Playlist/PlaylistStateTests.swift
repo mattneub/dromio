@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 
-@MainActor
 struct PlaylistStateTests {
     @Test("logic of showClearAndJukebox is correct")
     func showClearAndJukebox() {

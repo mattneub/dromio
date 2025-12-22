@@ -1,7 +1,6 @@
 import UIKit
 
 /// Protocol describing a type that is a factory for our BackgroundTaskOperation.
-@MainActor
 protocol BackgroundTaskOperationMakerType {
     /// Create an instance of BackgroundTaskOperation, fully initialized, and wrapped in its
     /// protocol for testing purposes.
@@ -26,8 +25,7 @@ extension BackgroundTaskOperationMakerType {
 
 /// Factory class that makes a BackgroundTaskOperation — wrapped in a protocol, so that
 /// a mock version of this class can make a mock version of the BackgroundTaskOperation.
-@MainActor
-final class BackgroundTaskOperationMaker: BackgroundTaskOperationMakerType {
+final class BackgroundTaskOperationMaker: nonisolated BackgroundTaskOperationMakerType {
     func make<T: Sendable>(
         whatToDo: @Sendable @escaping () async throws -> T,
         cleanup: (@Sendable () async throws -> ())?

@@ -1,7 +1,6 @@
 import UIKit
 
 /// Class that functions as data source and delegate for ArtistsViewController table view.
-@MainActor
 final class ArtistsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITableViewDelegate {
 
     /// Processor to whom we can send action messages.

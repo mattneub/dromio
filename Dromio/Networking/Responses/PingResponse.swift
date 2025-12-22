@@ -1,7 +1,7 @@
 import Foundation
 
 /// Inner response for the `ping` request.
-struct PingResponse: InnerResponse {
+struct PingResponse: @MainActor InnerResponse {
     let status: String
     let version: String
     let type: String

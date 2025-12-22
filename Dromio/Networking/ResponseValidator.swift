@@ -1,7 +1,6 @@
 import Foundation
 
 /// Protocol expressing the public face of the ResponseValidator.
-@MainActor
 protocol ResponseValidatorType {
     func validateResponse<T: InnerResponse>(_ jsonResponse: SubsonicResponse<T>) async throws
 }
@@ -11,7 +10,6 @@ protocol ResponseValidatorType {
 /// validation of these properties. After decoding the response, it should be passed to this
 /// validator for final checking — and that is just what RequestMaker does.
 ///
-@MainActor
 struct ResponseValidator: ResponseValidatorType {
 
     /// Given a decoded SubsonicResponse wrapping an InnerResponse, validate the properties of the

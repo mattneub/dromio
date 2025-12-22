@@ -8,7 +8,6 @@ enum NetworkerError: Error, Equatable {
 }
 
 /// Protocol defining the public face of our Networker.
-@MainActor
 protocol NetworkerType: Sendable {
     func clear() async
     func performRequest(url: URL) async throws -> Data
@@ -21,7 +20,6 @@ protocol NetworkerType: Sendable {
 /// only the RequestMaker should have reason to talk to the Networker; in a sense, the RequestMaker
 /// is the public face of the Networker. However, the `clear` method is more public than that, because
 /// anyone might have reason to tell the Networking to stop whatever it's doing.
-@MainActor
 final class Networker: NetworkerType {
     /// The URLSession set by `init`.
     let session: any URLSessionType
@@ -74,9 +72,9 @@ final class Networker: NetworkerType {
         // system times us out before the download completes, cancel the download in good order.
         let operation = services.backgroundTaskOperationMaker.make { [weak self] in
             guard let self else { fatalError("oop") }
-            logger.debug("download started")
+            await logger.debug("download started")
             let (url, response) = try await self.session.download(for: request, delegate: DownloadDelegate())
-            logger.debug("download finished")
+            await logger.debug("download finished")
             return (url, response)
         } cleanup: { [weak self] in
             guard let self else { return }

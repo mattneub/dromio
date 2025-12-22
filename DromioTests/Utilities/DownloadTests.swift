@@ -3,7 +3,6 @@ import Testing
 import Foundation
 
 @Suite("download tests", .fileCleanup)
-@MainActor
 struct DownloadTests {
     let requestMaker = MockRequestMaker()
     let mockFileManager = MockFileManager()

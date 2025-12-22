@@ -1,7 +1,6 @@
 import Foundation
 
 /// Processor containing logic for the AlbumsViewController.
-@MainActor
 final class AlbumsProcessor: Processor {
     /// Reference to the coordinator, set by coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
@@ -21,7 +20,6 @@ final class AlbumsProcessor: Processor {
             do {
                 state.animateSpinner = true
                 await presenter?.present(state)
-                await presenter?.receive(.tearDownSearcher)
                 let albums = try await services.cache.fetch(\.allAlbums) {
                     let albums = try await services.requestMaker.getAlbumList()
                     return albums.sorted
@@ -29,7 +27,6 @@ final class AlbumsProcessor: Processor {
                 state.listType = .allAlbums
                 state.albums = albums
                 await presenter?.present(state)
-                await presenter?.receive(.setUpSearcher)
                 await presenter?.receive(.scrollToZero)
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.2))
@@ -84,7 +81,6 @@ final class AlbumsProcessor: Processor {
             do {
                 state.animateSpinner = true
                 await presenter?.present(state)
-                await presenter?.receive(.tearDownSearcher)
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.4))
                 }

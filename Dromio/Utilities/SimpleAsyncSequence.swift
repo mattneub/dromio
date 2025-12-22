@@ -26,7 +26,11 @@ struct SimpleAsyncSequence<T: Sendable>: AsyncSequence, AsyncIteratorProtocol, S
 /// Extension that turns an AsyncSequence into a normal sequence.
 extension AsyncSequence where Element: Sendable {
     func array() async throws -> [Element] {
-        try await reduce(into: []) { $0.append($1) }
+        var result = [Element]()
+        for try await item in self {
+            result.append(item)
+        }
+        return result
     }
 }
 

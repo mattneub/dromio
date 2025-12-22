@@ -4,7 +4,6 @@ import UIKit
 import WaitWhile
 import SnapshotTesting
 
-@MainActor
 struct PlaylistViewControllerTests {
     let subject = PlaylistViewController(nibName: nil, bundle: nil)
     let mockDataSourceDelegate = MockDataSourceDelegate<PlaylistState, PlaylistAction, PlaylistEffect>(tableView: UITableView())

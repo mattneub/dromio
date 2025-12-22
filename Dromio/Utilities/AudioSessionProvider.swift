@@ -1,7 +1,6 @@
 import AVFoundation
 
 /// Class that provides a reference to the audio session.
-@MainActor
 final class AudioSessionProvider {
     /// Private reference to a function that provides the audio session.
     private let provider: () -> any AudioSessionType

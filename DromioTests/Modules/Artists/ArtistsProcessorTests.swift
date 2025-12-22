@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 
-@MainActor
 struct ArtistsProcessorTests {
     let subject = ArtistsProcessor()
     let presenter = MockReceiverPresenter<ArtistsEffect, ArtistsState>()
@@ -39,7 +38,7 @@ struct ArtistsProcessorTests {
         ]
         await subject.receive(.allArtists)
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
+        #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled == ["getArtistsBySearch()"])
         #expect(presenter.statePresented?.listType == .allArtists)
         #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: "name")])
@@ -78,7 +77,7 @@ struct ArtistsProcessorTests {
         requestMaker.artistList = []
         await subject.receive(.allArtists)
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
+        #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled.isEmpty)
         #expect(presenter.statePresented?.listType == .allArtists)
         #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
@@ -103,7 +102,7 @@ struct ArtistsProcessorTests {
         ]
         await subject.receive(.composers)
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
+        #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled == ["getArtistsBySearch()"])
         #expect(presenter.statePresented?.listType == .composers)
         #expect(presenter.statePresented?.artists == [
@@ -120,7 +119,7 @@ struct ArtistsProcessorTests {
         requestMaker.artistList = []
         await subject.receive(.composers)
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.setUpSearcher, .scrollToZero])
+        #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled.isEmpty)
         #expect(presenter.statePresented?.listType == .composers)
         #expect(presenter.statePresented?.artists == [

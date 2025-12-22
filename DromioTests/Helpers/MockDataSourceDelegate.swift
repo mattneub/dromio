@@ -1,8 +1,7 @@
 @testable import Dromio
 import UIKit
 
-@MainActor
-final class MockDataSourceDelegate<StateType, ActionType, EffectType>: NSObject, DataSourceDelegateSearcher {
+final class MockDataSourceDelegate<StateType, ActionType, EffectType>: NSObject, nonisolated DataSourceDelegateSearcher {
     var methodsCalled = [String]()
     var thingsReceived = [EffectType]()
     var processor: (any Receiver<ActionType>)?

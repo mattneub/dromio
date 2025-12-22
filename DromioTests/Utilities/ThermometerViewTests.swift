@@ -3,7 +3,6 @@ import Testing
 import SnapshotTesting
 import UIKit
 
-@MainActor
 struct ThermometerViewTests {
     let subject = ThermometerView(frame: CGRect(origin: .zero, size: .init(width: 100, height: 100)))
 

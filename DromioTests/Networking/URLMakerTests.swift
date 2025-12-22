@@ -2,7 +2,6 @@
 import Testing
 import Foundation
 
-@MainActor
 struct URLMakerTests {
     let subject = URLMaker()
     let persistence = MockPersistence()

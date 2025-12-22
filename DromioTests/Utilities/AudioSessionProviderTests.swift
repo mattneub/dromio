@@ -3,7 +3,6 @@ import Testing
 import UIKit
 import AVFoundation
 
-@MainActor
 struct AudioSessionProviderTests {
     @Test("audio session provider by default provides the shared audio session")
     func provide() {

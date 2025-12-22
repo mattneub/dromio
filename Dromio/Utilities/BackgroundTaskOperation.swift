@@ -1,7 +1,6 @@
 import UIKit
 
 /// Protocol describing the public face of our BackgroundTaskOperation, so we can mock it for testing.
-@MainActor
 protocol BackgroundTaskOperationType<T> {
     associatedtype T: Sendable
     init(
@@ -15,7 +14,6 @@ protocol BackgroundTaskOperationType<T> {
 /// Class that encapsulates the boilerplate needed to ask for an extra 30 seconds (or so) of time
 /// just in case the app goes into the background while we are doing some time-consuming operation
 /// that we don't want interrupted if we can help it.
-@MainActor
 final class BackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationType {
     /// The time-consuming operation.
     private let whatToDo: @Sendable () async throws -> T

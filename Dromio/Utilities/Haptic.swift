@@ -1,7 +1,6 @@
 import UIKit
 
 /// Protocol expressing the public face of our Haptic class.
-@MainActor
 protocol HapticType {
     func failure()
     func success()
@@ -9,7 +8,6 @@ protocol HapticType {
 }
 
 /// Class that simplifies our interaction with the built-in feedback generators.
-@MainActor
 final class Haptic: HapticType {
     var notificationFeedbackGenerator: NotificationFeedbackGeneratorType = UINotificationFeedbackGenerator()
     var impactFeedbackGenerator: ImpactFeedbackGeneratorType = UIImpactFeedbackGenerator()

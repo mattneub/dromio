@@ -1,7 +1,7 @@
 import Foundation
 
 /// Inner response for the `search3` request.
-struct Search3Response: InnerResponse {
+struct Search3Response: @MainActor InnerResponse {
     let status: String
     let version: String
     let type: String

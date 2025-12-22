@@ -1,7 +1,6 @@
 @testable import Dromio
 import Foundation
 
-@MainActor
 final class MockHaptic: HapticType {
     var methodsCalled = [String]()
 

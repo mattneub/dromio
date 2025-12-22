@@ -31,6 +31,10 @@ struct SubsonicSong: Codable, Equatable, Sendable {
         case duration
         case contributors
     }
+
+    /// Purely so test actor can get at this property.
+    nonisolated
+    var myId: String { self.id }
 }
 
 /// Type of the SubsonicSong `contributors` array element.

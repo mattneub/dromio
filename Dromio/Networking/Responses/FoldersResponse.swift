@@ -1,7 +1,7 @@
 import Foundation
 
 /// Inner response for the `getFolders` request.
-struct FoldersResponse: InnerResponse {
+struct FoldersResponse: @MainActor InnerResponse {
     let status: String
     let version: String
     let type: String

@@ -2,7 +2,6 @@
 import Testing
 import Foundation
 
-@MainActor
 struct ResponseValidatorTests {
     let subject = ResponseValidator()
 

@@ -1,6 +1,5 @@
 import UIKit
 
-@MainActor
 final class MockTableView: UITableView {
     var methodsCalled = [String]()
     var indexPath: IndexPath?

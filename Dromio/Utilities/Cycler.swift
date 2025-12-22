@@ -4,7 +4,6 @@
 /// action, we don't have to check all the effects of the second action, thus repeating a whole
 /// bunch of tests; it is enough to check that the second action was sent (using a MockCycler).
 /// This problem arises so often, I'm surprised I didn't think of it sooner.
-@MainActor
 class Cycler<ActionType, P: Processor> where P.Received == ActionType {
     weak var processor: P?
     init(processor: P) {

@@ -2,11 +2,11 @@
 import Testing
 import Foundation
 
-class MockCommand: RemoteCommandType {
-    var methodsCalled = [String]()
-    var enabled: Bool = true
+class MockCommand: RemoteCommandType, @unchecked Sendable {
+    nonisolated(unsafe) var methodsCalled = [String]()
+    nonisolated(unsafe) var enabled: Bool = true
     weak var target: AnyObject? // must be weak or we will leak Players during testing, which is disastrous
-    var action: Selector?
+    nonisolated(unsafe) var action: Selector?
 
     func addTarget(_ target: Any, action: Selector) {
         methodsCalled.append(#function)
@@ -27,7 +27,7 @@ class MockCommand: RemoteCommandType {
 }
 
 final class MockRemoteCommandCenter: RemoteCommandCenterType {
-    nonisolated(unsafe) let pause: any RemoteCommandType = MockCommand()
-    nonisolated(unsafe) let play: any RemoteCommandType = MockCommand()
-    nonisolated(unsafe) let changePlaybackPosition: any RemoteCommandType = MockCommand()
+    let pause: any RemoteCommandType = MockCommand()
+    let play: any RemoteCommandType = MockCommand()
+    let changePlaybackPosition: any RemoteCommandType = MockCommand()
 }

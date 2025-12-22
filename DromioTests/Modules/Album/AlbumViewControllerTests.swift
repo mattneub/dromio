@@ -3,41 +3,17 @@ import Testing
 import UIKit
 import WaitWhile
 
-@MainActor
 struct AlbumViewControllerTests {
-    let subject = AlbumViewController(nibName: nil, bundle: nil)
+    let subject = AlbumViewController()
     let mockDataSourceDelegate = MockDataSourceDelegate<AlbumState, AlbumAction, Void>(tableView: UITableView())
     let processor = MockReceiver<AlbumAction>()
     let tableView = MockTableView()
-    let searcher = MockSearcher()
+    let configurator = MockSearchConfigurator()
 
     init() {
         subject.dataSourceDelegate = mockDataSourceDelegate
         subject.processor = processor
-        subject.searcher = searcher
-    }
-
-    @Test("Initialize: creates data source delegate, sets table view estimated row height")
-    func initialize() throws {
-        let subject = AlbumViewController(nibName: nil, bundle: nil)
-        #expect(subject.dataSourceDelegate != nil)
-        #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
-        #expect(subject.tableView.estimatedRowHeight == 90)
-        #expect(subject.tableView.sectionHeaderTopPadding == 0)
-    }
-
-    @Test("Initialize: creates right bar button item")
-    func initializeRight() throws {
-        let item = try #require(subject.navigationItem.rightBarButtonItem)
-        #expect(item.target === subject)
-        #expect(item.action == #selector(subject.showPlaylist))
-    }
-
-    @Test("Setting the processor sets the data source's processor")
-    func setProcessor() {
-        let processor2 = MockReceiver<AlbumAction>()
-        subject.processor = processor2
-        #expect(mockDataSourceDelegate.processor === processor2)
+        subject.searchConfigurator = configurator
     }
 
     @Test("Activity spinner is correctly constructed")
@@ -50,12 +26,27 @@ struct AlbumViewControllerTests {
         #expect(spinner.layer.cornerRadius == 20)
     }
 
-    @Test("viewDidLoad: sets the data source's processor, sets background color, sets spinner")
-    func viewDidLoad() async {
+    @Test("real viewDidLoad: configures the data source delegate")
+    func viewDidLoadReal() {
+        let subject = AlbumViewController()
         subject.loadViewIfNeeded()
-        #expect(mockDataSourceDelegate.processor === subject.processor)
+        #expect(subject.dataSourceDelegate.tableView == subject.tableView)
+    }
+
+    @Test("viewDidLoad: sets background color, sets spinner, calls search configurator, configures table, right bbi")
+    func viewDidLoad() async throws {
+        subject.loadViewIfNeeded()
+        #expect(subject.dataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .background)
         #expect(subject.activity.isDescendant(of: subject.view))
+        #expect(configurator.methodsCalled == ["configure(viewController:updater:)"])
+        #expect(configurator.viewController === subject)
+        #expect(configurator.updater === mockDataSourceDelegate)
+        #expect(subject.tableView.estimatedRowHeight == 90)
+        #expect(subject.tableView.sectionHeaderTopPadding == 0)
+        let item = try #require(subject.navigationItem.rightBarButtonItem)
+        #expect(item.target === subject)
+        #expect(item.action == #selector(subject.showPlaylist))
     }
 
     @Test("viewIsAppearing: sends .initialData action")
@@ -95,14 +86,6 @@ struct AlbumViewControllerTests {
         // that was prep, this is the test
         await subject.receive(.scrollToZero)
         #expect(!tableView.methodsCalled.contains("scrollToRow(at:at:animated:)"))
-    }
-
-    @Test("receive setUpSearcher: calls searcher setUpSearcher")
-    func setUpSearcher() async {
-        await subject.receive(.setUpSearcher)
-        #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:tableView:updater:)"])
-        #expect(searcher.navigationItem === subject.navigationItem)
-        #expect(searcher.updater === subject.dataSourceDelegate)
     }
 
     @Test("present: presents to the data source")

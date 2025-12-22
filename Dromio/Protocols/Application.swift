@@ -1,7 +1,6 @@
 import UIKit
 
 /// Protocol describing UIApplication for purposes of background tasks, so we can mock it for testing.
-@MainActor
 public protocol ApplicationType {
     // weirdly, have to specify iOS here because tvOS variant is different; I have no idea why Xcode thinks we would be building for tvOS
     @available(iOS 18.0, *)

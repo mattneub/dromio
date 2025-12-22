@@ -1,7 +1,6 @@
 @testable import Dromio
 import Foundation
 
-@MainActor
 final class MockURLMaker: URLMakerType {
     var action: String?
     var additional: [URLQueryItem]?

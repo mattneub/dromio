@@ -3,7 +3,6 @@ import Testing
 import Foundation
 import WaitWhile
 
-@MainActor
 struct PingProcessorTests {
     let subject = PingProcessor()
     let presenter = MockReceiverPresenter<Void, PingState>()
@@ -309,6 +308,7 @@ struct PingProcessorTests {
 
     @Test("receive doPing: with current server calls networker ping, sets state status to .failure and localized description if throw other error")
     func receiveDoPingFailure2() async {
+        nonisolated
         class MyError: NSError, @unchecked Sendable {
             override var localizedDescription: String { "oops" }
         }
@@ -466,10 +466,11 @@ struct PingProcessorTests {
         #expect(persistence.currentFolder == nil)
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"))
         #expect(currentPlaylist.methodsCalled == ["clear()"])
-        #expect(await download.methodsCalled == ["clear()"])
+        #expect(download.methodsCalled == ["clear()"])
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"])
         let cycler = try #require(subject.cycler as? MockCycler)
+        await #while(cycler.thingsReceived.isEmpty)
         #expect(cycler.thingsReceived == [.doPing()])
     }
 
@@ -495,10 +496,11 @@ struct PingProcessorTests {
         #expect(persistence.currentFolder == 100)
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"))
         #expect(currentPlaylist.methodsCalled.isEmpty)
-        #expect(await download.methodsCalled.isEmpty)
+        #expect(download.methodsCalled.isEmpty)
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"]) // but the cache _is_ cleared
         let cycler = try #require(subject.cycler as? MockCycler)
+        await #while(cycler.thingsReceived.isEmpty)
         #expect(cycler.thingsReceived == [.doPing(100)])
     }
 
@@ -529,8 +531,9 @@ struct PingProcessorTests {
         #expect(currentPlaylist.methodsCalled == ["clear()"])
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"])
-        #expect(await download.methodsCalled == ["clear()"])
+        #expect(download.methodsCalled == ["clear()"])
         let cycler = try #require(subject.cycler as? MockCycler)
+        await #while(cycler.thingsReceived.isEmpty)
         #expect(cycler.thingsReceived == [.doPing()])
     }
 

@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 
-@MainActor
 struct PasswordHasherTests {
     @Test("md5: generates correct md5 hash of given string")
     func md5() {

@@ -3,52 +3,17 @@ import Testing
 import UIKit
 import WaitWhile
 
-@MainActor
 struct ArtistsViewControllerTests {
-    let subject = ArtistsViewController(nibName: nil, bundle: nil)
+    let subject = ArtistsViewController()
     let mockDataSourceDelegate = MockDataSourceDelegate<ArtistsState, ArtistsAction, Void>(tableView: UITableView())
     let processor = MockReceiver<ArtistsAction>()
-    let searcher = MockSearcher()
+    let configurator = MockSearchConfigurator()
     let tableView = MockTableView()
 
     init() {
         subject.dataSourceDelegate = mockDataSourceDelegate
         subject.processor = processor
-        subject.searcher = searcher
-    }
-
-    @Test("Initialize: sets title to Artists, creates data source delegate, configures table view")
-    func initialize() throws {
-        let subject = ArtistsViewController(nibName: nil, bundle: nil)
-        #expect(subject.title == "Artists")
-        #expect(subject.dataSourceDelegate != nil)
-        #expect(subject.dataSourceDelegate?.tableView === subject.tableView)
-        #expect(subject.tableView.estimatedRowHeight == 40)
-        #expect(subject.tableView.sectionIndexColor == .systemRed)
-    }
-
-    @Test("Initialize: creates right bar button item")
-    func initializeRight() throws {
-        let item = try #require(subject.navigationItem.rightBarButtonItem)
-        #expect(item.title == nil)
-        #expect(item.image == UIImage(systemName: "list.bullet"))
-        #expect(item.target === subject)
-        #expect(item.action == #selector(subject.showPlaylist))
-    }
-
-    @Test("Initialize: creates left bar button item")
-    func initializeLeft() throws {
-        let item = try #require(subject.navigationItem.leftBarButtonItem)
-        #expect(item.title == nil)
-        #expect(item.image == UIImage(systemName: "arrow.trianglehead.turn.up.right.circle"))
-        #expect(item.menu != nil)
-    }
-
-    @Test("Setting the processor sets the data source's processor")
-    func setProcessor() {
-        let processor2 = MockReceiver<ArtistsAction>()
-        subject.processor = processor2
-        #expect(mockDataSourceDelegate.processor === processor2)
+        subject.searchConfigurator = configurator
     }
 
     @Test("Activity spinner is correctly constructed")
@@ -61,12 +26,38 @@ struct ArtistsViewControllerTests {
         #expect(spinner.layer.cornerRadius == 20)
     }
 
-    @Test("viewDidLoad: sets the data source's processor, sets background color, sets spinner, sends .allArtists action")
+    @Test("real viewDidLoad: configures the data source delegate")
+    func viewDidLoadReal() {
+        let subject = AlbumViewController()
+        subject.loadViewIfNeeded()
+        #expect(subject.dataSourceDelegate.tableView == subject.tableView)
+    }
+
+    @Test("viewDidLoad: sets background color and title, sets spinner, bar button items, table view, search")
     func viewDidLoad() async throws {
         subject.loadViewIfNeeded()
-        #expect(mockDataSourceDelegate.processor === subject.processor)
+        #expect(subject.dataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .background)
         #expect(subject.activity.isDescendant(of: subject.view))
+        #expect(subject.tableView.estimatedRowHeight == 40)
+        #expect(subject.tableView.sectionIndexColor == .systemRed)
+        #expect(subject.title == "Artists")
+        do {
+            let item = try #require(subject.navigationItem.rightBarButtonItem)
+            #expect(item.title == nil)
+            #expect(item.image == UIImage(systemName: "list.bullet"))
+            #expect(item.target === subject)
+            #expect(item.action == #selector(subject.showPlaylist))
+        }
+        do {
+            let item = try #require(subject.navigationItem.leftBarButtonItem)
+            #expect(item.title == nil)
+            #expect(item.image == UIImage(systemName: "arrow.trianglehead.turn.up.right.circle"))
+            #expect(item.menu != nil)
+        }
+        #expect(configurator.methodsCalled == ["configure(viewController:updater:)"])
+        #expect(configurator.viewController === subject)
+        #expect(configurator.updater === mockDataSourceDelegate)
     }
 
     @Test("viewIsAppearing: sends .viewIsAppearing action")
@@ -108,14 +99,6 @@ struct ArtistsViewControllerTests {
         #expect(!tableView.methodsCalled.contains("scrollToRow(at:at:animated:)"))
     }
 
-    @Test("receive setUpSearcher: calls searcher setUpSearcher")
-    func setUpSearcher() async {
-        await subject.receive(.setUpSearcher)
-        #expect(searcher.methodsCalled == ["setUpSearcher(navigationItem:tableView:updater:)"])
-        #expect(searcher.navigationItem === subject.navigationItem)
-        #expect(searcher.updater === subject.dataSourceDelegate)
-    }
-
     @Test("present: presents to the data source")
     func present() async {
         let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
@@ -140,6 +123,7 @@ struct ArtistsViewControllerTests {
 
     @Test("present: sets the title and left bar button menu item according to the state")
     func presentAll() async throws {
+        subject.loadViewIfNeeded()
         let state = ArtistsState(listType: .allArtists)
         await subject.present(state)
         #expect(subject.title == "Artists")
@@ -172,6 +156,7 @@ struct ArtistsViewControllerTests {
 
     @Test("present: sets the title and left bar button menu item according to the state")
     func presentComposers() async throws {
+        subject.loadViewIfNeeded()
         let state = ArtistsState(listType: .composers)
         await subject.present(state)
         #expect(subject.title == "Composers")

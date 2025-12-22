@@ -2,6 +2,7 @@
 import Foundation
 import Combine
 
+@MainActor
 final class MockNetworker: NetworkerType {
 
     var progress = CurrentValueSubject<(id: String, fraction: Double?), Never>((id: "-1", fraction: nil))

@@ -1,7 +1,6 @@
 @testable import Dromio
 import UIKit
 
-@MainActor
 final class MockRootCoordinator: RootCoordinatorType {
     var methodsCalled = [String]()
     var albumId: String?

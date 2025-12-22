@@ -1,7 +1,6 @@
 import Foundation
 
 /// Protocol wrapping URLSession so we can mock it for testing.
-@MainActor
 protocol URLSessionType: Sendable {
     /// In this way, we make `allTasks` return a protocol-typed instance so we can mock that too.
     func allTasks() async -> [URLSessionTaskType]
@@ -23,7 +22,6 @@ extension URLSession: URLSessionType {
 }
 
 /// Protocol wrapping URLSessionTask so we can mock it for testing.
-@MainActor
 protocol URLSessionTaskType {
     func cancel()
 }

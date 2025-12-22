@@ -1,7 +1,6 @@
 import Foundation
 
 /// Processor containing logic for the ArtistsViewController.
-@MainActor
 final class ArtistsProcessor: Processor {
     /// Reference to the coordinator, set by coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
@@ -36,7 +35,6 @@ final class ArtistsProcessor: Processor {
                 state.listType = .allArtists
                 state.artists = artistsWhoAreArtists
                 await presenter?.present(state)
-                await presenter?.receive(.setUpSearcher)
                 await presenter?.receive(.scrollToZero)
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.2))
@@ -65,7 +63,6 @@ final class ArtistsProcessor: Processor {
                 state.listType = .composers
                 state.artists = artistsWhoAreComposers
                 await presenter?.present(state)
-                await presenter?.receive(.setUpSearcher)
                 await presenter?.receive(.scrollToZero)
                 try? await unlessTesting {
                     try? await Task.sleep(for: .seconds(0.2))

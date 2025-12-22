@@ -1,7 +1,7 @@
 @testable import Dromio
 import Testing
 
-@MainActor struct CyclerTests {
+struct CyclerTests {
     enum MyAction: Equatable {
         case assoc(Int)
         case plain

@@ -3,7 +3,6 @@ import Testing
 import UIKit
 import WaitWhile
 
-@MainActor
 struct AlbumsDataSourceDelegateTests {
     var subject: AlbumsDataSourceDelegate!
     let tableView = MockTableView()

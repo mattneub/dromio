@@ -1,7 +1,6 @@
 import MediaPlayer
 
 /// Protocol that represents the public face of our NowPlayingInfo type.
-@MainActor
 protocol NowPlayingInfoType {
     func playing(song: SubsonicSong, at: TimeInterval)
     func paused(song: SubsonicSong, at: TimeInterval)
@@ -9,7 +8,6 @@ protocol NowPlayingInfoType {
 }
 
 /// Class that acts as a gateway for talking to the MPNowPlayingInfoCenter.
-@MainActor
 final class NowPlayingInfo: NowPlayingInfoType {
     /// Provider for the now playing info center to which we are the gateway.
     var centerProvider: () -> any NowPlayingInfoCenterType = { MPNowPlayingInfoCenter.default() }

@@ -2,7 +2,6 @@
 import Testing
 import Foundation
 
-@MainActor
 struct ArrayTests {
     let album1 = SubsonicAlbum(id: "1", name: "The buck stops here", sortName: nil, artist: nil, songCount: 0, song: nil)
     let album2 = SubsonicAlbum(id: "2", name: "Bust my britches", sortName: nil, artist: nil, songCount: 0, song: nil)

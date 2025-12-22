@@ -1,7 +1,6 @@
 import UIKit
 
 /// Protocol embodying the public interface for the root coordinator.
-@MainActor
 protocol RootCoordinatorType: AnyObject {
     /// Create the entire initial interface and modules, rooted in the given window.
     /// - Parameter window: The window
@@ -58,7 +57,6 @@ protocol RootCoordinatorType: AnyObject {
 }
 
 /// Class of single instance responsible for all view controller manipulation.
-@MainActor
 final class RootCoordinator: RootCoordinatorType {
     // Processors are rooted here. They are all expressed as protocols, for testability.
 
@@ -104,8 +102,9 @@ final class RootCoordinator: RootCoordinatorType {
     }
 
     func showAlbums() {
-        let albumsController = AlbumsViewController(nibName: nil, bundle: nil)
+        let albumsController = AlbumsViewController()
         let navigationController = UINavigationController(rootViewController: albumsController)
+        navigationController.isToolbarHidden = false
         let albumsProcessor = AlbumsProcessor()
         self.albumsProcessor = albumsProcessor
         albumsProcessor.presenter = albumsController
@@ -116,7 +115,7 @@ final class RootCoordinator: RootCoordinatorType {
     }
 
     func showAlbumsForArtist(state: AlbumsState) {
-        let albumsController = AlbumsViewController(nibName: nil, bundle: nil)
+        let albumsController = AlbumsViewController()
         let albumsProcessor = AlbumsProcessor()
         self.artistAlbumsProcessor = albumsProcessor // different from self.albumsProcessor
         albumsProcessor.state = state
@@ -144,8 +143,9 @@ final class RootCoordinator: RootCoordinatorType {
     }
 
     func showArtists() {
-        let artistsController = ArtistsViewController(nibName: nil, bundle: nil)
+        let artistsController = ArtistsViewController()
         let navigationController = UINavigationController(rootViewController: artistsController)
+        navigationController.isToolbarHidden = false
         let artistsProcessor = ArtistsProcessor()
         self.artistsProcessor = artistsProcessor
         artistsProcessor.presenter = artistsController

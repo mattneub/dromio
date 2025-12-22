@@ -1,7 +1,6 @@
 import UIKit
 
 /// Class that functions as data source and delegate for PlaylistViewController table view.
-@MainActor
 final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, UITableViewDelegate {
 
     /// Processor to whom we can send action messages.

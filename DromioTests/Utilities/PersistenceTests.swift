@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 
-@MainActor
 struct PersistenceTests {
     let subject = Persistence()
     let defaults = MockUserDefaults()

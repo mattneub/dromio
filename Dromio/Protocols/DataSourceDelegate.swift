@@ -4,7 +4,6 @@ import UIKit
 /// How the actual type does this is an internal implementation detail; the only absolute
 /// requirement is that the initializer must set the table view's `dataSource` and `delegate`.
 ///
-@MainActor
 protocol DataSourceDelegate<ProcessorAction, State, Received>: NSObjectProtocol, ReceiverPresenter {
     associatedtype ProcessorAction
 
@@ -37,12 +36,10 @@ extension DataSourceDelegate {
 
 /// Protocol combining two built-in types: it can update results for a UISearchController and can function as its delegate.
 /// 
-@MainActor
 protocol SearchHandler: UISearchResultsUpdating, UISearchControllerDelegate, Sendable {}
 
 /// Variety of protocol `DataSourceDelegate` that is also a search controller updater and delegate.
 ///
-@MainActor
 protocol DataSourceDelegateSearcher<ProcessorAction, State, Received>: DataSourceDelegate, SearchHandler {
     func updateSearchResults(for searchController: UISearchController)
 }

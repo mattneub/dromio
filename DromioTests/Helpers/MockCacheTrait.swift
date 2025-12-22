@@ -1,12 +1,22 @@
 @testable import Dromio
 import Testing
 
-@MainActor
 struct MockCacheTrait: TestTrait, TestScoping {
-    func provideScope(for test: Test, testCase: Test.Case?, performing function: @Sendable () async throws -> Void) async throws {
+
+    @MainActor
+    func setCache() {
         services.cache = MockCache()
-        try await function()
+    }
+
+    @MainActor
+    func resetCache() {
         services.cache = Cache()
+    }
+
+    func provideScope(for test: Test, testCase: Test.Case?, performing function: @concurrent @Sendable () async throws -> Void) async throws {
+        await setCache()
+        try await function()
+        await resetCache()
     }
 }
 

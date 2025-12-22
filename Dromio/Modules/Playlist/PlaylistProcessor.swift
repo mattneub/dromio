@@ -2,7 +2,6 @@ import Foundation
 import Combine
 
 /// Processor containing logic for the PlaylistViewController.
-@MainActor
 final class PlaylistProcessor: Processor {
     /// Reference to the coordinator, set by coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?

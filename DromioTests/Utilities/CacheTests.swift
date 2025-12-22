@@ -1,7 +1,7 @@
 @testable import Dromio
 import Testing
 
-@MainActor struct CacheTests {
+struct CacheTests {
     @Test("Cache memoizes as expected")
     func cache() async throws {
         let subject = Cache()

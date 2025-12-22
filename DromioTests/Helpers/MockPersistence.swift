@@ -1,7 +1,6 @@
 @testable import Dromio
 import Foundation
 
-@MainActor
 final class MockPersistence: PersistenceType {
     var methodsCalled = [String]()
     var songList: [SubsonicSong]?

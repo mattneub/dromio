@@ -1,7 +1,6 @@
 @testable import Dromio
 import Foundation
 
-@MainActor
 final class MockUserDefaults: UserDefaultsType {
     var methodsCalled = [String]()
     var key: String?

@@ -9,7 +9,7 @@ final class MockReceiver<T>: Receiver {
     }
 }
 
-final class MockReceiverPresenter<T, U>: UIViewController, ReceiverPresenter {
+final class MockReceiverPresenter<T, U>: UIViewController, @MainActor ReceiverPresenter {
     var statePresented: U?
     var statesPresented = [U]()
     var thingsReceived: [T] = []
@@ -24,7 +24,7 @@ final class MockReceiverPresenter<T, U>: UIViewController, ReceiverPresenter {
     }
 }
 
-final class MockProcessor<T, U, V>: Processor {
+final class MockProcessor<T, U, V>: @MainActor Processor {
     var thingsReceived: [T] = []
 
     var presenter: (any ReceiverPresenter<V, U>)?

@@ -2,7 +2,6 @@
 import Testing
 import UIKit
 
-@MainActor
 struct HapticTests {
     let subject = Haptic()
     let mockNotificationGenerator = MockNotificationGenerator()
@@ -36,7 +35,6 @@ struct HapticTests {
     }
 }
 
-@MainActor
 final class MockNotificationGenerator: NotificationFeedbackGeneratorType {
     var methodsCalled = [String]()
     var type: UINotificationFeedbackGenerator.FeedbackType?
@@ -51,7 +49,6 @@ final class MockNotificationGenerator: NotificationFeedbackGeneratorType {
     }
 }
 
-@MainActor
 final class MockImpactGenerator: ImpactFeedbackGeneratorType {
     var methodsCalled = [String]()
     var intensity: CGFloat?

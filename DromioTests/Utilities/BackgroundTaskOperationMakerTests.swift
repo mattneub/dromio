@@ -2,7 +2,6 @@
 import Testing
 import UIKit
 
-@MainActor
 struct BackgroundTaskOperationMakerTests {
     @Test("what the maker makes, by default, is a background task operation")
     func make() {

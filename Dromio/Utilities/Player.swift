@@ -4,7 +4,6 @@ import MediaPlayer
 import Combine
 
 /// Protocol expressing the public face of our Player class.
-@MainActor
 protocol PlayerType {
     var currentSongIdPublisher: CurrentValueSubject<String?, Never> { get }
     var playerStatePublisher: CurrentValueSubject<Player.PlayerState, Never> { get }
@@ -24,7 +23,6 @@ protocol PlayerType {
 /// in the remove command center, and it must update the now playing info center and manage
 /// the audio session. In addition, it publishes updates on what the player is doing, so that
 /// other parts of the app can subscribe and stay apprised of what is happening.
-@MainActor
 final class Player: NSObject, PlayerType {
     /// The _real_ player. Set in the initializer.
     let player: any QueuePlayerType
@@ -85,13 +83,13 @@ final class Player: NSObject, PlayerType {
         // prepare our various observations
         queuePlayerCurrentItemObservation = (player as? AVPlayer)?.observe(\.currentItem, options: [.new]) { [weak self] _, item in
             Task {
-                logger.debug("current item change: \(String(describing: item.newValue), privacy: .public)")
+                await logger.debug("current item change: \(String(describing: item.newValue), privacy: .public)")
                 await self?.adjustNowPlayingItemToCurrentItem()
             }
         }
         queuePlayerRateObservation = (player as? AVPlayer)?.observe(\.rate, options: [.new]) { [weak self] _, item in
             Task {
-                logger.debug("rate change: \(String(describing: item.newValue), privacy: .public)")
+                await logger.debug("rate change: \(String(describing: item.newValue), privacy: .public)")
                 await self?.adjustNowPlayingItemToCurrentItem()
             }
         }
@@ -127,10 +125,18 @@ final class Player: NSObject, PlayerType {
         }
     }
 
-    deinit {
+    nonisolated
+    func removeTarget() {
         let commandCenter = commandCenterProvider()
-        commandCenter.play.removeTarget(self)
-        commandCenter.pause.removeTarget(self)
+        Task {
+            // I think we can get away with this as long as we don't say `self`
+            await commandCenter.play.removeTarget(nil) // remove all
+            await commandCenter.pause.removeTarget(nil) // remove all
+        }
+    }
+
+    deinit {
+        removeTarget()
     }
 
     /// Called by observations, when the player's current item or rate changes.

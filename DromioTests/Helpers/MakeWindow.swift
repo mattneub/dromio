@@ -1,7 +1,6 @@
 import UIKit
 @testable import Dromio
 
-@MainActor
 @discardableResult
 func makeWindow(viewController: UIViewController? = nil) -> UIWindow {
     // construct interface artificially
@@ -16,7 +15,6 @@ func makeWindow(viewController: UIViewController? = nil) -> UIWindow {
     return window
 }
 
-@MainActor
 @discardableResult
 func makeWindow(view: UIView) -> UIWindow {
     let viewController = UIViewController()

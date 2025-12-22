@@ -1,7 +1,6 @@
 import Foundation
 
 /// Processor containing the logic for the server view controller.
-@MainActor
 final class ServerProcessor: Processor {
     /// Reference to the coordinator, set by the coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?
@@ -46,7 +45,6 @@ final class ServerProcessor: Processor {
 }
 
 /// Protocol that defines a delegate to whom we can report when the user taps the Done button.
-@MainActor
 protocol ServerDelegate: AnyObject {
     func userEdited(serverInfo: ServerInfo) async
 }

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Inner response for the `getArtists` request.
-struct ArtistsResponse: InnerResponse {
+struct ArtistsResponse: @MainActor InnerResponse {
     let status: String
     let version: String
     let type: String

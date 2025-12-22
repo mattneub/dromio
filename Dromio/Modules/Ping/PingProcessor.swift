@@ -2,7 +2,6 @@ import Foundation
 
 /// Processor containing logic for the Ping view controller.
 ///
-@MainActor
 final class PingProcessor: Processor {
     /// A reference to the root coordinator, set by the coordinator on creation.
     weak var coordinator: (any RootCoordinatorType)?

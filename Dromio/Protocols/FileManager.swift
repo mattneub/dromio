@@ -1,6 +1,7 @@
 import Foundation
 
 /// Protocol that wraps the File Manager, so we can mock it for testing.
+nonisolated
 protocol FileManagerType: AnyObject, Sendable {
     func moveItem(
         at srcURL: URL,

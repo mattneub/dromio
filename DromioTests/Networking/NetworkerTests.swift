@@ -4,7 +4,6 @@ import Combine
 import Testing
 import WaitWhile
 
-@MainActor
 struct NetworkerTests {
     let subject = Networker(session: NetworkerTests.session)
 

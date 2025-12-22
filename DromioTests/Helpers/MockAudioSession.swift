@@ -1,7 +1,6 @@
 @testable import Dromio
 import AVFoundation
 
-@MainActor
 final class MockAudioSession: AudioSessionType {
     var category: AVAudioSession.Category?
     var active: Bool?

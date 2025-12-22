@@ -3,7 +3,6 @@ import Testing
 import UIKit
 import WaitWhile
 
-@MainActor
 struct PingViewControllerTests {
     let subject = PingViewController(nibName: "Ping", bundle: nil)
     let processor = MockProcessor<PingAction, PingState, Void>()

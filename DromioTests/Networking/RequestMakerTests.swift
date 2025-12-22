@@ -2,7 +2,6 @@
 import Testing
 import Foundation
 
-@MainActor
 struct RequestMakerTests {
     let subject = RequestMaker()
     let networker = MockNetworker()

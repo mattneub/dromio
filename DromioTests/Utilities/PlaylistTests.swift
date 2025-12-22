@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 
-@MainActor
 struct PlaylistTests {
     let subject = Playlist()
     let persistence = MockPersistence()

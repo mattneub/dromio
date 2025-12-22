@@ -5,7 +5,6 @@ enum PlaylistError: Error {
 }
 
 /// Protocol expressing the public face of our Playlist class.
-@MainActor
 protocol PlaylistType: Sendable {
     var list: [SubsonicSong] { get }
     func setList(_ newList: [SubsonicSong])
@@ -21,7 +20,6 @@ protocol PlaylistType: Sendable {
 /// At the moment, this class represents only the _current_ playlist, i.e. the anonymous "Queue" displayed
 /// in the Queue screen of the interface. This is the only thing that can be played. If we ever decide to implement
 /// named playlists, the assumptions in this class will break and it will have to be modified.
-@MainActor
 final class Playlist: PlaylistType {
 
     /// Source of truth for playlist contents. As mentioned above, we simply assume that we are

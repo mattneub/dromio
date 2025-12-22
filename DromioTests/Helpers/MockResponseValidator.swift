@@ -1,7 +1,6 @@
 @testable import Dromio
 import Foundation
 
-@MainActor
 final class MockResponseValidator: ResponseValidatorType {
     var methodsCalled = [String]()
     var errorToThrow: (any Error)?

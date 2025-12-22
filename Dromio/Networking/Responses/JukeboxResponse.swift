@@ -1,7 +1,7 @@
 import Foundation
 
 /// Inner response for the `jukeboxControl` request.
-struct JukeboxResponse: InnerResponse {
+struct JukeboxResponse: @MainActor InnerResponse {
     let status: String
     let version: String
     let type: String

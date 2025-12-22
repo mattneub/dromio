@@ -2,7 +2,6 @@
 import Testing
 import MediaPlayer
 
-@MainActor
 struct NowPlayingInfoTests {
     let subject = NowPlayingInfo()
     var center: MockNowPlayingInfoCenter!

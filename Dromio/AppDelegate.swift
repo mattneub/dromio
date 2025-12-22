@@ -10,6 +10,7 @@ var services: Services = Services.shared
 var userHasJukeboxRole = false
 
 /// Globally available Logger instance.
+@MainActor
 let logger = Logger(subsystem: "dromio", category: "debugging")
 
 @main

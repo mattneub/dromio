@@ -2,7 +2,6 @@
 import Testing
 import Foundation
 
-@MainActor
 final class Search3ResponseTests {
     @Test("decodes actual json")
     func search3Response() throws {

@@ -3,7 +3,6 @@ import Testing
 import Foundation
 import WaitWhile
 
-@MainActor
 struct DownloadDelegateTests {
     let subject = DownloadDelegate()
     let networker = MockNetworker()
@@ -19,19 +18,19 @@ struct DownloadDelegateTests {
     }
 
     @Test("urlsessionDidCreateTask: observes progress, passes it to networker")
-    nonisolated
     func didCreateTask() async {
         let task = MockTask()
         task.originalRequest = URLRequest(url: URL(string: "http://www.example.com?id=1")!)
-        await subject.urlSession(Self.session, didCreateTask: task)
+        subject.urlSession(Self.session, didCreateTask: task)
         task.doProgress(0.5)
-        await #while(await networker.methodsCalled.isEmpty)
-        #expect(await networker.methodsCalled.contains("progress(id:fraction:)"))
-        #expect(await networker.id == "1")
-        #expect(await networker.fraction == 0.5)
+        await #while(networker.methodsCalled.isEmpty)
+        #expect(networker.methodsCalled.contains("progress(id:fraction:)"))
+        #expect(networker.id == "1")
+        #expect(networker.fraction == 0.5)
     }
 }
 
+nonisolated
 final class MockTask: URLSessionTask, @unchecked Sendable {
     override init() { super.init() } // deprecated but what else can we do?
     var _progress = Progress(totalUnitCount: 100)

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Inner response for the `getAlbumList2` request.
-struct AlbumList2Response: InnerResponse {
+struct AlbumList2Response: @MainActor InnerResponse {
     let status: String
     let version: String
     let type: String

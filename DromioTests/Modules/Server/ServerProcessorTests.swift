@@ -2,7 +2,6 @@
 import Testing
 import WaitWhile
 
-@MainActor
 struct ServerProcessorTests {
     let subject = ServerProcessor()
     let presenter = MockReceiverPresenter<Void, ServerState>()

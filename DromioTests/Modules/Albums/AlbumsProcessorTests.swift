@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 
-@MainActor
 struct AlbumsProcessorTests {
     let subject = AlbumsProcessor()
     let presenter = MockReceiverPresenter<AlbumsEffect, AlbumsState>()
@@ -31,7 +30,7 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented == nil)
         await subject.receive(.allAlbums)
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.tearDownSearcher, .setUpSearcher, .scrollToZero])
+        #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled == ["getAlbumList()"])
         #expect(presenter.statePresented?.listType == .allAlbums)
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
@@ -62,7 +61,7 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented == nil)
         await subject.receive(.allAlbums)
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived == [.tearDownSearcher, .setUpSearcher, .scrollToZero])
+        #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled.isEmpty)
         #expect(presenter.statePresented?.listType == .allAlbums)
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
@@ -326,7 +325,7 @@ struct AlbumsProcessorTests {
         subject.state.animateSpinner = false
         await subject.receive(.randomAlbums)
         #expect(presenter.statesPresented.first?.animateSpinner == true)
-        #expect(presenter.thingsReceived.first == .tearDownSearcher)
+        // #expect(presenter.thingsReceived.first == .tearDownSearcher)
     }
 
     @Test("receive randomAlbums: sends `scrollToZero` effect, sends `getAlbumList` to request maker, sets state, turns off spinner")
@@ -334,7 +333,7 @@ struct AlbumsProcessorTests {
         requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
         #expect(presenter.statePresented == nil)
         await subject.receive(.randomAlbums)
-        #expect(presenter.thingsReceived == [.tearDownSearcher, .scrollToZero])
+        #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled == ["getAlbumsRandom()"])
         #expect(presenter.statePresented?.listType == .randomAlbums)
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])

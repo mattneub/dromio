@@ -1,7 +1,6 @@
 import Foundation
 
 /// Protocol describing our Cache class, so we can mock it for testing.
-@MainActor
 protocol CacheType {
     var allAlbums: [SubsonicAlbum]? { get set }
     var allArtists: [SubsonicArtist]? { get set }
@@ -15,7 +14,6 @@ protocol CacheType {
 }
 
 /// Class that memoizes our biggest and most commonly used server fetch results.
-@MainActor
 final class Cache: CacheType {
     /// For the result of `getAlbumList`
     var allAlbums: [SubsonicAlbum]?

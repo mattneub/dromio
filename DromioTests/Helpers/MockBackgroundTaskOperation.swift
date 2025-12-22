@@ -1,7 +1,6 @@
 @testable import Dromio
 import UIKit
 
-@MainActor
 final class MockBackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationType {
     var methodsCalled = [String]()
     var whatToDo: @Sendable () async throws -> T
@@ -19,8 +18,7 @@ final class MockBackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationTyp
     }
 }
 
-@MainActor
-final class MockBackgroundTaskOperationMaker: BackgroundTaskOperationMakerType {
+final class MockBackgroundTaskOperationMaker: nonisolated BackgroundTaskOperationMakerType {
     var mockBackgroundTaskOperation: (any BackgroundTaskOperationType)?
     var timesCalled = 0
 

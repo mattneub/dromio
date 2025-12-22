@@ -1,13 +1,12 @@
 @testable import Dromio
 import Foundation
 
-@MainActor
 final class MockURLSession: URLSessionType {
-    var methodsCalled = [String]()
-    var data = Data()
-    var urlResponse = URLResponse()
-    var url = URL(string: "file://dummy")!
-    var tasks = [MockURLSessionTask(), MockURLSessionTask()]
+    nonisolated(unsafe) var methodsCalled = [String]()
+    nonisolated(unsafe) var data = Data()
+    nonisolated(unsafe) var urlResponse = URLResponse()
+    nonisolated(unsafe) var url = URL(string: "file://dummy")!
+    nonisolated(unsafe) var tasks = [MockURLSessionTask(), MockURLSessionTask()]
 
     func allTasks() async -> [any URLSessionTaskType] {
         methodsCalled.append(#function)
@@ -25,7 +24,6 @@ final class MockURLSession: URLSessionType {
     }
 }
 
-@MainActor
 final class MockURLSessionTask: URLSessionTaskType {
     var methodsCalled = [String]()
 

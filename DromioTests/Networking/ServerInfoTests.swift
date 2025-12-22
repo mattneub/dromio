@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 
-@MainActor
 struct ServerInfoTests {
     let subject = ServerInfo.init(
         scheme: "s",

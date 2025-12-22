@@ -1,23 +1,22 @@
 @testable import Dromio
 import Foundation
 
-@MainActor
 final class MockRequestMaker: RequestMakerType {
-    var albumList = [SubsonicAlbum]()
-    var artistList = [SubsonicArtist]()
-    var folderList = [SubsonicFolder]()
-    var songList = [SubsonicSong]()
-    var albumId: String?
-    var songId: String?
-    var artistId: String?
-    var user: SubsonicUser?
-    var pingError: Error?
-    var query: String?
-    var methodsCalled = [String]()
-    var streamURL = URL(string: "http://example.com")!
-    var downloadURL = URL(string: "file://tempFolder/stuff")!
-    var actions = [JukeboxAction]()
-    var songIds = [String?]()
+    nonisolated(unsafe) var albumList = [SubsonicAlbum]()
+    nonisolated(unsafe) var artistList = [SubsonicArtist]()
+    nonisolated(unsafe) var folderList = [SubsonicFolder]()
+    nonisolated(unsafe) var songList = [SubsonicSong]()
+    nonisolated(unsafe) var albumId: String?
+    nonisolated(unsafe) var songId: String?
+    nonisolated(unsafe) var artistId: String?
+    nonisolated(unsafe) var user: SubsonicUser?
+    nonisolated(unsafe) var pingError: Error?
+    nonisolated(unsafe) var query: String?
+    nonisolated(unsafe) var methodsCalled = [String]()
+    nonisolated(unsafe) var streamURL = URL(string: "http://example.com")!
+    nonisolated(unsafe) var downloadURL = URL(string: "file://tempFolder/stuff")!
+    nonisolated(unsafe) var actions = [JukeboxAction]()
+    nonisolated(unsafe) var songIds = [String?]()
 
     func ping() async throws {
         methodsCalled.append(#function)
