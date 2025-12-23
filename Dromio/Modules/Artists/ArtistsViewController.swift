@@ -144,6 +144,8 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
 
     isolated
     deinit {
-        logger.debug("farewell from artists")
+        unlessTesting {
+            logger.debug("farewell from artists")
+        }
     }
 }

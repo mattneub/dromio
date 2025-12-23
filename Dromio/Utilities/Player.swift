@@ -125,18 +125,13 @@ final class Player: NSObject, PlayerType {
         }
     }
 
-    nonisolated
-    func removeTarget() {
-        let commandCenter = commandCenterProvider()
-        Task {
-            // I think we can get away with this as long as we don't say `self`
-            await commandCenter.play.removeTarget(nil) // remove all
-            await commandCenter.pause.removeTarget(nil) // remove all
-        }
-    }
-
     deinit {
-        removeTarget()
+        Task { @MainActor [commandCenterProvider] in // capture is crucial to avoid saying `self`
+            let commandCenter = commandCenterProvider()
+            // can get away with this as long as we don't say self
+            commandCenter.play.removeTarget(nil) // remove all
+            commandCenter.pause.removeTarget(nil) // remove all
+        }
     }
 
     /// Called by observations, when the player's current item or rate changes.

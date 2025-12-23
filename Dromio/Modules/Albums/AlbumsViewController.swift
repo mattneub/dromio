@@ -154,6 +154,8 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
 
     isolated
     deinit {
-        logger.debug("farewell from albums")
+        unlessTesting {
+            logger.debug("farewell from albums")
+        }
     }
 }
