@@ -114,26 +114,6 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITab
         }
     }
 
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        guard section == 0 else {
-            return nil // shouldn't happen
-        }
-        guard let font =  UIFont(name: "Verdana-Bold", size: 17) else {
-            return nil // shouldn't happen
-        }
-        let albumTitle = datasource.snapshot().sectionIdentifiers[0]
-        guard albumTitle != "albumTitleDummy" else {
-            return nil // shouldn't happen
-        }
-        let headerView = UITableViewHeaderFooterView()
-        var configuration = headerView.defaultContentConfiguration()
-        configuration.text = albumTitle
-        configuration.textProperties.font = font
-        configuration.textProperties.alignment = .center
-        headerView.contentConfiguration = configuration
-        return headerView
-    }
-
     // MARK: Searching
 
     // Quite tricky, because we get calls to this method not just when the user types in the

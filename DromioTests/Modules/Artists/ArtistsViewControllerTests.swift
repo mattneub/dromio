@@ -33,7 +33,7 @@ struct ArtistsViewControllerTests {
         #expect(subject.dataSourceDelegate.tableView == subject.tableView)
     }
 
-    @Test("viewDidLoad: sets background color and title, sets spinner, bar button items, table view, search")
+    @Test("viewDidLoad: sets background color, sets spinner, bar button items, table view, search")
     func viewDidLoad() async throws {
         subject.loadViewIfNeeded()
         #expect(subject.dataSourceDelegate.processor === subject.processor)
@@ -41,7 +41,6 @@ struct ArtistsViewControllerTests {
         #expect(subject.activity.isDescendant(of: subject.view))
         #expect(subject.tableView.estimatedRowHeight == 40)
         #expect(subject.tableView.sectionIndexColor == .systemRed)
-        #expect(subject.title == "Artists")
         do {
             let item = try #require(subject.navigationItem.rightBarButtonItem)
             #expect(item.title == nil)
@@ -121,12 +120,17 @@ struct ArtistsViewControllerTests {
         #expect(window.isUserInteractionEnabled == true)
     }
 
-    @Test("present: sets the title and left bar button menu item according to the state")
+    @Test("present: sets the title view and left bar button menu item according to the state")
     func presentAll() async throws {
         subject.loadViewIfNeeded()
         let state = ArtistsState(listType: .allArtists)
         await subject.present(state)
-        #expect(subject.title == "Artists")
+        let label = try #require(subject.navigationItem.titleView as? UILabel)
+        #expect(label.text == "Artists")
+        #expect(label.font == UIFont(name: "Verdana-Bold", size: 17))
+        #expect(label.textAlignment == .center)
+        #expect(Float(label.minimumScaleFactor) == 0.8 as Float) // eliminate tiny difference
+        #expect(label.adjustsFontSizeToFitWidth == true)
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
         #expect(menu.children.count == 3)
         do {
@@ -159,7 +163,12 @@ struct ArtistsViewControllerTests {
         subject.loadViewIfNeeded()
         let state = ArtistsState(listType: .composers)
         await subject.present(state)
-        #expect(subject.title == "Composers")
+        let label = try #require(subject.navigationItem.titleView as? UILabel)
+        #expect(label.text == "Composers")
+        #expect(label.font == UIFont(name: "Verdana-Bold", size: 17))
+        #expect(label.textAlignment == .center)
+        #expect(Float(label.minimumScaleFactor) == 0.8 as Float) // eliminate tiny difference
+        #expect(label.adjustsFontSizeToFitWidth == true)
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
         #expect(menu.children.count == 3)
         do {

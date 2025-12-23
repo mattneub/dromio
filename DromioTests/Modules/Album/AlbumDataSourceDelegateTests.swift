@@ -193,54 +193,6 @@ struct AlbumDataSourceDelegateTests {
         }
     }
 
-    @Test("viewForHeaderInSection: correctly populates header view")
-    func viewForHeader() async throws {
-        var state = AlbumState()
-        state.songs = [.init(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )]
-        state.albumTitle = "My Album"
-        await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-        let headerView = try #require(subject.tableView(tableView, viewForHeaderInSection: 0) as? UITableViewHeaderFooterView)
-        let configuration = try #require(headerView.contentConfiguration as? UIListContentConfiguration)
-        #expect(configuration.text == "My Album")
-        #expect(configuration.textProperties.font == UIFont(name: "Verdana-Bold", size: 17))
-        #expect(configuration.textProperties.alignment == .center)
-    }
-
-    @Test("viewForHeaderInSection: is nil if album title is nil")
-    func viewForHeaderNil() async throws {
-        var state = AlbumState()
-        state.songs = [.init(
-            id: "1",
-            title: "Title",
-            album: "Album",
-            artist: "Artist",
-            displayComposer: "Me",
-            track: 1,
-            year: 1970,
-            albumId: "2",
-            suffix: nil,
-            duration: nil,
-            contributors: nil
-        )]
-        state.albumTitle = nil
-        await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-        #expect(subject.tableView(tableView, viewForHeaderInSection: 0) == nil)
-    }
-
     @Test("didSelect: sends tapped to processor")
     func didSelect() async {
         let song = SubsonicSong(

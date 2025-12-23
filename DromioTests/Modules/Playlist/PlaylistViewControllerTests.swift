@@ -79,7 +79,7 @@ struct PlaylistViewControllerTests {
         #expect(processor.thingsReceived.first == .initialData)
     }
 
-    @Test("viewDidLoad: creates right bar button item")
+    @Test("viewDidLoad: adds right bar button item")
     func viewDidLoadRight() async throws {
         subject.loadViewIfNeeded()
         let rightBarButtonItem = try #require(subject.navigationItem.rightBarButtonItem)
@@ -88,15 +88,22 @@ struct PlaylistViewControllerTests {
         #expect(rightBarButtonItem.action == #selector(subject.doClear))
     }
 
-    @Test("viewDidLoad: creates the other right bar button item")
+    @Test("viewDidLoad: adds the other right bar button item")
     func viewDidLoadRight2() async throws {
         subject.loadViewIfNeeded()
-        let playpauseButtonItem = try #require(subject.navigationItem.rightBarButtonItems?[1])
+        let playpauseButtonItem = try #require(subject.navigationItem.rightBarButtonItems?[2])
         #expect(playpauseButtonItem.image == UIImage(systemName: "playpause.fill"))
         #expect(playpauseButtonItem.target === subject)
         #expect(playpauseButtonItem.action == #selector(subject.doPlayPause))
         #expect(playpauseButtonItem.width == 58)
         #expect(playpauseButtonItem.isSymbolAnimationEnabled == true)
+    }
+
+    @Test("viewDidLoad: adds right bar button item spacer")
+    func viewDidLoadRight3() async throws {
+        subject.loadViewIfNeeded()
+        let spacer = try #require(subject.navigationItem.rightBarButtonItems?[1])
+        #expect(spacer == UIBarButtonItem.fixedSpace())
     }
 
     @Test("viewDidLoad: creates the left bar button item")
@@ -187,19 +194,19 @@ struct PlaylistViewControllerTests {
         state.jukeboxMode = false
         state.currentSongId = nil
         await subject.present(state)
-        #expect(!items[1].isEnabled)
+        #expect(!items[2].isEnabled)
         state.jukeboxMode = true
         state.currentSongId = nil
         await subject.present(state)
-        #expect(!items[1].isEnabled)
+        #expect(!items[2].isEnabled)
         state.jukeboxMode = false
         state.currentSongId = "1"
         await subject.present(state)
-        #expect(items[1].isEnabled)
+        #expect(items[2].isEnabled)
         state.jukeboxMode = true
         state.currentSongId = "1"
         await subject.present(state)
-        #expect(!items[1].isEnabled)
+        #expect(!items[2].isEnabled)
     }
 
     @Test("present: sets enablement of clear button")
@@ -273,7 +280,7 @@ struct PlaylistViewControllerTests {
     @Test("receive playerState: sets the symbol image of the second right bar button item")
     func receivePlayerState() async throws {
         subject.loadViewIfNeeded()
-        let button = try #require(subject.navigationItem.rightBarButtonItems?[1])
+        let button = try #require(subject.navigationItem.rightBarButtonItems?[2])
         await subject.receive(.playerState(.playing))
         await #while(button.image == UIImage(systemName: "playpause.fill"))
         #expect(button.image == UIImage(systemName: "pause.fill"))

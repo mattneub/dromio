@@ -111,11 +111,16 @@ struct AlbumsViewControllerTests {
         #expect(window.isUserInteractionEnabled == true)
     }
 
-    @Test("present: sets the title and left bar button menu item according to the state, all albums")
+    @Test("present: sets the title view and left bar button menu item according to the state, all albums")
     func presentAll() async throws {
         let state = AlbumsState(listType: .allAlbums)
         await subject.present(state)
-        #expect(subject.title == "All Albums")
+        let label = try #require(subject.navigationItem.titleView as? UILabel)
+        #expect(label.text == "All Albums")
+        #expect(label.font == UIFont(name: "Verdana-Bold", size: 17))
+        #expect(label.textAlignment == .center)
+        #expect(Float(label.minimumScaleFactor) == 0.8 as Float) // eliminate tiny difference
+        #expect(label.adjustsFontSizeToFitWidth == true)
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
         #expect(menu.children.count == 3)
         do {
@@ -143,11 +148,16 @@ struct AlbumsViewControllerTests {
         }
     }
 
-    @Test("present: sets the title and left bar button menu item according to the state, random albums")
+    @Test("present: sets the title view and left bar button menu item according to the state, random albums")
     func presentRandom() async throws {
         let state = AlbumsState(listType: .randomAlbums)
         await subject.present(state)
-        #expect(subject.title == "Random Albums")
+        let label = try #require(subject.navigationItem.titleView as? UILabel)
+        #expect(label.text == "Random Albums")
+        #expect(label.font == UIFont(name: "Verdana-Bold", size: 17))
+        #expect(label.textAlignment == .center)
+        #expect(Float(label.minimumScaleFactor) == 0.8 as Float) // eliminate tiny difference
+        #expect(label.adjustsFontSizeToFitWidth == true)
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
         #expect(menu.children.count == 3)
         do {

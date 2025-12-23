@@ -1,6 +1,7 @@
 @testable import Dromio
 import Testing
 import UIKit
+import WaitWhile
 
 struct SearcherConfiguratorTests {
     let subject = SearchConfigurator()
@@ -10,6 +11,7 @@ struct SearcherConfiguratorTests {
         let viewController = UIViewController()
         let handler = MockSearchHandler()
         subject.configure(viewController: viewController, updater: handler)
+        await #while(viewController.navigationItem.searchController == nil)
         let controller = try #require(viewController.navigationItem.searchController)
         #expect(controller.hidesNavigationBarDuringPresentation == false)
         #expect(controller.obscuresBackgroundDuringPresentation == false)

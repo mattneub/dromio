@@ -11,8 +11,7 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
     /// Reference to the processor, set by coordinator on creation.
     weak var processor: (any Receiver<ArtistsAction>)?
 
-    let activity: UIActivityIndicatorView = {
-        let activity = UIActivityIndicatorView(style: .large)
+    let activity = UIActivityIndicatorView(style: .large).applying { activity in
         activity.color = .label
         activity.backgroundColor = UIColor(dynamicProvider: { traits in
             switch traits.userInterfaceStyle {
@@ -24,8 +23,7 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         activity.widthAnchor.constraint(equalToConstant: 100).isActive = true
         activity.heightAnchor.constraint(equalToConstant: 100).isActive = true
         activity.layer.cornerRadius = 20
-        return activity
-    }()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,7 +33,6 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         activity.centerXAnchor.constraint(equalTo: tableView.frameLayoutGuide.centerXAnchor).isActive = true
         activity.centerYAnchor.constraint(equalTo: tableView.frameLayoutGuide.centerYAnchor).isActive = true
         searchConfigurator.configure(viewController: self, updater: dataSourceDelegate)
-        title = "Artists"
         let itemRight = UIBarButtonItem(title: nil, image: UIImage(systemName: "list.bullet"), target: self, action: #selector(showPlaylist))
         navigationItem.rightBarButtonItem = itemRight
         let menu = UIMenu() // real menu will be provided by `present`
@@ -67,6 +64,14 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
         title = switch state.listType {
         case .allArtists: "Artists"
         case .composers: "Composers"
+        }
+        navigationItem.titleView = UILabel().applying {
+            $0.text = title
+            $0.font = UIFont(name: "Verdana-Bold", size: 17)
+            $0.numberOfLines = 2
+            $0.textAlignment = .center
+            $0.minimumScaleFactor = 0.8
+            $0.adjustsFontSizeToFitWidth = true
         }
         navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
 

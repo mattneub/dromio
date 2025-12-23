@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_9" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -36,9 +36,16 @@
                             <nil key="highlightedColor"/>
                         </label>
                         <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uMr-C9-MHs">
-                            <rect key="frame" x="109" y="144.66666666666669" width="190" height="35"/>
+                            <rect key="frame" x="85.000000000000014" y="144.66666666666669" width="238.33333333333337" height="37.666666666666657"/>
                             <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="plain" title="Enter New Server Info"/>
+                            <buttonConfiguration key="configuration" style="tinted" title="Enter New Server Info" titleAlignment="center">
+                                <backgroundConfiguration key="background">
+                                    <color key="backgroundColor" systemColor="systemTealColor"/>
+                                </backgroundConfiguration>
+                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
+                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
+                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </buttonConfiguration>
                             <connections>
                                 <action selector="doReenterButton:" destination="-1" eventType="touchUpInside" id="o7n-QJ-Vos"/>
                             </connections>
@@ -56,33 +63,61 @@
                             <nil key="highlightedColor"/>
                         </label>
                         <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fqj-F7-Fqc">
-                            <rect key="frame" x="135.66666666666666" y="195.66666666666669" width="136.99999999999997" height="35"/>
+                            <rect key="frame" x="115.66666666666666" y="198.33333333333331" width="176.99999999999997" height="37.666666666666657"/>
                             <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="plain" title="Choose Server"/>
+                            <buttonConfiguration key="configuration" style="tinted" title="Choose Server" titleAlignment="center">
+                                <backgroundConfiguration key="background">
+                                    <color key="backgroundColor" systemColor="systemTealColor"/>
+                                </backgroundConfiguration>
+                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
+                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
+                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </buttonConfiguration>
                             <connections>
                                 <action selector="doPickServerButton:" destination="-1" eventType="touchUpInside" id="5sZ-6u-HJQ"/>
                             </connections>
                         </button>
                         <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vHJ-u8-kXz">
-                            <rect key="frame" x="140.33333333333334" y="297.66666666666669" width="127.33333333333334" height="35"/>
+                            <rect key="frame" x="121.00000000000001" y="305.66666666666669" width="166.33333333333337" height="37.666666666666686"/>
                             <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="plain" title="Delete Server"/>
+                            <buttonConfiguration key="configuration" style="tinted" title="Delete Server" titleAlignment="center">
+                                <backgroundConfiguration key="background">
+                                    <color key="backgroundColor" systemColor="systemTealColor"/>
+                                </backgroundConfiguration>
+                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
+                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
+                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </buttonConfiguration>
                             <connections>
                                 <action selector="doDeleteServerButton:" destination="-1" eventType="touchUpInside" id="78b-Ee-INS"/>
                             </connections>
                         </button>
                         <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="s7r-7V-AD6">
-                            <rect key="frame" x="143" y="348.66666666666669" width="122.33333333333331" height="35"/>
+                            <rect key="frame" x="124.33333333333336" y="359.33333333333337" width="159.66666666666663" height="37.666666666666686"/>
                             <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="plain" title="Offline Mode"/>
+                            <buttonConfiguration key="configuration" style="tinted" title="Offline Mode" titleAlignment="center">
+                                <backgroundConfiguration key="background">
+                                    <color key="backgroundColor" systemColor="systemTealColor"/>
+                                </backgroundConfiguration>
+                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
+                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
+                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </buttonConfiguration>
                             <connections>
                                 <action selector="doOfflineModeButton:" destination="-1" eventType="touchUpInside" id="Smw-5W-v5h"/>
                             </connections>
                         </button>
                         <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xlr-og-uyn">
-                            <rect key="frame" x="134" y="246.66666666666669" width="140" height="35"/>
+                            <rect key="frame" x="113.33333333333333" y="251.99999999999997" width="181.33333333333337" height="37.666666666666657"/>
                             <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="plain" title="Choose Library"/>
+                            <buttonConfiguration key="configuration" style="tinted" title="Choose Library" titleAlignment="center">
+                                <backgroundConfiguration key="background">
+                                    <color key="backgroundColor" systemColor="systemTealColor"/>
+                                </backgroundConfiguration>
+                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
+                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
+                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </buttonConfiguration>
                             <connections>
                                 <action selector="doPickFolderButton:" destination="-1" eventType="touchUpInside" id="sGR-dh-CZ1"/>
                             </connections>
@@ -135,6 +170,9 @@
     <resources>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemTealColor">
+            <color red="0.18823529410000001" green="0.69019607839999997" blue="0.78039215689999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemYellowColor">
             <color red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

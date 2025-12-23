@@ -11,8 +11,7 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
     /// Reference to the processor, set by coordinator on creation.
     weak var processor: (any Receiver<AlbumAction>)?
 
-    let activity: UIActivityIndicatorView = {
-        let activity = UIActivityIndicatorView(style: .large)
+    let activity = UIActivityIndicatorView(style: .large).applying { activity in
         activity.color = .label
         activity.backgroundColor = UIColor(dynamicProvider: { traits in
             switch traits.userInterfaceStyle {
@@ -24,8 +23,7 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
         activity.widthAnchor.constraint(equalToConstant: 100).isActive = true
         activity.heightAnchor.constraint(equalToConstant: 100).isActive = true
         activity.layer.cornerRadius = 20
-        return activity
-    }()
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,6 +48,19 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
     }
 
     func present(_ state: AlbumState) async {
+        if let albumTitle = state.albumTitle {
+            navigationItem.titleView = UILabel().applying {
+                $0.text = albumTitle
+                $0.font = UIFont(name: "Verdana-Bold", size: 17)
+                $0.numberOfLines = 2
+                $0.textAlignment = .center
+                $0.minimumScaleFactor = 0.8
+                $0.adjustsFontSizeToFitWidth = true
+                let constraint = $0.widthAnchor.constraint(equalToConstant: 200)
+                constraint.priority = .init(500)
+                constraint.isActive = true
+            }
+        }
         switch state.animateSpinner {
         case true:
             if !activity.isAnimating {

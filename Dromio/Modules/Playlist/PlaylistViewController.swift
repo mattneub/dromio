@@ -49,16 +49,29 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         return button
     }()
 
-    lazy var tableHeaderView: UIView = {
-        let tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 40))
+    lazy var tableHeaderView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 40)).applying { tableHeaderView in
         tableHeaderView.backgroundColor = .background
         tableHeaderView.addSubview(jukeboxButton)
         NSLayoutConstraint.activate([
             jukeboxButton.centerXAnchor.constraint(equalTo: tableHeaderView.centerXAnchor),
             jukeboxButton.centerYAnchor.constraint(equalTo: tableHeaderView.centerYAnchor),
         ])
-        return tableHeaderView
-    }()
+    }
+
+    lazy var clearItem = UIBarButtonItem(
+        title: nil,
+        image: UIImage(systemName: "clear.fill"),
+        target: self,
+        action: #selector(doClear)
+    )
+
+    lazy var pauseItem = UIBarButtonItem(
+        title: nil,
+        image: UIImage(systemName: "playpause.fill"),
+        target: self,
+        action: #selector(doPlayPause)
+    )
+
 
     /// Temporary holding tank for any state that arrives while the table view has a selection; we
     /// don't want to present when it does, because that will cancel the selection.
@@ -68,14 +81,20 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         super.viewDidLoad()
         dataSourceDelegate?.processor = processor
         view.backgroundColor = .background
-        let clearItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "clear.fill"), target: self, action: #selector(doClear))
-        let pauseItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "playpause.fill"), target: self, action: #selector(doPlayPause))
         pauseItem.width = 58
         pauseItem.isSymbolAnimationEnabled = true
-        navigationItem.rightBarButtonItems = [clearItem, pauseItem]
+        navigationItem.rightBarButtonItems = [clearItem, UIBarButtonItem.fixedSpace(), pauseItem]
         let scissorsItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "scissors"), target: self, action: #selector(doEdit))
         navigationItem.leftBarButtonItem = scissorsItem
         navigationItem.leftItemsSupplementBackButton = true
+        navigationItem.titleView = UILabel().applying {
+            $0.text = "Queue"
+            $0.font = UIFont(name: "Verdana-Bold", size: 17)
+            $0.numberOfLines = 2
+            $0.textAlignment = .center
+            $0.minimumScaleFactor = 0.8
+            $0.adjustsFontSizeToFitWidth = true
+        }
         Task {
             await processor?.receive(.initialData)
         }
@@ -97,12 +116,8 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
                 UIImage(systemName: "scissors")
             }
         }
-        if let playPauseButton = navigationItem.rightBarButtonItems?[1] {
-            playPauseButton.isEnabled = state.showPlayPauseButton
-        }
-        if let cancelButton = navigationItem.rightBarButtonItems?[0] {
-            cancelButton.isEnabled = state.showClearButtonAndJukeboxButton
-        }
+        pauseItem.isEnabled = state.showPlayPauseButton
+        clearItem.isEnabled = state.showClearButtonAndJukeboxButton
         jukeboxButton.isEnabled = state.showClearButtonAndJukeboxButton
         if isEditing != state.editMode {
             setEditing(state.editMode, animated: unlessTesting(true))
@@ -129,18 +144,16 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
                 postponedState = nil
             }
         case .playerState(let playerState):
-            if let playPauseButton = navigationItem.rightBarButtonItems?[1] {
-                switch playerState {
-                case .empty:
-                    let image = UIImage(systemName: "playpause.fill")!
-                    playPauseButton.image = image
-                case .paused:
-                    let image = UIImage(systemName: "play.fill")!
-                    playPauseButton.setSymbolImage(image, contentTransition: .replace.offUp)
-                case .playing:
-                    let image = UIImage(systemName: "pause.fill")!
-                    playPauseButton.setSymbolImage(image, contentTransition: .replace.offUp)
-                }
+            switch playerState {
+            case .empty:
+                let image = UIImage(systemName: "playpause.fill")!
+                pauseItem.image = image
+            case .paused:
+                let image = UIImage(systemName: "play.fill")!
+                pauseItem.setSymbolImage(image, contentTransition: .replace.offUp)
+            case .playing:
+                let image = UIImage(systemName: "pause.fill")!
+                pauseItem.setSymbolImage(image, contentTransition: .replace.offUp)
             }
         case .progress(let id, let progress):
             await dataSourceDelegate?.receive(.progress(id, progress))

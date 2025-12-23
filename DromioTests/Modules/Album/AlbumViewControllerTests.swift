@@ -125,6 +125,39 @@ struct AlbumViewControllerTests {
         #expect(window.isUserInteractionEnabled == true)
     }
 
+    @Test("present: configures the title view as label")
+    func presentTitleView() async throws {
+        let state = AlbumState(
+            albumTitle: "Album",
+            songs: [.init(
+                id: "1",
+                title: "Title",
+                album: "Album",
+                artist: "Artist",
+                displayComposer: "Me",
+                track: 1,
+                year: 1970,
+                albumId: "2",
+                suffix: nil,
+                duration: nil,
+                contributors: nil
+            )]
+        )
+        await subject.present(state)
+        let label = try #require(subject.navigationItem.titleView as? UILabel)
+        #expect(label.text == "Album")
+        #expect(label.font == UIFont(name: "Verdana-Bold", size: 17))
+        #expect(label.numberOfLines == 2)
+        #expect(label.textAlignment == .center)
+        #expect(Float(label.minimumScaleFactor) == 0.8 as Float) // eliminate tiny difference
+        #expect(label.adjustsFontSizeToFitWidth == true)
+        let constraint = try #require(label.constraints.first)
+        #expect(constraint.firstAttribute == .width)
+        #expect(constraint.priority == .init(500))
+        #expect(constraint.constant == 200)
+        #expect(constraint.isActive)
+    }
+
     @Test("receive animatePlaylist: tells the playlist bar button item to animate")
     func receiveAnimatePlaylist() throws {
         // I don't see how to test this: you can't ask a bar button item whether it has a symbol effect

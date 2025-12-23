@@ -129,7 +129,7 @@ final class RootCoordinator: RootCoordinatorType {
     }
 
     func showAlbum(albumId: String, title: String) {
-        let albumController = AlbumViewController(nibName: nil, bundle: nil)
+        let albumController = AlbumViewController()
         let albumProcessor = AlbumProcessor()
         albumProcessor.state = AlbumState(albumId: albumId, albumTitle: title, songs: [])
         self.albumProcessor = albumProcessor

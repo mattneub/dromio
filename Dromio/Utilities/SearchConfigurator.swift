@@ -14,11 +14,13 @@ class SearchConfigurator {
         controller.searchBar.autocorrectionType = .no
         controller.searchBar.spellCheckingType = .no
         controller.searchBar.inlinePredictionType = .no
-        viewController.navigationItem.searchController = controller
         viewController.navigationItem.searchBarPlacementAllowsToolbarIntegration = true
         viewController.navigationItem.preferredSearchBarPlacement = .integratedButton
         let spacer = UIBarButtonItem.flexibleSpace()
         let searchbarPlacer = viewController.navigationItem.searchBarPlacementBarButtonItem
         viewController.toolbarItems = [spacer, searchbarPlacer]
+        Task { // weird, but needed in order to prevent icon from flashing as right bbi during push!
+            viewController.navigationItem.searchController = controller
+        }
     }
 }
