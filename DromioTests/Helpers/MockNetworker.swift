@@ -1,11 +1,9 @@
 @testable import Dromio
 import Foundation
-import Combine
 
 @MainActor
-final class MockNetworker: NetworkerType {
-
-    var progress = CurrentValueSubject<(id: String, fraction: Double?), Never>((id: "-1", fraction: nil))
+@Observable final class MockNetworker: NetworkerType {
+    var progress: (id: String, fraction: Double?) = (id: "-1", fraction: nil)
 
     var dataToReturn = [Data()]
     var errorToThrow: (any Error)?

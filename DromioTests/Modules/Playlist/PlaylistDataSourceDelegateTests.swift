@@ -285,17 +285,17 @@ struct PlaylistDataSourceDelegateTests {
     @Test("canEdit: returns false iff player is playing")
     func canEdit() {
         do {
-            player.playerStatePublisher.value = .empty
+            player.playerStatePublisher = .empty
             let result = subject.datasource.tableView(tableView, canEditRowAt: .init(row: 0, section: 0))
             #expect(result == true)
         }
         do {
-            player.playerStatePublisher.value = .paused
+            player.playerStatePublisher = .paused
             let result = subject.datasource.tableView(tableView, canEditRowAt: .init(row: 0, section: 0))
             #expect(result == true)
         }
         do {
-            player.playerStatePublisher.value = .playing
+            player.playerStatePublisher = .playing
             let result = subject.datasource.tableView(tableView, canEditRowAt: .init(row: 0, section: 0))
             #expect(result == false)
         }

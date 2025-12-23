@@ -429,9 +429,9 @@ struct PlaylistProcessorTests {
             duration: nil,
             contributors: nil
         )]
-        #expect(subject.downloadPipeline == nil)
-        #expect(subject.playerCurrentSongIdPipeline == nil)
-        #expect(subject.playerStatePipeline == nil)
+        #expect(subject.task1 == nil)
+        #expect(subject.task2 == nil)
+        #expect(subject.task3 == nil)
         await subject.receive(.initialData)
         #expect(
             presenter.statePresented?.songs == [.init(
@@ -449,20 +449,20 @@ struct PlaylistProcessorTests {
                 downloaded: false
             )]
         )
-        #expect(subject.downloadPipeline != nil)
-        #expect(subject.playerCurrentSongIdPipeline != nil)
-        #expect(subject.playerStatePipeline != nil)
-        networker.progress.send((id: "2", fraction: 0.5))
+        #expect(subject.task1 != nil)
+        #expect(subject.task2 != nil)
+        #expect(subject.task3 != nil)
+        networker.progress = (id: "2", fraction: 0.5)
         await #while(!presenter.thingsReceived.contains(.progress("2", 0.5)))
         #expect(presenter.thingsReceived.contains(.progress("2", 0.5)))
         presenter.statePresented = nil
-        player.currentSongIdPublisher.send("10")
+        player.currentSongIdPublisher = "10"
         await #while(presenter.statePresented == nil)
         #expect(presenter.statePresented?.currentSongId == "10")
         await #while(requestMaker.methodsCalled.isEmpty)
         #expect(requestMaker.methodsCalled.contains("scrobble(songId:)"))
         #expect(requestMaker.songId == "10")
-        player.playerStatePublisher.send(.playing)
+        player.playerStatePublisher = .playing
         await #while(!presenter.thingsReceived.contains(.playerState(.playing)))
         #expect(presenter.thingsReceived.contains(.playerState(.playing)))
         #expect(playlist.methodsCalled.contains("setList(_:)"))
@@ -474,16 +474,16 @@ struct PlaylistProcessorTests {
         await subject.receive(.initialData)
         try? await Task.sleep(for: .seconds(0.2))
         presenter.statesPresented = []
-        player.currentSongIdPublisher.send("10")
+        player.currentSongIdPublisher = "10"
         try? await Task.sleep(for: .seconds(0.2))
-        player.currentSongIdPublisher.send("10")
+        player.currentSongIdPublisher = "10"
         try? await Task.sleep(for: .seconds(0.2))
         let relevantStates = presenter.statesPresented.filter { $0.currentSongId == "10" }
         #expect(relevantStates.count == 1)
         await #while(presenter.thingsReceived.isEmpty)
         presenter.thingsReceived = []
-        player.playerStatePublisher.send(.playing)
-        player.playerStatePublisher.send(.playing)
+        player.playerStatePublisher = .playing
+        player.playerStatePublisher = .playing
         await #while(presenter.thingsReceived.isEmpty)
         #expect(presenter.thingsReceived.count == 1)
     }

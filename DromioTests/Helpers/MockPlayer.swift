@@ -1,10 +1,9 @@
 @testable import Dromio
 import Foundation
-import Combine
 
-final class MockPlayer: PlayerType {
-    var currentSongIdPublisher = CurrentValueSubject<String?, Never>(nil)
-    var playerStatePublisher = CurrentValueSubject<Player.PlayerState, Never>(.empty)
+@Observable final class MockPlayer: PlayerType {
+    var currentSongIdPublisher: String?
+    var playerStatePublisher: Player.PlayerState = .empty
     var url: URL?
     var urls = [URL]()
     var song: SubsonicSong?

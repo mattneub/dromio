@@ -1,12 +1,11 @@
 import UIKit
 import AVFoundation
 import MediaPlayer
-import Combine
 
 /// Protocol expressing the public face of our Player class.
-protocol PlayerType {
-    var currentSongIdPublisher: CurrentValueSubject<String?, Never> { get }
-    var playerStatePublisher: CurrentValueSubject<Player.PlayerState, Never> { get }
+protocol PlayerType: Observable {
+    var currentSongIdPublisher: String? { get }
+    var playerStatePublisher: Player.PlayerState { get }
     func play(url: URL, song: SubsonicSong)
     func playNext(url: URL, song: SubsonicSong)
     func playPause()
@@ -23,7 +22,7 @@ protocol PlayerType {
 /// in the remove command center, and it must update the now playing info center and manage
 /// the audio session. In addition, it publishes updates on what the player is doing, so that
 /// other parts of the app can subscribe and stay apprised of what is happening.
-final class Player: NSObject, PlayerType {
+@Observable final class Player: NSObject, PlayerType {
     /// The _real_ player. Set in the initializer.
     let player: any QueuePlayerType
 
@@ -51,10 +50,10 @@ final class Player: NSObject, PlayerType {
     private var periodicObservation: Any?
 
     /// Public publisher of the current item. Who has ears to hear, let him hear.
-    var currentSongIdPublisher = CurrentValueSubject<String?, Never>(nil)
+    var currentSongIdPublisher: String?
 
     /// Public publisher of the current player state. Who has ears to hear, let him hear.
-    var playerStatePublisher = CurrentValueSubject<PlayerState, Never>(.empty)
+    var playerStatePublisher: PlayerState = .empty
 
     /// List of all songs we've ever been handed, accessed by song id. Thus, if we know the id
     /// of a song, we know its title and artist. Well, if a song is in the queue, we have its URL —
@@ -141,7 +140,7 @@ final class Player: NSObject, PlayerType {
         } else if player.currentItem == nil && player.rate == 1 { // reached end of queue
             clear()
         }
-        currentSongIdPublisher.send(currentSongId)
+        currentSongIdPublisher = currentSongId
     }
 
     /// Utility to obtain the song id of player's current item, based on its URL.
@@ -222,13 +221,13 @@ final class Player: NSObject, PlayerType {
         if let song = currentSong {
             if player.rate == 0 {
                 services.nowPlayingInfo.paused(song: song, at: player.currentTime().seconds)
-                playerStatePublisher.send(.paused)
+                playerStatePublisher = .paused
             } else {
                 services.nowPlayingInfo.playing(song: song, at: player.currentTime().seconds)
-                playerStatePublisher.send(.playing)
+                playerStatePublisher = .playing
             }
         }
-        currentSongIdPublisher.send(currentSongId)
+        currentSongIdPublisher = currentSongId
     }
 
     /// Response to the remote command center saying "pause".
@@ -265,8 +264,8 @@ final class Player: NSObject, PlayerType {
             logger.debug("deactivating session")
         }
         try? services.audioSessionProvider.provide().setActive(false, options: [])
-        currentSongIdPublisher.send(nil)
-        playerStatePublisher.send(.empty)
+        currentSongIdPublisher = nil
+        playerStatePublisher = .empty
     }
 
     /// We are advised to deactivate on backgrounding if not actively playing, to avoid

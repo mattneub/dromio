@@ -186,6 +186,6 @@ final class PlaylistDataSource: UITableViewDiffableDataSource<String, String> {
     }
 
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        services.player.playerStatePublisher.value != .playing
+        services.player.playerStatePublisher != .playing
     }
 }

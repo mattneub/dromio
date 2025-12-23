@@ -1,6 +1,6 @@
 @testable import Dromio
 import Foundation
-import Combine
+import Observation
 import Testing
 import WaitWhile
 
@@ -26,14 +26,14 @@ struct NetworkerTests {
         do {
             subject.progress(id: "-1", fraction: 1)
             await subject.clear()
-            #expect(subject.progress.value.fraction == 1)
-            #expect(subject.progress.value.id == "-1")
+            #expect(subject.progress.fraction == 1)
+            #expect(subject.progress.id == "-1")
         }
         do {
             subject.progress(id: "-1", fraction: 0.9)
             await subject.clear()
-            #expect(subject.progress.value.fraction == 0)
-            #expect(subject.progress.value.id == "-1")
+            #expect(subject.progress.fraction == 0)
+            #expect(subject.progress.id == "-1")
         }
     }
 
@@ -148,12 +148,19 @@ struct NetworkerTests {
         #expect(try operatedOnBackgroundTask() == 1)
     }
 
-    @Test("progress: sends value to passthru subject")
+    @Test("progress: assigns value to published progress")
     func progress() async throws {
-        var pipeline: AnyCancellable?
+        let observations = Observations {
+            return subject.progress
+        }
         var result: (id: String, fraction: Double?)?
-        pipeline = subject.progress.sink { result = $0 }
+        Task {
+            for await value in observations {
+                result = value
+            }
+        }
         subject.progress(id: "1", fraction: 0.5)
+        await #while(result == nil)
         #expect(result?.id == "1")
         #expect(result?.fraction == 0.5)
     }

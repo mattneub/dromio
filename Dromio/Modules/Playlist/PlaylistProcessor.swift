@@ -1,5 +1,5 @@
 import Foundation
-import Combine
+import Observation
 
 /// Processor containing logic for the PlaylistViewController.
 final class PlaylistProcessor: Processor {
@@ -12,14 +12,9 @@ final class PlaylistProcessor: Processor {
     /// State to be presented to the presenter.
     var state = PlaylistState()
 
-    /// Pipeline subscribing to Download's `progress` during a download, so we can report progress.
-    var downloadPipeline: AnyCancellable?
-
-    /// Pipeline subscribing to Player's `currentSongId`, so we can display what's playing.
-    var playerCurrentSongIdPipeline: AnyCancellable?
-
-    /// Pipeline subscribing to Player's `playerState`, so we can display response to change of state.
-    var playerStatePipeline: AnyCancellable?
+    var task1: Task<(), Never>?
+    var task2: Task<(), Never>?
+    var task3: Task<(), Never>?
 
     func receive(_ action: PlaylistAction) async {
         switch action {
@@ -213,29 +208,51 @@ final class PlaylistProcessor: Processor {
     /// Configure our pipelines, just once. Called from `receive(.initialData)`. If it were to be called
     /// a second time, nothing would happen.
     private func setUpPipelines() {
-        if downloadPipeline == nil {
-            downloadPipeline = services.networker.progress.sink { [weak presenter] pair in
-                Task {
-                    await presenter?.receive(.progress(pair.id, pair.fraction))
+        guard task1 == nil, task2 == nil, task3 == nil else {
+            return
+        }
+        do {
+            let observations = Observations {
+                return services.networker.progress
+            }
+            task1 = Task { [weak self] in
+                for await pair in observations {
+                    guard self?.presenter != nil else {
+                        break
+                    }
+                    await self?.presenter?.receive(.progress(pair.id, pair.fraction))
                 }
             }
         }
-        if playerCurrentSongIdPipeline == nil {
-            playerCurrentSongIdPipeline = services.player.currentSongIdPublisher.removeDuplicates().sink { [weak self] songId in
-                guard let self else { return }
-                state.currentSongId = songId
-                Task {
-                    await presenter?.present(state)
+        do {
+            let observations = Observations {
+                return services.player.currentSongIdPublisher
+            }
+            task2 = Task { [weak self] in
+                for await songId in observations {
+                    guard self?.presenter != nil else {
+                        break
+                    }
+                    if let self {
+                        state.currentSongId = songId
+                        await presenter?.present(state)
+                    }
                     if let songId {
                         try? await services.requestMaker.scrobble(songId: songId)
                     }
                 }
             }
         }
-        if playerStatePipeline == nil {
-            playerStatePipeline = services.player.playerStatePublisher.removeDuplicates().sink { [weak presenter] playerState in
-                Task {
-                    await presenter?.receive(.playerState(playerState))
+        do {
+            let observations = Observations {
+                return services.player.playerStatePublisher
+            }
+            task3 = Task { [weak self] in
+                for await playerState in observations {
+                    guard self?.presenter != nil else {
+                        break
+                    }
+                    await self?.presenter?.receive(.playerState(playerState))
                 }
             }
         }

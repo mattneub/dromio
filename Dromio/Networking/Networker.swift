@@ -1,6 +1,5 @@
 import Foundation
 import UIKit
-import Combine
 
 /// Error enum that carries a message suitable for display to the user.
 enum NetworkerError: Error, Equatable {
@@ -8,25 +7,25 @@ enum NetworkerError: Error, Equatable {
 }
 
 /// Protocol defining the public face of our Networker.
-protocol NetworkerType: Sendable {
+protocol NetworkerType: Sendable, Observable {
     func clear() async
     func performRequest(url: URL) async throws -> Data
     func performDownloadRequest(url: URL) async throws -> URL
     func progress(id: String, fraction: Double?)
-    var progress: CurrentValueSubject<(id: String, fraction: Double?), Never> { get }
+    var progress: (id: String, fraction: Double?) { get }
 }
 
 /// Class embodying all _actual_ networking activity vis-a-vis the Navidrome server. In general,
 /// only the RequestMaker should have reason to talk to the Networker; in a sense, the RequestMaker
 /// is the public face of the Networker. However, the `clear` method is more public than that, because
 /// anyone might have reason to tell the Networking to stop whatever it's doing.
-final class Networker: NetworkerType {
+@Observable final class Networker: NetworkerType {
     /// The URLSession set by `init`.
     let session: any URLSessionType
 
     /// Publisher of progress in our download task when calling `performDownloadRequest`.
     /// Who has ears to hear, let him hear.
-    var progress = CurrentValueSubject<(id: String, fraction: Double?), Never>((id: "-1", fraction: nil))
+    var progress: (id: String, fraction: Double?) = (id: "-1", fraction: nil)
 
     /// Initializer.
     /// - Parameter session: Optional session, to be used by tests. The app itself should supply nothing
@@ -42,13 +41,13 @@ final class Networker: NetworkerType {
         }
     }
 
-    /// Stop whatever you're doing and clear the progress subject.
+    /// Stop whatever you're doing and clear the progress publisher.
     func clear() async {
         for task in await session.allTasks() {
             task.cancel()
         }
-        if let fraction = progress.value.fraction, fraction < 1 {
-            progress.send((id: progress.value.id, fraction: 0))
+        if let fraction = progress.fraction, fraction < 1 {
+            self.progress = (id: progress.id, fraction: 0)
         }
     }
 
@@ -104,6 +103,6 @@ final class Networker: NetworkerType {
     ///   - fraction: The percentage of progress, as a fraction of 1.
     func progress(id: String, fraction: Double?) {
         let pair = (id: id, fraction: fraction)
-        self.progress.send(pair)
+        self.progress = pair
     }
 }

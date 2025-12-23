@@ -2,10 +2,11 @@ import UIKit
 
 /// Protocol describing UIApplication for purposes of background tasks, so we can mock it for testing.
 public protocol ApplicationType {
-    // weirdly, have to specify iOS here because tvOS variant is different; I have no idea why Xcode thinks we would be building for tvOS
-    @available(iOS 18.0, *)
+    #if DEBUG
     nonisolated func beginBackgroundTask(expirationHandler handler: (@MainActor @Sendable () -> Void)?) -> UIBackgroundTaskIdentifier
-    @available(iOS 18.0, *)
+    #else
+    nonisolated func beginBackgroundTask(expirationHandler handler: (@Sendable () -> Void)?) -> UIBackgroundTaskIdentifier
+    #endif
     nonisolated func endBackgroundTask(_ identifier: UIBackgroundTaskIdentifier)
 }
 
