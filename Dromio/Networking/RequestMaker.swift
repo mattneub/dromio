@@ -123,7 +123,7 @@ final class RequestMaker: RequestMakerType {
         let data = try await services.networker.performRequest(url: url)
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<AlbumList2Response>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)
-        return jsonResponse.subsonicResponse.albumList2.album
+        return jsonResponse.subsonicResponse.albumList2.album ?? []
     }
     
     /// Get a list of 20 random albums.
@@ -140,7 +140,7 @@ final class RequestMaker: RequestMakerType {
         let data = try await services.networker.performRequest(url: url)
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<AlbumList2Response>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)
-        return jsonResponse.subsonicResponse.albumList2.album
+        return jsonResponse.subsonicResponse.albumList2.album ?? []
     }
     
     /// Get a list of all artists.

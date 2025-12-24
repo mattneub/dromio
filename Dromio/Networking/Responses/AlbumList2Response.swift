@@ -13,5 +13,5 @@ struct AlbumList2Response: @MainActor InnerResponse {
 
 /// Type of the `albumList2` property of the AlbumList2Response.
 struct AlbumsResponse: Codable {
-    let album: [SubsonicAlbum]
+    let album: [SubsonicAlbum]?
 }
