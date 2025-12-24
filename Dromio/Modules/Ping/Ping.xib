@@ -29,120 +29,147 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="baT-sF-97w" customClass="PingView" customModule="Dromio" customModuleProvider="target">
                     <rect key="frame" x="16" y="154" width="408" height="430"/>
                     <subviews>
-                        <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Failure!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mpo-fM-QrY">
-                            <rect key="frame" x="33" y="87.333333333333343" width="342" height="25.333333333333329"/>
-                            <fontDescription key="fontDescription" name="GillSans" family="Gill Sans" pointSize="22"/>
-                            <nil key="textColor"/>
-                            <nil key="highlightedColor"/>
-                        </label>
-                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uMr-C9-MHs">
-                            <rect key="frame" x="85.000000000000014" y="144.66666666666669" width="238.33333333333337" height="37.666666666666657"/>
-                            <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="tinted" title="Enter New Server Info" titleAlignment="center">
-                                <backgroundConfiguration key="background">
-                                    <color key="backgroundColor" systemColor="systemTealColor"/>
-                                </backgroundConfiguration>
-                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
-                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
-                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </buttonConfiguration>
-                            <connections>
-                                <action selector="doReenterButton:" destination="-1" eventType="touchUpInside" id="o7n-QJ-Vos"/>
-                            </connections>
-                        </button>
-                        <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Pinging the Navidrome server..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1WM-wj-KSO">
-                            <rect key="frame" x="65.333333333333343" y="32" width="277.33333333333326" height="25.333333333333329"/>
-                            <fontDescription key="fontDescription" name="GillSans" family="Gill Sans" pointSize="22"/>
-                            <nil key="textColor"/>
-                            <nil key="highlightedColor"/>
-                        </label>
-                        <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Success!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NW3-C5-yms">
-                            <rect key="frame" x="167" y="87.333333333333343" width="74" height="25.333333333333329"/>
-                            <fontDescription key="fontDescription" name="GillSans" family="Gill Sans" pointSize="22"/>
-                            <nil key="textColor"/>
-                            <nil key="highlightedColor"/>
-                        </label>
-                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fqj-F7-Fqc">
-                            <rect key="frame" x="115.66666666666666" y="198.33333333333331" width="176.99999999999997" height="37.666666666666657"/>
-                            <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="tinted" title="Choose Server" titleAlignment="center">
-                                <backgroundConfiguration key="background">
-                                    <color key="backgroundColor" systemColor="systemTealColor"/>
-                                </backgroundConfiguration>
-                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
-                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
-                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </buttonConfiguration>
-                            <connections>
-                                <action selector="doPickServerButton:" destination="-1" eventType="touchUpInside" id="5sZ-6u-HJQ"/>
-                            </connections>
-                        </button>
-                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vHJ-u8-kXz">
-                            <rect key="frame" x="121.00000000000001" y="305.66666666666669" width="166.33333333333337" height="37.666666666666686"/>
-                            <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="tinted" title="Delete Server" titleAlignment="center">
-                                <backgroundConfiguration key="background">
-                                    <color key="backgroundColor" systemColor="systemTealColor"/>
-                                </backgroundConfiguration>
-                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
-                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
-                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </buttonConfiguration>
-                            <connections>
-                                <action selector="doDeleteServerButton:" destination="-1" eventType="touchUpInside" id="78b-Ee-INS"/>
-                            </connections>
-                        </button>
-                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="s7r-7V-AD6">
-                            <rect key="frame" x="124.33333333333336" y="359.33333333333337" width="159.66666666666663" height="37.666666666666686"/>
-                            <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="tinted" title="Offline Mode" titleAlignment="center">
-                                <backgroundConfiguration key="background">
-                                    <color key="backgroundColor" systemColor="systemTealColor"/>
-                                </backgroundConfiguration>
-                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
-                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
-                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </buttonConfiguration>
-                            <connections>
-                                <action selector="doOfflineModeButton:" destination="-1" eventType="touchUpInside" id="Smw-5W-v5h"/>
-                            </connections>
-                        </button>
-                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xlr-og-uyn">
-                            <rect key="frame" x="113.33333333333333" y="251.99999999999997" width="181.33333333333337" height="37.666666666666657"/>
-                            <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="tinted" title="Choose Library" titleAlignment="center">
-                                <backgroundConfiguration key="background">
-                                    <color key="backgroundColor" systemColor="systemTealColor"/>
-                                </backgroundConfiguration>
-                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
-                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
-                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            </buttonConfiguration>
-                            <connections>
-                                <action selector="doPickFolderButton:" destination="-1" eventType="touchUpInside" id="sGR-dh-CZ1"/>
-                            </connections>
-                        </button>
+                        <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9Uq-Vd-YKR">
+                            <rect key="frame" x="0.0" y="0.0" width="408" height="430"/>
+                            <subviews>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="1qf-MJ-G7T">
+                                    <rect key="frame" x="0.0" y="0.0" width="408" height="405"/>
+                                    <subviews>
+                                        <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Failure!" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Mpo-fM-QrY">
+                                            <rect key="frame" x="20" y="75.333333333333343" width="368" height="25.333333333333329"/>
+                                            <fontDescription key="fontDescription" name="GillSans" family="Gill Sans" pointSize="22"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uMr-C9-MHs">
+                                            <rect key="frame" x="84.666666666666671" y="132.66666666666669" width="238.66666666666663" height="37.666666666666657"/>
+                                            <state key="normal" title="Button"/>
+                                            <buttonConfiguration key="configuration" style="tinted" title="Enter New Server Info" titleAlignment="center">
+                                                <backgroundConfiguration key="background">
+                                                    <color key="backgroundColor" systemColor="systemTealColor"/>
+                                                </backgroundConfiguration>
+                                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
+                                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
+                                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </buttonConfiguration>
+                                            <connections>
+                                                <action selector="doReenterButton:" destination="-1" eventType="touchUpInside" id="o7n-QJ-Vos"/>
+                                            </connections>
+                                        </button>
+                                        <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Pinging the Navidrome server..." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="1WM-wj-KSO">
+                                            <rect key="frame" x="65.333333333333343" y="20" width="277.33333333333326" height="25.333333333333329"/>
+                                            <fontDescription key="fontDescription" name="GillSans" family="Gill Sans" pointSize="22"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="1000" verticalCompressionResistancePriority="1000" text="Success!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="NW3-C5-yms">
+                                            <rect key="frame" x="167" y="75.333333333333343" width="74" height="25.333333333333329"/>
+                                            <fontDescription key="fontDescription" name="GillSans" family="Gill Sans" pointSize="22"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fqj-F7-Fqc">
+                                            <rect key="frame" x="115.66666666666666" y="186.33333333333331" width="176.99999999999997" height="37.666666666666657"/>
+                                            <state key="normal" title="Button"/>
+                                            <buttonConfiguration key="configuration" style="tinted" title="Choose Server" titleAlignment="center">
+                                                <backgroundConfiguration key="background">
+                                                    <color key="backgroundColor" systemColor="systemTealColor"/>
+                                                </backgroundConfiguration>
+                                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
+                                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
+                                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </buttonConfiguration>
+                                            <connections>
+                                                <action selector="doPickServerButton:" destination="-1" eventType="touchUpInside" id="5sZ-6u-HJQ"/>
+                                            </connections>
+                                        </button>
+                                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vHJ-u8-kXz">
+                                            <rect key="frame" x="120.66666666666667" y="293.66666666666669" width="166.66666666666663" height="37.666666666666686"/>
+                                            <state key="normal" title="Button"/>
+                                            <buttonConfiguration key="configuration" style="tinted" title="Delete Server" titleAlignment="center">
+                                                <backgroundConfiguration key="background">
+                                                    <color key="backgroundColor" systemColor="systemTealColor"/>
+                                                </backgroundConfiguration>
+                                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
+                                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
+                                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </buttonConfiguration>
+                                            <connections>
+                                                <action selector="doDeleteServerButton:" destination="-1" eventType="touchUpInside" id="78b-Ee-INS"/>
+                                            </connections>
+                                        </button>
+                                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="s7r-7V-AD6">
+                                            <rect key="frame" x="124" y="347.33333333333331" width="160" height="37.666666666666686"/>
+                                            <state key="normal" title="Button"/>
+                                            <buttonConfiguration key="configuration" style="tinted" title="Offline Mode" titleAlignment="center">
+                                                <backgroundConfiguration key="background">
+                                                    <color key="backgroundColor" systemColor="systemTealColor"/>
+                                                </backgroundConfiguration>
+                                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
+                                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
+                                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </buttonConfiguration>
+                                            <connections>
+                                                <action selector="doOfflineModeButton:" destination="-1" eventType="touchUpInside" id="Smw-5W-v5h"/>
+                                            </connections>
+                                        </button>
+                                        <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="xlr-og-uyn">
+                                            <rect key="frame" x="113.33333333333333" y="239.99999999999997" width="181.33333333333337" height="37.666666666666657"/>
+                                            <state key="normal" title="Button"/>
+                                            <buttonConfiguration key="configuration" style="tinted" title="Choose Library" titleAlignment="center">
+                                                <backgroundConfiguration key="background">
+                                                    <color key="backgroundColor" systemColor="systemTealColor"/>
+                                                </backgroundConfiguration>
+                                                <fontDescription key="titleFontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="18"/>
+                                                <directionalEdgeInsets key="contentInsets" top="8" leading="25" bottom="8" trailing="25"/>
+                                                <color key="baseForegroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            </buttonConfiguration>
+                                            <connections>
+                                                <action selector="doPickFolderButton:" destination="-1" eventType="touchUpInside" id="sGR-dh-CZ1"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstItem="Mpo-fM-QrY" firstAttribute="centerX" secondItem="1qf-MJ-G7T" secondAttribute="centerX" id="0gC-9M-NQT"/>
+                                        <constraint firstItem="1WM-wj-KSO" firstAttribute="centerX" secondItem="1qf-MJ-G7T" secondAttribute="centerX" id="6Fw-fg-USY"/>
+                                        <constraint firstItem="Mpo-fM-QrY" firstAttribute="leading" secondItem="1qf-MJ-G7T" secondAttribute="leading" constant="20" id="7KF-ie-OgQ"/>
+                                        <constraint firstItem="xlr-og-uyn" firstAttribute="top" secondItem="Fqj-F7-Fqc" secondAttribute="bottom" constant="16" id="BYx-iP-eid"/>
+                                        <constraint firstItem="vHJ-u8-kXz" firstAttribute="centerX" secondItem="1qf-MJ-G7T" secondAttribute="centerX" id="FeB-4S-7dl"/>
+                                        <constraint firstItem="Mpo-fM-QrY" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="30" id="GBt-5o-Z0c"/>
+                                        <constraint firstAttribute="bottom" secondItem="s7r-7V-AD6" secondAttribute="bottom" constant="20.000000000000057" id="J8d-Pf-ew0"/>
+                                        <constraint firstItem="uMr-C9-MHs" firstAttribute="top" secondItem="Mpo-fM-QrY" secondAttribute="bottom" constant="32" id="JD1-lB-Ub7"/>
+                                        <constraint firstItem="Fqj-F7-Fqc" firstAttribute="centerX" secondItem="1qf-MJ-G7T" secondAttribute="centerX" id="Kaz-DF-5lc"/>
+                                        <constraint firstItem="s7r-7V-AD6" firstAttribute="top" secondItem="vHJ-u8-kXz" secondAttribute="bottom" constant="16" id="WCb-R2-DbU"/>
+                                        <constraint firstItem="1WM-wj-KSO" firstAttribute="top" secondItem="1qf-MJ-G7T" secondAttribute="top" constant="20" id="dRg-0b-wCT"/>
+                                        <constraint firstItem="NW3-C5-yms" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="30" id="dny-h5-XPk"/>
+                                        <constraint firstItem="uMr-C9-MHs" firstAttribute="centerX" secondItem="1qf-MJ-G7T" secondAttribute="centerX" id="hds-W0-qm4"/>
+                                        <constraint firstItem="vHJ-u8-kXz" firstAttribute="top" secondItem="xlr-og-uyn" secondAttribute="bottom" constant="16" id="mhK-hn-AxB"/>
+                                        <constraint firstItem="xlr-og-uyn" firstAttribute="centerX" secondItem="1qf-MJ-G7T" secondAttribute="centerX" id="pTk-9S-iiI"/>
+                                        <constraint firstItem="s7r-7V-AD6" firstAttribute="centerX" secondItem="1qf-MJ-G7T" secondAttribute="centerX" id="uZT-gf-7dp"/>
+                                        <constraint firstItem="Fqj-F7-Fqc" firstAttribute="top" secondItem="uMr-C9-MHs" secondAttribute="bottom" constant="16" id="vXp-4R-ZIi"/>
+                                        <constraint firstItem="NW3-C5-yms" firstAttribute="centerX" secondItem="1qf-MJ-G7T" secondAttribute="centerX" id="vor-vF-sOZ"/>
+                                    </constraints>
+                                </view>
+                            </subviews>
+                            <constraints>
+                                <constraint firstItem="1qf-MJ-G7T" firstAttribute="leading" secondItem="92M-kZ-I1W" secondAttribute="leading" id="9mj-xP-q9y"/>
+                                <constraint firstItem="1qf-MJ-G7T" firstAttribute="bottom" secondItem="92M-kZ-I1W" secondAttribute="bottom" id="J4X-mo-hhU"/>
+                                <constraint firstItem="1qf-MJ-G7T" firstAttribute="width" secondItem="Ekl-p0-ZC7" secondAttribute="width" id="Uak-vY-mq5"/>
+                                <constraint firstItem="1qf-MJ-G7T" firstAttribute="top" secondItem="92M-kZ-I1W" secondAttribute="top" id="qSP-lF-0kx"/>
+                                <constraint firstItem="1qf-MJ-G7T" firstAttribute="trailing" secondItem="92M-kZ-I1W" secondAttribute="trailing" id="r64-hx-jST"/>
+                            </constraints>
+                            <viewLayoutGuide key="contentLayoutGuide" id="92M-kZ-I1W"/>
+                            <viewLayoutGuide key="frameLayoutGuide" id="Ekl-p0-ZC7"/>
+                        </scrollView>
                     </subviews>
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
-                        <constraint firstItem="1WM-wj-KSO" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="2Gd-BE-yue"/>
+                        <constraint firstAttribute="bottom" secondItem="9Uq-Vd-YKR" secondAttribute="bottom" id="0EK-bS-3Wa"/>
                         <constraint firstAttribute="height" constant="430" id="4L3-us-KBu"/>
-                        <constraint firstItem="1WM-wj-KSO" firstAttribute="top" secondItem="baT-sF-97w" secondAttribute="top" constant="32" id="4ey-q9-2jC"/>
-                        <constraint firstItem="xlr-og-uyn" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="8LM-rr-QzU"/>
-                        <constraint firstItem="Mpo-fM-QrY" firstAttribute="leading" secondItem="baT-sF-97w" secondAttribute="leading" constant="33" id="8iA-EG-lil"/>
-                        <constraint firstItem="Mpo-fM-QrY" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="30" id="Cgp-Wb-cAb"/>
-                        <constraint firstItem="Mpo-fM-QrY" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="DYI-E8-pOD"/>
-                        <constraint firstItem="Fqj-F7-Fqc" firstAttribute="top" secondItem="uMr-C9-MHs" secondAttribute="bottom" constant="16" id="Ift-a1-x51"/>
-                        <constraint firstItem="s7r-7V-AD6" firstAttribute="top" secondItem="vHJ-u8-kXz" secondAttribute="bottom" constant="16" id="LdD-2H-zdc"/>
-                        <constraint firstItem="uMr-C9-MHs" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="Q3G-Kq-BdR"/>
-                        <constraint firstItem="NW3-C5-yms" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="YbI-tr-ZYj"/>
-                        <constraint firstItem="NW3-C5-yms" firstAttribute="top" secondItem="1WM-wj-KSO" secondAttribute="bottom" constant="30" id="f65-TT-9Ot"/>
-                        <constraint firstItem="s7r-7V-AD6" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="hOY-vo-0v1"/>
-                        <constraint firstItem="xlr-og-uyn" firstAttribute="top" secondItem="Fqj-F7-Fqc" secondAttribute="bottom" constant="16" id="iH3-vf-z9U"/>
-                        <constraint firstItem="vHJ-u8-kXz" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="k9k-je-Ujh"/>
-                        <constraint firstItem="vHJ-u8-kXz" firstAttribute="top" secondItem="xlr-og-uyn" secondAttribute="bottom" constant="16" id="twy-oA-Vg8"/>
-                        <constraint firstItem="uMr-C9-MHs" firstAttribute="top" secondItem="Mpo-fM-QrY" secondAttribute="bottom" constant="32" id="u50-Ec-FVE"/>
-                        <constraint firstItem="Fqj-F7-Fqc" firstAttribute="centerX" secondItem="baT-sF-97w" secondAttribute="centerX" id="yib-eU-lRH"/>
+                        <constraint firstItem="9Uq-Vd-YKR" firstAttribute="top" secondItem="baT-sF-97w" secondAttribute="top" id="4YO-H5-l5y"/>
+                        <constraint firstAttribute="trailing" secondItem="9Uq-Vd-YKR" secondAttribute="trailing" id="p9s-vz-z1p"/>
+                        <constraint firstItem="9Uq-Vd-YKR" firstAttribute="leading" secondItem="baT-sF-97w" secondAttribute="leading" id="vph-Hm-gwA"/>
                     </constraints>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">

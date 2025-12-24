@@ -48,6 +48,7 @@ class PingViewController: UIViewController, ReceiverPresenter {
         pingingLabel.isHidden = true
         successLabel.isHidden = true
         failureLabel.isHidden = true
+        failureLabel.text = "Failure!" // this is the only one that can change
         reenterButton.isHidden = true
         pickServerButton.isHidden = true
         deleteServerButton.isHidden = true
