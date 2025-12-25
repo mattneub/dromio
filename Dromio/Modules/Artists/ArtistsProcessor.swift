@@ -34,6 +34,8 @@ final class ArtistsProcessor: Processor {
                 }
                 state.listType = .allArtists
                 state.artists = artistsWhoAreArtists
+                state.currentFolder = services.persistence.loadCurrentFolderName()
+                state.showTitle = true
                 await presenter?.present(state)
                 await presenter?.receive(.scrollToZero)
                 try? await unlessTesting {
@@ -62,6 +64,8 @@ final class ArtistsProcessor: Processor {
                 }
                 state.listType = .composers
                 state.artists = artistsWhoAreComposers
+                state.currentFolder = services.persistence.loadCurrentFolderName()
+                state.showTitle = true
                 await presenter?.present(state)
                 await presenter?.receive(.scrollToZero)
                 try? await unlessTesting {

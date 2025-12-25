@@ -135,16 +135,26 @@ struct PersistenceTests {
         #expect(result[0] == expected)
     }
 
-    @Test("save(currentFolder:) saves value to defaults")
+    @Test("save(currentFolder:) saves value to defaults in two places")
     func saveCurrentFolder() {
-        subject.save(currentFolder: 2)
-        #expect(defaults.methodsCalled == ["set(_:forKey:)"])
-        #expect(defaults.key == "currentFolder")
-        #expect(defaults.value as? Int == 2)
-        subject.save(currentFolder: nil)
+        subject.save(currentFolder: SubsonicFolder(id: 2, name: "Folder"))
         #expect(defaults.methodsCalled == ["set(_:forKey:)", "set(_:forKey:)"])
-        #expect(defaults.key == "currentFolder")
-        #expect(defaults.value == nil)
+        #expect(defaults.thingsSet["currentFolder"] as? Int == 2)
+        #expect(defaults.thingsSet["currentFolderName"] as? String == "Folder")
+        defaults.methodsCalled = []
+        subject.save(currentFolder: nil) // setting current folder nil sets _both_ to nil
+        #expect(defaults.methodsCalled == ["set(_:forKey:)", "set(_:forKey:)"])
+        #expect(defaults.thingsSet["currentFolder"] as? Int == nil)
+        #expect(defaults.thingsSet["currentFolderName"] as? String == nil)
+    }
+
+    @Test("save(currentFolder:) with suppressName saves id value to defaults but nil to folder name")
+    func saveCurrentFolderSuppress() {
+        defaults.thingsSet = ["currentFolderName": "Folder"]
+        subject.save(currentFolder: SubsonicFolder(id: 2, name: "Folder"), suppressName: true)
+        #expect(defaults.methodsCalled == ["set(_:forKey:)", "set(_:forKey:)"])
+        #expect(defaults.thingsSet["currentFolder"] as? Int == 2)
+        #expect(defaults.thingsSet["currentFolderName"] as? String == nil)
     }
 
     @Test("loadCurrentFolder() fetches value from defaults")
@@ -159,5 +169,19 @@ struct PersistenceTests {
         #expect(defaults.methodsCalled == ["object(forKey:)", "object(forKey:)"])
         #expect(defaults.key == "currentFolder")
         #expect(result == 2)
+    }
+
+    @Test("loadCurrentFolderName() fetches value from defaults")
+    func loadCurrentFolderName() {
+        defaults.value = nil
+        var result = subject.loadCurrentFolderName()
+        #expect(defaults.methodsCalled == ["object(forKey:)"])
+        #expect(defaults.key == "currentFolderName")
+        #expect(result == nil)
+        defaults.value = "Folder"
+        result = subject.loadCurrentFolderName()
+        #expect(defaults.methodsCalled == ["object(forKey:)", "object(forKey:)"])
+        #expect(defaults.key == "currentFolderName")
+        #expect(result == "Folder")
     }
 }

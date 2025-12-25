@@ -6,11 +6,13 @@ struct ArtistsProcessorTests {
     let presenter = MockReceiverPresenter<ArtistsEffect, ArtistsState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
+    let persistence = MockPersistence()
 
     init() {
         subject.presenter = presenter
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
+        services.persistence = persistence
         services.cache.clear()
         subject.cycler = MockCycler(processor: subject)
     }
@@ -27,10 +29,12 @@ struct ArtistsProcessorTests {
         #expect(presenter.statePresented == nil)
         await subject.receive(.allArtists)
         #expect(presenter.statesPresented.first?.animateSpinner == true)
+        #expect(presenter.statesPresented.first?.showTitle == false)
     }
 
-    @Test("receive allArtists: sends `getArtists` to request maker, filters, sets state, turns off spinner, sends searcher/scroll effects")
+    @Test("receive allArtists: sends `getArtists` to request maker, filters, gets current folder, sets state, turns off spinner, sends scroll effect")
     func receiveAllArtists() async {
+        persistence.currentFolderName = "Folder"
         subject.state.animateSpinner = true
         requestMaker.artistList = [
             .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
@@ -41,6 +45,8 @@ struct ArtistsProcessorTests {
         #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled == ["getArtistsBySearch()"])
         #expect(presenter.statePresented?.listType == .allArtists)
+        #expect(persistence.methodsCalled == ["loadCurrentFolderName()"])
+        #expect(presenter.statePresented?.showTitle == true)
         #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: "name")])
     }
 
@@ -67,8 +73,9 @@ struct ArtistsProcessorTests {
         ])
     }
 
-    @Test("receive allArtists: gets list from cache if it exists, filters, sets state, turns off spinner, sends effects")
+    @Test("receive allArtists: gets list from cache if it exists, filters, gets current Folder, sets state, turns off spinner, sends effects")
     func receiveAllArtistsCached() async {
+        persistence.currentFolderName = "Folder"
         subject.state.animateSpinner = true
         services.cache.allArtists = [
             .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
@@ -80,6 +87,8 @@ struct ArtistsProcessorTests {
         #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled.isEmpty)
         #expect(presenter.statePresented?.listType == .allArtists)
+        #expect(persistence.methodsCalled == ["loadCurrentFolderName()"])
+        #expect(presenter.statePresented?.showTitle == true)
         #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
     }
 
@@ -94,8 +103,9 @@ struct ArtistsProcessorTests {
         #expect(presenter.statePresented?.artists == [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
     }
 
-    @Test("receive composers: sends `getArtists` to request maker, filters, sets state, turns off spinner, sends effects")
+    @Test("receive composers: sends `getArtists` to request maker, filters, gets current Folder, sets state, turns off spinner, sends effects")
     func receiveComposers() async {
+        persistence.currentFolderName = "Folder"
         requestMaker.artistList = [
             .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
             .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
@@ -105,13 +115,16 @@ struct ArtistsProcessorTests {
         #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled == ["getArtistsBySearch()"])
         #expect(presenter.statePresented?.listType == .composers)
+        #expect(persistence.methodsCalled == ["loadCurrentFolderName()"])
+        #expect(presenter.statePresented?.showTitle == true)
         #expect(presenter.statePresented?.artists == [
             .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: "composer"),
         ])
     }
 
-    @Test("receive composers: gets list from cache if it exists, filters, sets state, turns off spinner, sends effects")
+    @Test("receive composers: gets list from cache if it exists, filters, gets current Folder, sets state, turns off spinner, sends effects")
     func receiveComposersCached() async {
+        persistence.currentFolderName = "Folder"
         services.cache.allArtists = [
             .init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil),
             .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
@@ -122,6 +135,8 @@ struct ArtistsProcessorTests {
         #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled.isEmpty)
         #expect(presenter.statePresented?.listType == .composers)
+        #expect(persistence.methodsCalled == ["loadCurrentFolderName()"])
+        #expect(presenter.statePresented?.showTitle == true)
         #expect(presenter.statePresented?.artists == [
             .init(id: "2", name: "Composer", albumCount: nil, album: nil, roles: ["composer"], sortName: nil),
         ])

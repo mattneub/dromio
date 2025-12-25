@@ -58,7 +58,7 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
     }
 
     func present(_ state: AlbumsState) async {
-        title = switch state.listType {
+        var title: String? = switch state.listType {
         case .allAlbums:
             "All Albums"
         case .randomAlbums: 
@@ -66,15 +66,19 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
         case .albumsForArtist:
             nil
         }
-        navigationItem.titleView = UILabel().applying {
-            $0.text = title
-            $0.font = UIFont(name: "Verdana-Bold", size: 17)
-            $0.numberOfLines = 1
-            $0.textAlignment = .center
-            $0.minimumScaleFactor = 0.8
-            $0.adjustsFontSizeToFitWidth = true
+        if !state.showTitle {
+            title = nil
         }
-
+        if let title, let font = UIFont(name: "Verdana-Bold", size: 17) {
+            navigationItem.attributedTitle = AttributedString(
+                title,
+                attributes: AttributeContainer.font(font)
+            )
+            navigationItem.subtitle = state.currentFolder
+        } else {
+            navigationItem.title = nil
+            navigationItem.subtitle = nil
+        }
         switch state.animateSpinner {
         case true:
             if !activity.isAnimating {

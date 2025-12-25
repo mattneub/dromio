@@ -6,11 +6,13 @@ struct AlbumsProcessorTests {
     let presenter = MockReceiverPresenter<AlbumsEffect, AlbumsState>()
     let requestMaker = MockRequestMaker()
     let coordinator = MockRootCoordinator()
+    let persistence = MockPersistence()
 
     init() {
         subject.presenter = presenter
         subject.coordinator = coordinator
         services.requestMaker = requestMaker
+        services.persistence = persistence
         services.cache.clear()
         subject.cycler = MockCycler(processor: subject)
     }
@@ -21,10 +23,12 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented == nil)
         await subject.receive(.allAlbums)
         #expect(presenter.statesPresented.first?.animateSpinner == true)
+        #expect(presenter.statesPresented.first?.showTitle == false)
     }
 
-    @Test("receive allAlbums: sends `tearDown` effect, sends `getAlbumList` to request maker, sets state, turns off spinner, sends searcher/scroll effects")
+    @Test("receive allAlbums: sends `getAlbumList` to request maker, gets current folder, sets state, turns off spinner, sends scroll effect")
     func receiveAllAlbums() async {
+        persistence.currentFolderName = "Folder"
         subject.state.animateSpinner = true
         requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
         #expect(presenter.statePresented == nil)
@@ -33,6 +37,9 @@ struct AlbumsProcessorTests {
         #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled == ["getAlbumList()"])
         #expect(presenter.statePresented?.listType == .allAlbums)
+        #expect(persistence.methodsCalled == ["loadCurrentFolderName()"])
+        #expect(presenter.statePresented?.currentFolder == "Folder")
+        #expect(presenter.statePresented?.showTitle == true)
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
     }
 
@@ -53,8 +60,9 @@ struct AlbumsProcessorTests {
         ])
     }
 
-    @Test("receive allAlbums: gets list from cache if it exists, sends teardown, sets state, turns off spinner, sends searcher/scroll effects")
+    @Test("receive allAlbums: gets list from cache if it exists, gets current folder, sets state, turns off spinner, sends scroll effect")
     func receiveAllAlbumsCached() async {
+        persistence.currentFolderName = "Folder"
         subject.state.animateSpinner = true
         services.cache.allAlbums = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
         requestMaker.albumList = []
@@ -64,6 +72,9 @@ struct AlbumsProcessorTests {
         #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled.isEmpty)
         #expect(presenter.statePresented?.listType == .allAlbums)
+        #expect(persistence.methodsCalled == ["loadCurrentFolderName()"])
+        #expect(presenter.statePresented?.currentFolder == "Folder")
+        #expect(presenter.statePresented?.showTitle == true)
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
     }
 
@@ -82,6 +93,7 @@ struct AlbumsProcessorTests {
         await subject.receive(.initialData)
         #expect(subject.state.hasInitialData == true)
         #expect(presenter.statesPresented.first?.animateSpinner == true)
+        #expect(presenter.statesPresented.first?.showTitle == false)
         #expect(presenter.statesPresented.last?.animateSpinner == false)
     }
 
@@ -94,6 +106,7 @@ struct AlbumsProcessorTests {
         await subject.receive(.initialData)
         #expect(subject.state.hasInitialData == true)
         #expect(presenter.statesPresented.first?.animateSpinner == true)
+        #expect(presenter.statesPresented.first?.showTitle == false)
         await subject.receive(.allAlbums) // because that's what the cycler does!
         #expect(presenter.statesPresented.last?.animateSpinner == false)
     }
@@ -118,7 +131,7 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented?.listType == .albumsForArtist(id: "1", source: .artists))
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived.isEmpty) // not searchable
+        #expect(presenter.statePresented?.showTitle == false)
     }
 
     @Test("receive initialData: for albumsForArtist, source artist, sorts the list from the requestMaker")
@@ -159,7 +172,7 @@ struct AlbumsProcessorTests {
         #expect(presenter.statePresented?.listType == .albumsForArtist(id: "1", source: .composers(name: "Me")))
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: "yoho", artist: "Artist", songCount: 30, song: nil)])
         #expect(presenter.statePresented?.animateSpinner == false)
-        #expect(presenter.thingsReceived.isEmpty) // not searchable
+        #expect(presenter.statePresented?.showTitle == false)
     }
 
     @Test("receive initialData:, listType albumsForArtist for source composers, keeps sort order from cache")
@@ -320,22 +333,25 @@ struct AlbumsProcessorTests {
         #expect(cycler.thingsReceived == [.allAlbums])
     }
 
-    @Test("receive randomAlbums: starts by sending `tearDown` and starting the spinner")
+    @Test("receive randomAlbums: starts by starting the spinner")
     func receiveRandomAlbumsStart() async {
         subject.state.animateSpinner = false
         await subject.receive(.randomAlbums)
         #expect(presenter.statesPresented.first?.animateSpinner == true)
-        // #expect(presenter.thingsReceived.first == .tearDownSearcher)
+        #expect(presenter.statesPresented.first?.showTitle == false)
     }
 
-    @Test("receive randomAlbums: sends `scrollToZero` effect, sends `getAlbumList` to request maker, sets state, turns off spinner")
+    @Test("receive randomAlbums: sends `scrollToZero` effect, sends `getAlbumList` to request maker, gets current folder, sets state, turns off spinner")
     func receiveRandomAlbums() async {
+        persistence.currentFolderName = "Folder"
         requestMaker.albumList = [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)]
         #expect(presenter.statePresented == nil)
         await subject.receive(.randomAlbums)
         #expect(presenter.thingsReceived == [.scrollToZero])
         #expect(requestMaker.methodsCalled == ["getAlbumsRandom()"])
         #expect(presenter.statePresented?.listType == .randomAlbums)
+        #expect(persistence.methodsCalled == ["loadCurrentFolderName()"])
+        #expect(presenter.statePresented?.showTitle == true)
         #expect(presenter.statePresented?.albums == [.init(id: "1", name: "Yoho", sortName: nil, artist: "Artist", songCount: 30, song: nil)])
         #expect(presenter.statePresented?.animateSpinner == false)
     }

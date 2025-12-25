@@ -2,9 +2,11 @@ import Foundation
 
 /// State presented by AlbumsProcessor to AlbumsViewController.
 struct AlbumsState: Equatable {
+    var showTitle = false // do not show title until data is ready
     var listType: ListType = .allAlbums
     var albums = [SubsonicAlbum]()
     var animateSpinner = false
+    var currentFolder: String? = nil
     var hasInitialData = false // scratchpad
 
     /// The albums view controller comes in three "flavors" or "modes". This enum specifies

@@ -89,7 +89,7 @@ struct URLMakerTests {
 
     @Test("urlFor(action:) adds musicFolderId query item if folder restrictable and current folder is non-nil")
     func folderRestrictable() throws {
-        persistence.currentFolder = 2
+        persistence.currentFolderId = 2
         subject.currentServerInfo = .init(scheme: "scheme", host: "host", port: 1, username: "username", password: "password", version: "version")
         let url = try subject.urlFor(action: "action", additional: [
             .init(name: "nickname", value: "mattski"),
@@ -133,7 +133,7 @@ struct URLMakerTests {
 
     @Test("urlFor(action:) doesn't add musicFolderId query item if not folder restrictable and current folder is non-nil")
     func folderRestrictableNot() throws {
-        persistence.currentFolder = 2
+        persistence.currentFolderId = 2
         subject.currentServerInfo = .init(scheme: "scheme", host: "host", port: 1, username: "username", password: "password", version: "version")
         let url = try subject.urlFor(action: "action", additional: [
             .init(name: "nickname", value: "mattski"),

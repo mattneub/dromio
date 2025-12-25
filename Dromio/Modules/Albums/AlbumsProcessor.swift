@@ -26,6 +26,8 @@ final class AlbumsProcessor: Processor {
                 }
                 state.listType = .allAlbums
                 state.albums = albums
+                state.currentFolder = services.persistence.loadCurrentFolderName()
+                state.showTitle = true
                 await presenter?.present(state)
                 await presenter?.receive(.scrollToZero)
                 try? await unlessTesting {
@@ -87,6 +89,8 @@ final class AlbumsProcessor: Processor {
                 let albums = try await services.requestMaker.getAlbumsRandom()
                 state.listType = .randomAlbums
                 state.albums = albums
+                state.currentFolder = services.persistence.loadCurrentFolderName()
+                state.showTitle = true
                 await presenter?.present(state)
                 await presenter?.receive(.scrollToZero)
                 try? await unlessTesting {

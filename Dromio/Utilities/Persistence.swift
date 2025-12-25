@@ -6,8 +6,14 @@ protocol PersistenceType {
     func loadCurrentPlaylist() throws -> [SubsonicSong]
     func save(servers: [ServerInfo]) throws
     func loadServers() throws -> [ServerInfo]
-    func save(currentFolder: Int?)
+    func save(currentFolder: SubsonicFolder?, suppressName: Bool)
     func loadCurrentFolder() -> Int?
+    func loadCurrentFolderName() -> String?
+}
+extension PersistenceType {
+    func save(currentFolder: SubsonicFolder?) {
+        save(currentFolder: currentFolder, suppressName: false)
+    }
 }
 
 /// Struct that implements persistence. There are two kinds; we can save something into
@@ -73,18 +79,36 @@ struct Persistence: PersistenceType {
         return servers
     }
 
-    func save(currentFolder: Int?) {
-        Self.defaults.set(currentFolder, forKey: PersistenceKey.currentFolder.rawValue)
+    /// Save info about the current folder. We save the id and name separately, because those
+    /// two pieces of info have different clients interested in them.
+    /// - Parameters:
+    ///   - currentFolder: The folder.
+    ///   - suppressName: If true, save nil as the name even though the folder has one. This is
+    ///   because if there is only one folder for this user, we do not want to show the name.
+    func save(currentFolder: SubsonicFolder?, suppressName: Bool) {
+        Self.defaults.set(currentFolder?.id, forKey: PersistenceKey.currentFolder.rawValue)
+        if suppressName {
+            Self.defaults.set(nil, forKey: PersistenceKey.currentFolderName.rawValue)
+        } else {
+            Self.defaults.set(currentFolder?.name, forKey: PersistenceKey.currentFolderName.rawValue)
+        }
     }
 
+    /// Fetch the current folder id, if any.
     func loadCurrentFolder() -> Int? {
         Self.defaults.object(forKey: PersistenceKey.currentFolder.rawValue) as? Int
+    }
+
+    /// Fetch the current folder name, if any.
+    func loadCurrentFolderName() -> String? {
+        Self.defaults.object(forKey: PersistenceKey.currentFolderName.rawValue) as? String
     }
 }
 
 /// Keys for saving/fetching into/from UserDefaults.
 enum PersistenceKey: String {
     case currentFolder
+    case currentFolderName
     case currentPlaylist
     case servers
 }

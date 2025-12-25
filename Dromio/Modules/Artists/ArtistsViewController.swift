@@ -61,17 +61,19 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
     }
 
     func present(_ state: ArtistsState) async {
-        title = switch state.listType {
+        let title = switch state.listType {
         case .allArtists: "Artists"
         case .composers: "Composers"
         }
-        navigationItem.titleView = UILabel().applying {
-            $0.text = title
-            $0.font = UIFont(name: "Verdana-Bold", size: 17)
-            $0.numberOfLines = 2
-            $0.textAlignment = .center
-            $0.minimumScaleFactor = 0.8
-            $0.adjustsFontSizeToFitWidth = true
+        if state.showTitle, let font = UIFont(name: "Verdana-Bold", size: 17) {
+            navigationItem.attributedTitle = AttributedString(
+                title,
+                attributes: AttributeContainer.font(font)
+            )
+            navigationItem.subtitle = state.currentFolder
+        } else {
+            navigationItem.title = nil
+            navigationItem.subtitle = nil
         }
         navigationItem.leftBarButtonItem?.menu = menu(for: state.listType)
 

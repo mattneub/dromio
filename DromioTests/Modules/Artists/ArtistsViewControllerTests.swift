@@ -120,17 +120,31 @@ struct ArtistsViewControllerTests {
         #expect(window.isUserInteractionEnabled == true)
     }
 
-    @Test("present: sets the title view and left bar button menu item according to the state")
+    @Test("present: if state showTitle is false, no title, no attributed title, no subtitle")
+    func presentNoShowTitle() async {
+        await subject.present(ArtistsState())
+        #expect(subject.title == nil)
+        #expect(subject.navigationItem.title == nil)
+        #expect(subject.navigationItem.attributedTitle == nil)
+        #expect(subject.navigationItem.subtitle == nil)
+    }
+
+    @Test("present: if state showTitle is true, if state has current folder, sets subtitle")
+    func presentSubtitle() async {
+        await subject.present(ArtistsState(showTitle: true, currentFolder: "Folder"))
+        #expect(subject.navigationItem.subtitle == "Folder")
+        await subject.present(ArtistsState(showTitle: false, currentFolder: "Folder"))
+        #expect(subject.navigationItem.subtitle == nil)
+    }
+
+    @Test("present: sets the title and left bar button menu item according to the state")
     func presentAll() async throws {
         subject.loadViewIfNeeded()
-        let state = ArtistsState(listType: .allArtists)
+        let state = ArtistsState(showTitle: true, listType: .allArtists)
         await subject.present(state)
-        let label = try #require(subject.navigationItem.titleView as? UILabel)
-        #expect(label.text == "Artists")
-        #expect(label.font == UIFont(name: "Verdana-Bold", size: 17))
-        #expect(label.textAlignment == .center)
-        #expect(Float(label.minimumScaleFactor) == 0.8 as Float) // eliminate tiny difference
-        #expect(label.adjustsFontSizeToFitWidth == true)
+        let title = try #require(subject.navigationItem.attributedTitle)
+        #expect(String(title.characters) == "Artists")
+        #expect(title.uiKit.font == UIFont(name: "Verdana-Bold", size: 17))
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
         #expect(menu.children.count == 3)
         do {
@@ -161,14 +175,11 @@ struct ArtistsViewControllerTests {
     @Test("present: sets the title and left bar button menu item according to the state")
     func presentComposers() async throws {
         subject.loadViewIfNeeded()
-        let state = ArtistsState(listType: .composers)
+        let state = ArtistsState(showTitle: true, listType: .composers)
         await subject.present(state)
-        let label = try #require(subject.navigationItem.titleView as? UILabel)
-        #expect(label.text == "Composers")
-        #expect(label.font == UIFont(name: "Verdana-Bold", size: 17))
-        #expect(label.textAlignment == .center)
-        #expect(Float(label.minimumScaleFactor) == 0.8 as Float) // eliminate tiny difference
-        #expect(label.adjustsFontSizeToFitWidth == true)
+        let title = try #require(subject.navigationItem.attributedTitle)
+        #expect(String(title.characters) == "Composers")
+        #expect(title.uiKit.font == UIFont(name: "Verdana-Bold", size: 17))
         let menu = try #require(subject.navigationItem.leftBarButtonItem?.menu)
         #expect(menu.children.count == 3)
         do {

@@ -66,14 +66,11 @@ final class PingProcessor: Processor {
             }
             userHasJukeboxRole = user.jukeboxRole && user.adminRole
             state.folders = try await services.requestMaker.getFolders() // older versions return one folder with id 1
-            let currentFolder: Int? = if state.folders.firstIndex(where: { $0.id == restrictedFolder }) != nil {
-                restrictedFolder
-            } else {
-                nil
-            }
-            services.persistence.save(currentFolder: currentFolder)
+            let currentFolder: SubsonicFolder? = state.folders.first(where: { $0.id == restrictedFolder })
+            let multipleFolders = state.folders.count > 1
+            services.persistence.save(currentFolder: currentFolder, suppressName: !multipleFolders)
             state.status = .success
-            state.enablePickFolderButton = state.folders.count > 1
+            state.enablePickFolderButton = multipleFolders
             await presenter?.present(state)
             await Task.yield()
             try? await unlessTesting {
@@ -132,14 +129,14 @@ final class PingProcessor: Processor {
             await cycler.receive(.doPing())
             return
         }
-        guard let folderId = state.folders.first(where: { $0.name == folderName })?.id else {
+        guard let folder = state.folders.first(where: { $0.name == folderName }) else {
             services.persistence.save(currentFolder: nil)
             await cycler.receive(.doPing()) // shouldn't happen, but let's do _something_
             return
         }
         Task {
-            services.persistence.save(currentFolder: folderId)
-            await cycler.receive(.doPing(folderId))
+            services.persistence.save(currentFolder: folder)
+            await cycler.receive(.doPing(folder.id))
         }
     }
 
