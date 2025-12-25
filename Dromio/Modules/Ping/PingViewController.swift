@@ -32,6 +32,22 @@ class PingViewController: UIViewController, ReceiverPresenter {
     /// Flag so that we know whether we are appearing at launch or later in the app's lifetime.
     private var firstTime = true
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        let handler: UIButton.ConfigurationUpdateHandler = { button in
+            if button.state.contains(.highlighted) {
+                button.configuration?.background.backgroundColor = .systemTeal.withAlphaComponent(0.6)
+            } else if button.state.contains(.disabled) {
+                button.configuration?.background.backgroundColor = .systemGray3.withAlphaComponent(0.7)
+            } else {
+                button.configuration?.background.backgroundColor = .systemTeal
+            }
+        }
+        for button in [reenterButton, pickServerButton, pickFolderButton, deleteServerButton, offlineModeButton] {
+            button?.configurationUpdateHandler = handler
+        }
+    }
+
     override func viewIsAppearing(_ animated: Bool) {
         super.viewIsAppearing(animated)
         Task {

@@ -23,6 +23,23 @@ struct PingViewControllerTests {
         #expect(subject.offlineModeButton.isHidden)
     }
 
+    @Test("viewDidLoad: sets up button update configuration handlers")
+    func viewDidLoad() throws {
+        subject.loadViewIfNeeded()
+        for button in [subject.reenterButton, subject.pickServerButton, subject.pickFolderButton, subject.deleteServerButton, subject.offlineModeButton] {
+            let button = try #require(button)
+            #expect(button.configurationUpdateHandler != nil)
+            #expect(button.configuration?.background.backgroundColor == .systemTeal)
+            button.isHighlighted = true
+            button.configurationUpdateHandler?(button)
+            #expect(button.configuration?.background.backgroundColor == .systemTeal.withAlphaComponent(0.6))
+            button.isHighlighted = false
+            button.isEnabled = false
+            button.configurationUpdateHandler?(button)
+            #expect(button.configuration?.background.backgroundColor == .systemGray3.withAlphaComponent(0.7))
+        }
+    }
+
     @Test("viewIsAppearing: sends launch to processor the first time, then choices")
     func viewIsAppearing() async {
         subject.viewIsAppearing(false)
