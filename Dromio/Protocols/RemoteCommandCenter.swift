@@ -22,7 +22,7 @@ extension MPSkipIntervalCommand: SkipCommandType {
     }
 }
 
-protocol RemoteCommandEventType {}
+@objc protocol RemoteCommandEventType {}
 
 extension MPRemoteCommandEvent: RemoteCommandEventType {}
 

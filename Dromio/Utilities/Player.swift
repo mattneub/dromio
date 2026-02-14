@@ -22,7 +22,7 @@ protocol PlayerType: Observable {
 /// in the remove command center, and it must update the now playing info center and manage
 /// the audio session. In addition, it publishes updates on what the player is doing, so that
 /// other parts of the app can subscribe and stay apprised of what is happening.
-@Observable final class Player: NSObject, PlayerType {
+@Observable final class Player: NSObject, PlayerType, PlayerTrampolineTargetType {
     /// The _real_ player. Set in the initializer.
     let player: any QueuePlayerType
 
@@ -30,6 +30,10 @@ protocol PlayerType: Observable {
     /// handed this function on initialization by the app or (with a mock) by the tests,
     /// without keeping a reference to the command center itself.
     let commandCenterProvider: (@Sendable () -> any RemoteCommandCenterType)
+
+    /// Trampoline object that acts as the target of all MPRemoteCommandEvent actions.
+    /// Set in the initializer.
+    let trampoline: any PlayerTrampolineType
 
     /// Observation of the queue player's current item, so we are notified when it changes.
     private var queuePlayerCurrentItemObservation: NSKeyValueObservation?
@@ -59,7 +63,7 @@ protocol PlayerType: Observable {
     /// of a song, we know its title and artist. Well, if a song is in the queue, we have its URL —
     /// and its URL, stripped of its extension, is its id. See `currentSongId`, below.
     var knownSongs = [String: SubsonicSong]()
-    
+
     /// Initializer.
     /// - Parameters:
     ///   - player: A queue player, wrapped in a protocol for testing. By default, this will be
@@ -69,18 +73,22 @@ protocol PlayerType: Observable {
     ///     the app should not override this; only a test should use this parameter.
     init(
         player: any QueuePlayerType = AVQueuePlayer(),
-        commandCenterProvider: @Sendable @escaping () -> any RemoteCommandCenterType = { MPRemoteCommandCenter.shared() }
+        commandCenterProvider: @Sendable @escaping () -> any RemoteCommandCenterType = { MPRemoteCommandCenter.shared() },
+        trampoline: any PlayerTrampolineType = PlayerTrampoline()
     ) {
         self.player = player
         self.commandCenterProvider = commandCenterProvider
+        self.trampoline = trampoline
         super.init()
+        // finishing configuring the trampoline
+        trampoline.player = self
         // configure the command center
         let commandCenter = self.commandCenterProvider()
-        commandCenter.play.addTarget(self, action: #selector(doPlay(_:)))
-        commandCenter.pause.addTarget(self, action: #selector(doPause(_:)))
-        commandCenter.skipBack.addTarget(self, action: #selector(doSkipBack(_:)))
+        commandCenter.play.addTarget(trampoline, action: #selector(PlayerTrampoline.doPlay(_:)))
+        commandCenter.pause.addTarget(trampoline, action: #selector(PlayerTrampoline.doPause(_:)))
+        commandCenter.skipBack.addTarget(trampoline, action: #selector(PlayerTrampoline.doSkipBack(_:)))
         commandCenter.skipBack.setInterval(30)
-        commandCenter.skipForward.addTarget(self, action: #selector(doSkipForward(_:)))
+        commandCenter.skipForward.addTarget(trampoline, action: #selector(PlayerTrampoline.doSkipForward(_:)))
         commandCenter.skipForward.setInterval(30)
         commandCenter.changePlaybackPosition.isEnabled = false
         // prepare our various observations
@@ -202,13 +210,6 @@ protocol PlayerType: Observable {
         knownSongs[song.id] = song
     }
 
-    /// Response to the remote command center saying "play".
-    @objc func doPlay(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
-        logger.debug("doPlay")
-        doPlay(updateOnly: false)
-        return .success
-    }
-
     /// Major workhorse. Assert our session; if we are not actually playing, play; update now
     /// playing info; and update our current song publisher.
     /// - Parameter updateOnly: Flag. If true, do all the updating, but don't actually play.
@@ -235,17 +236,10 @@ protocol PlayerType: Observable {
         currentSongIdPublisher = currentSongId
     }
 
-    /// Response to the remote command center saying "pause".
-    @objc func doPause(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
-        logger.debug("doPause")
-        doPause()
-        return .success
-    }
-
     /// Implementation of both `doSkipBack` and `doSkipForward`, i.e. combined response
     /// to remote command center saying `skipBack` or `skipForward`. The response differs
     /// only by a plus or minus sign, adding or subtracting the specified skip interval.
-    func skip(forward: Bool, event: (any RemoteCommandEventType)?) -> MPRemoteCommandHandlerStatus {
+    func skip(forward: Bool, event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus {
         guard player.rate != 0 else {
             return .commandFailed
         }
@@ -257,21 +251,10 @@ protocol PlayerType: Observable {
         let targetTime = player.currentTime() + CMTime(seconds: interval, preferredTimescale: 1)
         Task { @MainActor in
             if await player.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero) {
-                print("skip, calling doPlay")
                 self.doPlay(updateOnly: true)
             }
         }
         return .success
-    }
-
-    /// Response to the remote command center saying "skipBack".
-    @objc func doSkipBack(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
-        return skip(forward: false, event: event)
-    }
-
-    /// Response to the remote command center saying "skipForward".
-    @objc func doSkipForward(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
-        return skip(forward: true, event: event)
     }
 
     /// Pause the queue player. If playing, this will trigger a rate change which will call `doPlay` to update everything.

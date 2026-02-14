@@ -25,7 +25,7 @@ class MockCommand: RemoteCommandType, @unchecked Sendable {
     }
 }
 
-class MockSkipCommand: MockCommand, SkipCommandType, @unchecked Sendable {
+final class MockSkipCommand: MockCommand, SkipCommandType, @unchecked Sendable {
     var interval: Int?
 
     func setInterval(_ interval: Int) {
@@ -34,7 +34,8 @@ class MockSkipCommand: MockCommand, SkipCommandType, @unchecked Sendable {
     }
 }
 
-final class MockRemoteCommandCenter: RemoteCommandCenterType {
+
+final class MockRemoteCommandCenter: RemoteCommandCenterType, @unchecked Sendable {
     let pause: any RemoteCommandType = MockCommand()
     let play: any RemoteCommandType = MockCommand()
     let changePlaybackPosition: any RemoteCommandType = MockCommand()

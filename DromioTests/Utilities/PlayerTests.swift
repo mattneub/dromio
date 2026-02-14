@@ -10,10 +10,11 @@ struct PlayerTests {
     let nowPlayingInfo = MockNowPlayingInfo()
     var commandCenter: MockRemoteCommandCenter!
     var audioSession: MockAudioSession!
+    let trampoline = MockPlayerTrampoline()
 
     init() {
         let commandCenter = MockRemoteCommandCenter()
-        subject = Player(player: audioPlayer, commandCenterProvider: { commandCenter })
+        subject = Player(player: audioPlayer, commandCenterProvider: { commandCenter }, trampoline: trampoline)
         self.commandCenter = commandCenter
         let audioSession = MockAudioSession()
         services.audioSessionProvider = .init { audioSession }
@@ -34,28 +35,30 @@ struct PlayerTests {
     func initializer() async throws {
         let commandCenter = MockRemoteCommandCenter()
         var subject: Player? = Player(player: audioPlayer, commandCenterProvider: { commandCenter })
+        #expect(subject!.trampoline is PlayerTrampoline)
+        #expect(subject!.trampoline.player === subject!)
         //
         let play = try #require(commandCenter.play as? MockCommand)
         #expect(play.methodsCalled.contains("addTarget(_:action:)"))
-        #expect(play.target is Player)
-        #expect(play.action == #selector(subject!.doPlay(_:)))
+        #expect(play.target === subject!.trampoline)
+        #expect(play.action == #selector(trampoline.doPlay(_:)))
         //
         let pause = try #require(commandCenter.pause as? MockCommand)
         #expect(pause.methodsCalled.contains("addTarget(_:action:)"))
-        #expect(pause.target is Player)
-        #expect(pause.action == #selector(subject!.doPause(_:)))
+        #expect(pause.target === subject!.trampoline)
+        #expect(pause.action == #selector(trampoline.doPause(_:)))
         //
         let skipForward = try #require(commandCenter.skipForward as? MockSkipCommand)
         #expect(skipForward.methodsCalled.contains("addTarget(_:action:)"))
-        #expect(skipForward.target is Player)
-        #expect(skipForward.action == #selector(subject!.doSkipForward(_:)))
+        #expect(skipForward.target === subject!.trampoline)
+        #expect(skipForward.action == #selector(trampoline.doSkipForward(_:)))
         #expect(skipForward.methodsCalled.contains("setInterval(_:)"))
         #expect(skipForward.interval == 30)
         //
         let skipBack = try #require(commandCenter.skipBack as? MockSkipCommand)
         #expect(skipBack.methodsCalled.contains("addTarget(_:action:)"))
-        #expect(skipBack.target is Player)
-        #expect(skipBack.action == #selector(subject!.doSkipBack(_:)))
+        #expect(skipBack.target === subject!.trampoline)
+        #expect(skipBack.action == #selector(trampoline.doSkipBack(_:)))
         #expect(skipBack.methodsCalled.contains("setInterval(_:)"))
         #expect(skipBack.interval == 30)
         //
@@ -115,7 +118,7 @@ struct PlayerTests {
     @Test("if the queue player changes current item, calls now playing info `playing`, sets playerState and currentSongIdPublisher, activates")
     func itemChanges() async {
         subject.playerStatePublisher = .empty
-        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }) // real player!
+        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }, trampoline: trampoline) // real player!
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
             title: "Title",
@@ -144,7 +147,7 @@ struct PlayerTests {
 
     @Test("if the queue player changes current item to nil, calls clear, deactivates session, sets playerState and currentSongIdPublisher")
     func itemChangesToNil() async {
-        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }) // real player!
+        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }, trampoline: trampoline) // real player!
         subject.playerStatePublisher = .playing
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
@@ -173,7 +176,7 @@ struct PlayerTests {
 
     @Test("if the queue player changes rate to 0, calls now playing info `paused`, sets playerState and currentSongIdPublisher, activates")
     func rateChangesToZero() async {
-        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }) // real player!
+        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }, trampoline: trampoline) // real player!
         subject.playerStatePublisher = .playing
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
