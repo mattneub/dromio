@@ -12,19 +12,10 @@ final class NowPlayingInfo: NowPlayingInfoType {
     /// Provider for the now playing info center to which we are the gateway.
     var centerProvider: () -> any NowPlayingInfoCenterType = { MPNowPlayingInfoCenter.default() }
 
-    /// Buffer so that we can avoid hammering the center with the same info multiple times in a row.
-    var previousInfo: [NowPlayingInfoKey: NowPlayingInfoValue]?
-
     /// Dictionary that acts as a setter gateway to the now playing info center's `nowPlayingInfo` dictionary.
     var info: [NowPlayingInfoKey: NowPlayingInfoValue] {
         get { [:] } // dummy getter
         set {
-            if let previousInfo {
-                guard previousInfo != newValue else {
-                    return
-                }
-            }
-            previousInfo = newValue
             let center = centerProvider()
             var centerInfo = center.nowPlayingInfo ?? [:]
             // If song changed, remove all existing keys before setting any.
@@ -84,7 +75,6 @@ final class NowPlayingInfo: NowPlayingInfoType {
     /// Tell the now playing info center that there is no current song.
     func clear() {
         centerProvider().nowPlayingInfo = nil
-        previousInfo = nil
         print("telling npi: clear")
     }
 }

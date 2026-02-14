@@ -21,8 +21,8 @@ extension PersistenceType {
 /// things: the current playlist, and the list of servers. When we save/fetch a server,
 /// its password is replaced by a dummy and the real password lives in the keychain.
 struct Persistence: PersistenceType {
-    static var defaults: UserDefaultsType = UserDefaults.standard
-    static var keychain: KeychainType = Keychain.shared
+    static var defaults: any UserDefaultsType = UserDefaults.standard
+    static var keychain: any KeychainType = Keychain.shared
 
     /// Save the current playlist's songs into user defaults.
     /// - Parameter songList: Array of songs.

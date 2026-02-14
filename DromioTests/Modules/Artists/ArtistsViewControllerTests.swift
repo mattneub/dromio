@@ -150,7 +150,7 @@ struct ArtistsViewControllerTests {
         do {
             let action = menu.children[0]
             #expect(action.title == "Composers")
-            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .composers)
         }
@@ -158,7 +158,7 @@ struct ArtistsViewControllerTests {
         do {
             let action = menu.children[1]
             #expect(action.title == "Albums")
-            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .albums)
         }
@@ -166,7 +166,7 @@ struct ArtistsViewControllerTests {
         do {
             let action = menu.children[2]
             #expect(action.title == "Server")
-            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .server)
         }
@@ -185,7 +185,7 @@ struct ArtistsViewControllerTests {
         do {
             let action = menu.children[0]
             #expect(action.title == "Artists")
-            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .allArtists)
         }
@@ -193,7 +193,7 @@ struct ArtistsViewControllerTests {
         do {
             let action = menu.children[1]
             #expect(action.title == "Albums")
-            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .albums)
         }
@@ -201,7 +201,7 @@ struct ArtistsViewControllerTests {
         do {
             let action = menu.children[2]
             #expect(action.title == "Server")
-            (action as! UIMenuLeaf).performWithSender(nil, target: nil)
+            (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
             await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .server)
         }

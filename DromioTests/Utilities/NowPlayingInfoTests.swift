@@ -93,20 +93,6 @@ struct NowPlayingInfoTests {
         #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyElapsedPlaybackTime"] as? Double == 3)
     }
 
-    @Test("playing: filters out duplicates")
-    func playingDuplicates() {
-        #expect(center.nowPlayingInfo == nil)
-        let song = SubsonicSong(id: "1", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
-        subject.playing(song: song, at: 3)
-        #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyPlaybackRate"] as? Double == 1)
-        #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyElapsedPlaybackTime"] as? Double == 3)
-        center.nowPlayingInfo?["MPNowPlayingInfoPropertyPlaybackRate"] = 2.0
-        center.nowPlayingInfo?["MPNowPlayingInfoPropertyElapsedPlaybackTime"] = 6.0
-        subject.playing(song: song, at: 3)
-        #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyPlaybackRate"] as? Double == 2)
-        #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyElapsedPlaybackTime"] as? Double == 6)
-    }
-
     @Test("paused: sets the center's artist, title, duration, and id")
     func pausedInfo() {
         let song = SubsonicSong(id: "1", title: "title", album: nil, artist: "artist", displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: 3, contributors: nil)
@@ -151,20 +137,6 @@ struct NowPlayingInfoTests {
         subject.paused(song: song, at: 3)
         #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyPlaybackRate"] as? Double == 0)
         #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyElapsedPlaybackTime"] as? Double == 3)
-    }
-
-    @Test("paused: filters out duplicates")
-    func pausedDuplicates() {
-        #expect(center.nowPlayingInfo == nil)
-        let song = SubsonicSong(id: "1", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
-        subject.paused(song: song, at: 3)
-        #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyPlaybackRate"] as? Double == 0)
-        #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyElapsedPlaybackTime"] as? Double == 3)
-        center.nowPlayingInfo?["MPNowPlayingInfoPropertyPlaybackRate"] = 2.0
-        center.nowPlayingInfo?["MPNowPlayingInfoPropertyElapsedPlaybackTime"] = 6.0
-        subject.paused(song: song, at: 3)
-        #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyPlaybackRate"] as? Double == 2)
-        #expect(center.nowPlayingInfo?["MPNowPlayingInfoPropertyElapsedPlaybackTime"] as? Double == 6)
     }
 
     @Test("clear: sets the now playing info to nil")

@@ -7,7 +7,7 @@ final class MockBackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationTyp
     init(
         whatToDo: @Sendable @escaping () async throws -> T,
         cleanup: (@Sendable () async throws -> ())?,
-        application: ApplicationType
+        application: any ApplicationType
     ) {
         self.whatToDo = whatToDo
     }

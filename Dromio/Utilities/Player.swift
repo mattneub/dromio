@@ -78,6 +78,10 @@ protocol PlayerType: Observable {
         let commandCenter = self.commandCenterProvider()
         commandCenter.play.addTarget(self, action: #selector(doPlay(_:)))
         commandCenter.pause.addTarget(self, action: #selector(doPause(_:)))
+        commandCenter.skipBack.addTarget(self, action: #selector(doSkipBack(_:)))
+        commandCenter.skipBack.setInterval(30)
+        commandCenter.skipForward.addTarget(self, action: #selector(doSkipForward(_:)))
+        commandCenter.skipForward.setInterval(30)
         commandCenter.changePlaybackPosition.isEnabled = false
         // prepare our various observations
         queuePlayerCurrentItemObservation = (player as? AVPlayer)?.observe(\.currentItem, options: [.new]) { [weak self] _, item in
@@ -125,11 +129,12 @@ protocol PlayerType: Observable {
     }
 
     deinit {
-        Task { @MainActor [commandCenterProvider] in // capture is crucial to avoid saying `self`
+        Task { @MainActor [commandCenterProvider] in // capture is crucial
             let commandCenter = commandCenterProvider()
-            // can get away with this as long as we don't say self
             commandCenter.play.removeTarget(nil) // remove all
             commandCenter.pause.removeTarget(nil) // remove all
+            commandCenter.skipForward.removeTarget(nil) // remove all
+            commandCenter.skipBack.removeTarget(nil) // remove all
         }
     }
 
@@ -235,6 +240,38 @@ protocol PlayerType: Observable {
         logger.debug("doPause")
         doPause()
         return .success
+    }
+
+    /// Implementation of both `doSkipBack` and `doSkipForward`, i.e. combined response
+    /// to remote command center saying `skipBack` or `skipForward`. The response differs
+    /// only by a plus or minus sign, adding or subtracting the specified skip interval.
+    func skip(forward: Bool, event: (any RemoteCommandEventType)?) -> MPRemoteCommandHandlerStatus {
+        guard player.rate != 0 else {
+            return .commandFailed
+        }
+        // this dance to obtain `event.interval` is not really needed, as it will always be 30
+        guard let event = event as? any SkipIntervalCommandEventType else {
+            return .commandFailed
+        }
+        let interval = event.interval * (forward ? 1 : -1)
+        let targetTime = player.currentTime() + CMTime(seconds: interval, preferredTimescale: 1)
+        Task { @MainActor in
+            if await player.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero) {
+                print("skip, calling doPlay")
+                self.doPlay(updateOnly: true)
+            }
+        }
+        return .success
+    }
+
+    /// Response to the remote command center saying "skipBack".
+    @objc func doSkipBack(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+        return skip(forward: false, event: event)
+    }
+
+    /// Response to the remote command center saying "skipForward".
+    @objc func doSkipForward(_ event: MPRemoteCommandEvent) -> MPRemoteCommandHandlerStatus {
+        return skip(forward: true, event: event)
     }
 
     /// Pause the queue player. If playing, this will trigger a rate change which will call `doPlay` to update everything.

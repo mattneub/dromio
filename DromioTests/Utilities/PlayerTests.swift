@@ -34,20 +34,40 @@ struct PlayerTests {
     func initializer() async throws {
         let commandCenter = MockRemoteCommandCenter()
         var subject: Player? = Player(player: audioPlayer, commandCenterProvider: { commandCenter })
+        //
         let play = try #require(commandCenter.play as? MockCommand)
         #expect(play.methodsCalled.contains("addTarget(_:action:)"))
         #expect(play.target is Player)
         #expect(play.action == #selector(subject!.doPlay(_:)))
+        //
         let pause = try #require(commandCenter.pause as? MockCommand)
         #expect(pause.methodsCalled.contains("addTarget(_:action:)"))
         #expect(pause.target is Player)
         #expect(pause.action == #selector(subject!.doPause(_:)))
+        //
+        let skipForward = try #require(commandCenter.skipForward as? MockSkipCommand)
+        #expect(skipForward.methodsCalled.contains("addTarget(_:action:)"))
+        #expect(skipForward.target is Player)
+        #expect(skipForward.action == #selector(subject!.doSkipForward(_:)))
+        #expect(skipForward.methodsCalled.contains("setInterval(_:)"))
+        #expect(skipForward.interval == 30)
+        //
+        let skipBack = try #require(commandCenter.skipBack as? MockSkipCommand)
+        #expect(skipBack.methodsCalled.contains("addTarget(_:action:)"))
+        #expect(skipBack.target is Player)
+        #expect(skipBack.action == #selector(subject!.doSkipBack(_:)))
+        #expect(skipBack.methodsCalled.contains("setInterval(_:)"))
+        #expect(skipBack.interval == 30)
+        //
         let change = try #require(commandCenter.changePlaybackPosition as? MockCommand)
         #expect(change.isEnabled == false)
+        //
         subject = nil
         await #while(!play.methodsCalled.contains("removeTarget(_:)"))
         #expect(play.methodsCalled.contains("removeTarget(_:)"))
         #expect(pause.methodsCalled.contains("removeTarget(_:)"))
+        #expect(skipForward.methodsCalled.contains("removeTarget(_:)"))
+        #expect(skipBack.methodsCalled.contains("removeTarget(_:)"))
     }
 
     @Test("currentSongId: munges current item URL when it is a file URL")
@@ -305,6 +325,126 @@ struct PlayerTests {
         #expect(nowPlayingInfo.time == 30)
         #expect(subject.currentSongIdPublisher == "4")
         #expect(subject.playerStatePublisher == .paused)
+    }
+
+    @Test("skip: false, when playing tells player to seek to 30 seconds back, then same as doPlay update only true")
+    func skipBack() async {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
+        audioPlayer.time = 60
+        audioPlayer.rate = 1
+        let event = MockSkipIntervalCommandEvent()
+        event._interval = 30
+        let result = subject.skip(forward: false, event: event)
+        await #while(nowPlayingInfo.time == nil)
+        #expect(audioPlayer.methodsCalled == ["currentTime()", "seek(to:toleranceBefore:toleranceAfter:)", "currentTime()"])
+        #expect(audioPlayer.time == 30) // 60 - 30
+        #expect(audioPlayer.toleranceAfter?.seconds == 0)
+        #expect(audioPlayer.toleranceBefore?.seconds == 0)
+        #expect(result == .success)
+        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.active == true)
+        #expect(!audioPlayer.methodsCalled.contains("play()"))
+        #expect(nowPlayingInfo.methodsCalled.last == "playing(song:at:)")
+        #expect(nowPlayingInfo.time == 30)
+        #expect(subject.currentSongIdPublisher == "4")
+        #expect(subject.playerStatePublisher == .playing)
+    }
+
+    @Test("skip: false, when playing tells player to seek to 30 seconds back, if returns false, stops")
+    func skipBackReturnFalse() async {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
+        audioPlayer.time = 60
+        audioPlayer.rate = 1
+        audioPlayer.boolToReturn = false
+        let event = MockSkipIntervalCommandEvent()
+        event._interval = 30
+        let result = subject.skip(forward: false, event: event)
+        try? await Task.sleep(for: .seconds(0.1))
+        #expect(audioPlayer.methodsCalled == ["currentTime()", "seek(to:toleranceBefore:toleranceAfter:)"]) // *
+        #expect(audioPlayer.time == 30) // 60 - 30
+        #expect(audioPlayer.toleranceAfter?.seconds == 0)
+        #expect(audioPlayer.toleranceBefore?.seconds == 0)
+        #expect(result == .success)
+        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(nowPlayingInfo.methodsCalled.isEmpty)
+    }
+
+    @Test("skip: false, when not playing, does nothing")
+    func skipBackNotPlaying() async {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
+        audioPlayer.time = 60
+        audioPlayer.rate = 0 // *
+        let event = MockSkipIntervalCommandEvent()
+        event._interval = 30
+        let result = subject.skip(forward: false, event: event)
+        try? await Task.sleep(for: .seconds(0.1))
+        #expect(audioPlayer.methodsCalled.isEmpty)
+        #expect(result == .commandFailed)
+        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(nowPlayingInfo.methodsCalled.isEmpty)
+    }
+
+    @Test("skip: true, when playing tells player to seek to 30 seconds forward, then same as doPlay update only true")
+    func skipForward() async {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
+        audioPlayer.time = 60
+        audioPlayer.rate = 1
+        let event = MockSkipIntervalCommandEvent()
+        event._interval = 30
+        let result = subject.skip(forward: true, event: event)
+        await #while(nowPlayingInfo.time == nil)
+        #expect(audioPlayer.methodsCalled == ["currentTime()", "seek(to:toleranceBefore:toleranceAfter:)", "currentTime()"])
+        #expect(audioPlayer.time == 90) // 60 + 30
+        #expect(audioPlayer.toleranceAfter?.seconds == 0)
+        #expect(audioPlayer.toleranceBefore?.seconds == 0)
+        #expect(result == .success)
+        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.active == true)
+        #expect(!audioPlayer.methodsCalled.contains("play()"))
+        #expect(nowPlayingInfo.methodsCalled.last == "playing(song:at:)")
+        #expect(nowPlayingInfo.time == 90)
+        #expect(subject.currentSongIdPublisher == "4")
+        #expect(subject.playerStatePublisher == .playing)
+    }
+
+    @Test("skip: true, when playing tells player to seek to 30 seconds forward, if returns false, stops")
+    func skipForwardReturnFalse() async {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
+        audioPlayer.time = 60
+        audioPlayer.rate = 1
+        audioPlayer.boolToReturn = false
+        let event = MockSkipIntervalCommandEvent()
+        event._interval = 30
+        let result = subject.skip(forward: true, event: event)
+        try? await Task.sleep(for: .seconds(0.1))
+        #expect(audioPlayer.methodsCalled == ["currentTime()", "seek(to:toleranceBefore:toleranceAfter:)"]) // *
+        #expect(audioPlayer.time == 90) // 60 + 30
+        #expect(audioPlayer.toleranceAfter?.seconds == 0)
+        #expect(audioPlayer.toleranceBefore?.seconds == 0)
+        #expect(result == .success)
+        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(nowPlayingInfo.methodsCalled.isEmpty)
+    }
+
+    @Test("skip: true, when not playing, does nothing")
+    func skipForwardNotPlaying() async {
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
+        subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
+        audioPlayer.time = 60
+        audioPlayer.rate = 0 // *
+        let event = MockSkipIntervalCommandEvent()
+        event._interval = 30
+        let result = subject.skip(forward: false, event: event)
+        try? await Task.sleep(for: .seconds(0.1))
+        #expect(audioPlayer.methodsCalled.isEmpty)
+        #expect(result == .commandFailed)
+        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(nowPlayingInfo.methodsCalled.isEmpty)
     }
 
     @Test("doPause: calls pause")

@@ -10,7 +10,7 @@ final class MockRequestMaker: RequestMakerType {
     nonisolated(unsafe) var songId: String?
     nonisolated(unsafe) var artistId: String?
     nonisolated(unsafe) var user: SubsonicUser?
-    nonisolated(unsafe) var pingError: Error?
+    nonisolated(unsafe) var pingError: (any Error)?
     nonisolated(unsafe) var query: String?
     nonisolated(unsafe) var methodsCalled = [String]()
     nonisolated(unsafe) var streamURL = URL(string: "http://example.com")!

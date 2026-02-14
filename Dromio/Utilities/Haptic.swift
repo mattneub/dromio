@@ -9,8 +9,8 @@ protocol HapticType {
 
 /// Class that simplifies our interaction with the built-in feedback generators.
 final class Haptic: HapticType {
-    var notificationFeedbackGenerator: NotificationFeedbackGeneratorType = UINotificationFeedbackGenerator()
-    var impactFeedbackGenerator: ImpactFeedbackGeneratorType = UIImpactFeedbackGenerator()
+    var notificationFeedbackGenerator: any NotificationFeedbackGeneratorType = UINotificationFeedbackGenerator()
+    var impactFeedbackGenerator: any ImpactFeedbackGeneratorType = UIImpactFeedbackGenerator()
 
     func failure() {
         notificationFeedbackGenerator.notificationOccurred(.error)

@@ -16,6 +16,11 @@ protocol QueuePlayerType: AnyObject {
         using block: @escaping @Sendable (CMTime) -> Void
     ) -> Any
     func removeTimeObserver(_ observer: Any)
+    func seek(
+        to: CMTime,
+        toleranceBefore: CMTime,
+        toleranceAfter: CMTime
+    ) async -> Bool
 }
 
 extension AVQueuePlayer: QueuePlayerType {}

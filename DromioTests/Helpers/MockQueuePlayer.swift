@@ -6,10 +6,13 @@ final class MockQueuePlayer: QueuePlayerType {
     var currentItem: AVPlayerItem?
     var actionAtItemEnd: AVPlayer.ActionAtItemEnd = .none
 
-    nonisolated(unsafe) var methodsCalled = [String]()
-    nonisolated(unsafe) var item: AVPlayerItem?
-    nonisolated(unsafe) var after: AVPlayerItem?
-    nonisolated(unsafe) var time: Double = 100
+    var methodsCalled = [String]()
+    var item: AVPlayerItem?
+    var after: AVPlayerItem?
+    var time: Double = 100
+    var toleranceBefore: CMTime?
+    var toleranceAfter: CMTime?
+    var boolToReturn = true
 
     func play() {
         methodsCalled.append(#function)
@@ -45,5 +48,18 @@ final class MockQueuePlayer: QueuePlayerType {
     func removeTimeObserver(_ observer: Any) {
         methodsCalled.append(#function)
     }
+
+    func seek(
+        to time: CMTime,
+        toleranceBefore: CMTime,
+        toleranceAfter: CMTime
+    ) async -> Bool {
+        methodsCalled.append(#function)
+        self.time = time.seconds
+        self.toleranceBefore = toleranceBefore
+        self.toleranceAfter = toleranceAfter
+        return boolToReturn
+    }
+
 
 }

@@ -6,7 +6,7 @@ protocol BackgroundTaskOperationType<T> {
     init(
         whatToDo: @Sendable @escaping () async throws -> T,
         cleanup: (@Sendable () async throws -> ())?,
-        application: ApplicationType
+        application: any ApplicationType
     )
     func start() async throws -> T
 }
@@ -42,7 +42,7 @@ final class BackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationType {
     init(
         whatToDo: @Sendable @escaping () async throws -> T,
         cleanup: (@Sendable () async throws -> ())? = nil,
-        application: ApplicationType = UIApplication.shared
+        application: any ApplicationType = UIApplication.shared
     ) {
         self.whatToDo = whatToDo
         self.cleanup = cleanup
