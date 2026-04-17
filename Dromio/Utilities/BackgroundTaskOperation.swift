@@ -54,7 +54,7 @@ final class BackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationType {
     func start() async throws -> T {
         bti = application.beginBackgroundTask { [weak self] in
             guard let self else { return }
-            Task { @MainActor in
+            Task.immediate { @MainActor in
                 try? await cleanup?()
                 if bti != .invalid {
                     application.endBackgroundTask(bti)
@@ -68,7 +68,7 @@ final class BackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationType {
             }
             return result
         } catch {
-            return try await Task { @MainActor in // this way we can throw and return nothing
+            return try await Task.immediate { @MainActor in // this way we can throw and return nothing
                 try await cleanup?()
                 if bti != .invalid {
                     application.endBackgroundTask(bti)

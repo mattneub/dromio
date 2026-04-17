@@ -93,13 +93,13 @@ protocol PlayerType: Observable {
         commandCenter.changePlaybackPosition.isEnabled = false
         // prepare our various observations
         queuePlayerCurrentItemObservation = (player as? AVPlayer)?.observe(\.currentItem, options: [.new]) { [weak self] _, item in
-            Task {
+            Task.immediate {
                 await logger.debug("current item change: \(String(describing: item.newValue), privacy: .public)")
                 await self?.adjustNowPlayingItemToCurrentItem()
             }
         }
         queuePlayerRateObservation = (player as? AVPlayer)?.observe(\.rate, options: [.new]) { [weak self] _, item in
-            Task {
+            Task.immediate {
                 await logger.debug("rate change: \(String(describing: item.newValue), privacy: .public)")
                 await self?.adjustNowPlayingItemToCurrentItem()
             }
@@ -137,7 +137,7 @@ protocol PlayerType: Observable {
     }
 
     deinit {
-        Task { @MainActor [commandCenterProvider] in // capture is crucial
+        Task.immediate { @MainActor [commandCenterProvider] in // capture is crucial
             let commandCenter = commandCenterProvider()
             commandCenter.play.removeTarget(nil) // remove all
             commandCenter.pause.removeTarget(nil) // remove all
@@ -249,7 +249,7 @@ protocol PlayerType: Observable {
         }
         let interval = event.interval * (forward ? 1 : -1)
         let targetTime = player.currentTime() + CMTime(seconds: interval, preferredTimescale: 1)
-        Task { @MainActor in
+        Task.immediate { @MainActor in
             if await player.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero) {
                 self.doPlay(updateOnly: true)
             }

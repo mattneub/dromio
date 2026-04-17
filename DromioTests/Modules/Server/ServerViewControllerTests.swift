@@ -1,6 +1,5 @@
 @testable import Dromio
 import Testing
-import WaitWhile
 import UIKit
 
 struct ServerViewControllerTests {
@@ -24,63 +23,56 @@ struct ServerViewControllerTests {
     }
 
     @Test("textFieldChanged: sends textFieldChanged with field and text, host")
-    func textFieldChangedHost() async {
+    func textFieldChangedHost() {
         makeWindow(viewController: subject)
         subject.host.text = "host"
         subject.textFieldChanged(subject.host)
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .textFieldChanged(.host, "host"))
     }
 
     @Test("textFieldChanged: sends textFieldChanged with field and text, port")
-    func textFieldChangedPort() async {
+    func textFieldChangedPort() {
         makeWindow(viewController: subject)
         subject.port.text = "port"
         subject.textFieldChanged(subject.port)
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .textFieldChanged(.port, "port"))
     }
 
     @Test("textFieldChanged: sends textFieldChanged with field and text, username")
-    func textFieldChangedUsername() async {
+    func textFieldChangedUsername() {
         makeWindow(viewController: subject)
         subject.username.text = "username"
         subject.textFieldChanged(subject.username)
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .textFieldChanged(.username, "username"))
     }
 
     @Test("textFieldChanged: sends textFieldChanged with field and text, password")
-    func textFieldChangedPassword() async {
+    func textFieldChangedPassword() {
         makeWindow(viewController: subject)
         subject.password.text = "password"
         subject.textFieldChanged(subject.password)
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .textFieldChanged(.password, "password"))
     }
 
     @Test("segmentedControlChanged: sends schemeChanged with scheme, http")
-    func segmentedControllerChangedHttp() async {
+    func segmentedControllerChangedHttp() {
         makeWindow(viewController: subject)
         subject.scheme.selectedSegmentIndex = 0
         subject.segmentedControlChanged(subject.scheme)
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .schemeChanged(.http))
     }
 
     @Test("segmentedControlChanged: sends schemeChanged with scheme, https")
-    func segmentedControllerChangedHttps() async {
+    func segmentedControllerChangedHttps() {
         makeWindow(viewController: subject)
         subject.scheme.selectedSegmentIndex = 1
         subject.segmentedControlChanged(subject.scheme)
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .schemeChanged(.https))
     }
 
     @Test("doDone: sends done")
-    func doDone() async {
+    func doDone() {
         subject.doDone("howdy")
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.first == .done)
     }
 

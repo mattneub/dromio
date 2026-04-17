@@ -136,7 +136,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         guard let song = data.first(where: { $0.id == identifier }) else {
             return
         }
-        Task {
+        Task.immediate {
             await processor?.receive(.tapped(song))
         }
     }
@@ -146,7 +146,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
         let deleteAction = UIContextualAction(style: .destructive, title: nil) { [weak self] action, view, completion in
-            Task {
+            Task.immediate {
                 await self?.processor?.receive(.delete(indexPath.row))
                 completion(true)
             }
@@ -162,7 +162,7 @@ final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, 
         moveRowAt sourceIndexPath: IndexPath,
         to destinationIndexPath: IndexPath
     ) {
-        Task {
+        Task.immediate {
             await processor?.receive(
                 .move(from: sourceIndexPath.row, to: destinationIndexPath.row)
             )

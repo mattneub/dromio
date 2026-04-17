@@ -134,10 +134,8 @@ final class PingProcessor: Processor {
             await cycler.receive(.doPing()) // shouldn't happen, but let's do _something_
             return
         }
-        Task {
-            services.persistence.save(currentFolder: folder)
-            await cycler.receive(.doPing(folder.id))
-        }
+        services.persistence.save(currentFolder: folder)
+        await cycler.receive(.doPing(folder.id))
     }
 
     /// Utility saying what to do when we receive `.pickServer`.
@@ -166,9 +164,7 @@ final class PingProcessor: Processor {
             services.currentPlaylist.clear()
             await services.download.clear()
         }
-        Task {
-            await cycler.receive(.doPing(services.persistence.loadCurrentFolder()))
-        }
+        await cycler.receive(.doPing(services.persistence.loadCurrentFolder()))
     }
 
     /// Utility saying what to do when we receive `.offlineMode`.
@@ -200,8 +196,6 @@ extension PingProcessor: ServerDelegate {
         services.currentPlaylist.clear()
         services.cache.clear()
         await services.download.clear()
-        Task {
-            await cycler.receive(.doPing())
-        }
+        await cycler.receive(.doPing())
     }
 }

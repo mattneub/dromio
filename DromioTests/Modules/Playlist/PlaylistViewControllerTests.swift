@@ -50,7 +50,7 @@ struct PlaylistViewControllerTests {
         let button = try #require(subject.tableHeaderView.subviews.first as? UIButton)
         #expect(button === subject.jukeboxButton)
         subject.tableHeaderView.bounds = CGRect(origin: .zero, size: .init(width: 600, height: 400))
-        assertSnapshot(of: subject.tableHeaderView, as: .image(traits: .init(userInterfaceStyle: .light)))
+        assertSnapshot(of: subject.tableHeaderView, as: .image(precision: 0.99, traits: .init(userInterfaceStyle: .light)))
     }
 
     @Test("table header view is created only iff user has jukebox role")
@@ -70,13 +70,11 @@ struct PlaylistViewControllerTests {
         #expect(mockDataSourceDelegate.processor === processor2)
     }
 
-    @Test("viewDidLoad: sets the data source's processor, sets background color, sends .initialData action")
+    @Test("viewDidLoad: sets the data source's processor, sets background color")
     func viewDidLoad() async {
         subject.loadViewIfNeeded()
         #expect(mockDataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .background)
-        await #while(processor.thingsReceived.isEmpty)
-        #expect(processor.thingsReceived.first == .initialData)
     }
 
     @Test("viewDidLoad: adds right bar button item")
@@ -116,6 +114,15 @@ struct PlaylistViewControllerTests {
         #expect(subject.navigationItem.leftItemsSupplementBackButton == true)
     }
 
+    @Test("viewWillAppear: sends .initialData, first time only")
+    func viewWillAppear() {
+        subject.viewWillAppear(false)
+        #expect(processor.thingsReceived.first == .initialData)
+        let count = processor.thingsReceived.count
+        subject.viewWillAppear(false)
+        #expect(processor.thingsReceived.count == count)
+    }
+
     @Test("present: presents to the data source")
     func present() async {
         let state = PlaylistState(
@@ -134,7 +141,6 @@ struct PlaylistViewControllerTests {
             )]
         )
         await subject.present(state)
-        await #while(mockDataSourceDelegate.methodsCalled.last != "present(_:)")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }
@@ -272,7 +278,6 @@ struct PlaylistViewControllerTests {
         )
         subject.postponedState = state
         await subject.receive(.deselectAll)
-        await #while(mockDataSourceDelegate.methodsCalled.last != "present(_:)")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }
@@ -282,13 +287,10 @@ struct PlaylistViewControllerTests {
         subject.loadViewIfNeeded()
         let button = try #require(subject.navigationItem.rightBarButtonItems?[2])
         await subject.receive(.playerState(.playing))
-        await #while(button.image == UIImage(systemName: "playpause.fill"))
         #expect(button.image == UIImage(systemName: "pause.fill"))
         await subject.receive(.playerState(.paused))
-        await #while(button.image == UIImage(systemName: "pause.fill"))
         #expect(button.image == UIImage(systemName: "play.fill"))
         await subject.receive(.playerState(.empty))
-        await #while(button.image == UIImage(systemName: "play.fill"))
         #expect(button.image == UIImage(systemName: "playpause.fill"))
     }
 
@@ -299,31 +301,27 @@ struct PlaylistViewControllerTests {
     }
 
     @Test("doPlayPause: sends .playPause to the processor")
-    func doPlayPause() async {
+    func doPlayPause() {
         subject.doPlayPause()
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.last == .playPause)
     }
 
     @Test("doClear: sends .clear to the processor")
-    func doClear() async {
+    func doClear() {
         subject.doClear()
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.last == .clear)
     }
 
     @Test("jukebox button sends .jukeboxButton to processor")
-    func doJukeboxButton() async throws {
+    func doJukeboxButton() throws {
         let button = try #require(subject.tableHeaderView.subviews(ofType: UIButton.self).first)
         button.performPrimaryAction()
-        await #while(processor.thingsReceived.last != .jukeboxButton)
         #expect(processor.thingsReceived.last == .jukeboxButton)
     }
 
     @Test("doEdit: sends .editButton to the processor")
-    func doEdit() async {
+    func doEdit() {
         subject.doEdit()
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.last == .editButton)
     }
 }

@@ -17,7 +17,7 @@ final class DownloadDelegate: NSObject, URLSessionTaskDelegate {
             )?.queryItems?.first(where: { $0.name == "id" })?.value else {
                 return
             }
-            Task {
+            Task.immediate {
                 await services.networker.progress(id: id, fraction: fraction.newValue)
             }
         }

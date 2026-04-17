@@ -209,6 +209,7 @@ final class PlaylistProcessor: Processor {
     /// a second time, nothing would happen.
     private func setUpPipelines() {
         guard task1 == nil, task2 == nil, task3 == nil else {
+            // TODO: Reconsider this
             return
         }
         do {

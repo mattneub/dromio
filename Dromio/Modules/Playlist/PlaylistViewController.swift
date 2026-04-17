@@ -95,11 +95,20 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
             $0.minimumScaleFactor = 0.8
             $0.adjustsFontSizeToFitWidth = true
         }
-        Task {
-            await processor?.receive(.initialData)
-        }
         if userHasJukeboxRole {
             tableView.tableHeaderView = tableHeaderView
+        }
+    }
+
+    var viewAppeared = false
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        guard !viewAppeared else {
+            return
+        }
+        viewAppeared = true
+        Task.immediate {
+            await processor?.receive(.initialData)
         }
     }
 
@@ -161,25 +170,25 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     }
 
     @objc func doClear() {
-        Task {
+        Task.immediate {
             await processor?.receive(.clear)
         }
     }
 
     @objc func doPlayPause() {
-        Task {
+        Task.immediate {
             await processor?.receive(.playPause)
         }
     }
 
     @objc func doJukeboxButton() {
-        Task {
+        Task.immediate {
             await processor?.receive(.jukeboxButton)
         }
     }
 
     @objc func doEdit() {
-        Task {
+        Task.immediate {
             await processor?.receive(.editButton)
         }
     }

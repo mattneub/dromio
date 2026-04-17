@@ -31,7 +31,7 @@ final class ServerViewController: UIViewController, ReceiverPresenter {
         case password: .password
         default: fatalError("impossible")
         }
-        Task {
+        Task.immediate {
             await processor?.receive(.textFieldChanged(field, sender.text ?? ""))
         }
     }
@@ -43,7 +43,7 @@ final class ServerViewController: UIViewController, ReceiverPresenter {
         case 1: .https
         default: fatalError("impossible")
         }
-        Task {
+        Task.immediate {
             await processor?.receive(.schemeChanged(scheme))
         }
     }
@@ -51,7 +51,7 @@ final class ServerViewController: UIViewController, ReceiverPresenter {
     /// Action of the Done button.
     @IBAction func doDone (_ sender: Any) {
         view.endEditing(true)
-        Task {
+        Task.immediate {
             await processor?.receive(.done)
         }
     }

@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 import UIKit
-import WaitWhile
 
 struct PlaylistDataSourceDelegateTests {
     var subject: PlaylistDataSourceDelegate!
@@ -17,7 +16,6 @@ struct PlaylistDataSourceDelegateTests {
 
     @Test("initializer: creates and sets the data source, sets the delegate")
     func initializer() async throws {
-        await #while(subject.datasource == nil)
         #expect(subject.datasource != nil)
         #expect(tableView.dataSource === subject.datasource)
         #expect(tableView.delegate === subject)
@@ -42,8 +40,6 @@ struct PlaylistDataSourceDelegateTests {
             contributors: nil
         )]
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
         // that was prep, this is the test
         subject.receive(.progress("1", 0.5))
@@ -69,7 +65,6 @@ struct PlaylistDataSourceDelegateTests {
         )]
         state.animate = animate
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
         #expect(snapshot.itemIdentifiers.count == 1)
         #expect(snapshot.itemIdentifiers.first == "1")
@@ -118,8 +113,6 @@ struct PlaylistDataSourceDelegateTests {
         )]
         state.animate = animate
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
         let configuration = try #require(cell?.contentConfiguration as? PlaylistCellContentConfiguration)
         let expected = PlaylistCellContentConfiguration(song: .init(
@@ -163,8 +156,6 @@ struct PlaylistDataSourceDelegateTests {
         state.currentSongId = "10"
         state.animate = animate
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
         let configuration = try #require(cell?.contentConfiguration as? PlaylistCellContentConfiguration)
         let expected = PlaylistCellContentConfiguration(song: .init(
@@ -205,8 +196,6 @@ struct PlaylistDataSourceDelegateTests {
         )]
         state.animate = animate
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
         let configuration = try #require(cell?.contentConfiguration as? PlaylistCellContentConfiguration)
         let expected = PlaylistCellContentConfiguration(song: .init(
@@ -249,14 +238,12 @@ struct PlaylistDataSourceDelegateTests {
         var state = PlaylistState()
         state.songs = [song]
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         subject.tableView(tableView, didSelectRowAt: IndexPath(row: 0, section: 0))
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.contains(.tapped(song)))
     }
 
     @Test("trailingSwipeActions: delete button, calls processor delete with specified row")
-    func trailing() async throws {
+    func trailing() throws {
         let configuration = subject.tableView(tableView, trailingSwipeActionsConfigurationForRowAt: IndexPath(row: 1, section: 0))
         let realConfiguration = try #require(configuration)
         #expect(realConfiguration.actions.count == 1)
@@ -270,15 +257,13 @@ struct PlaylistDataSourceDelegateTests {
             UIView(),
             { ok in resultOK = ok}
         )
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.last == .delete(1))
         #expect(resultOK == true)
     }
 
     @Test("moveRow: tells the processor to move row with the specified rows")
-    func moveRow() async throws {
+    func moveRow() {
         subject.datasource.tableView(tableView, moveRowAt: .init(row: 1, section: 0), to: .init(row: 2, section: 0))
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.last == .move(from: 1, to: 2))
     }
 

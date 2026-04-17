@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 import UIKit
-import WaitWhile
 
 struct PingViewControllerTests {
     let subject = PingViewController(nibName: "Ping", bundle: nil)
@@ -41,12 +40,10 @@ struct PingViewControllerTests {
     }
 
     @Test("viewIsAppearing: sends launch to processor the first time, then choices")
-    func viewIsAppearing() async {
+    func viewIsAppearing() {
         subject.viewIsAppearing(false)
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived == [.launch])
         subject.viewIsAppearing(false)
-        await #while(processor.thingsReceived == [.launch])
         #expect(processor.thingsReceived == [.launch, .choices])
     }
 
@@ -121,30 +118,32 @@ struct PingViewControllerTests {
     }
 
     @Test("doReenterButton: sends processor reenterServerInfo")
-    func doReenterButton() async {
+    func doReenterButton() {
         subject.doReenterButton(UIButton())
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived == [.reenterServerInfo])
     }
 
     @Test("doPickServerButton: sends processor pickServer")
-    func doPickServerButton() async {
+    func doPickServerButton() {
         subject.doPickServerButton(UIButton())
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived == [.pickServer])
     }
 
+    @Test("doPickFolderButton: sends processor pickFolder")
+    func doPickFolderButton() {
+        subject.doPickFolderButton(UIButton())
+        #expect(processor.thingsReceived == [.pickFolder])
+    }
+
     @Test("doDeleteServerButton: sends processor deleteServer")
-    func doDeleteServerButton() async {
+    func doDeleteServerButton() {
         subject.doDeleteServerButton(UIButton())
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived == [.deleteServer])
     }
 
     @Test("doOfflineModeButton: sends processor offlineMode")
-    func doOfflineModeButton() async {
+    func doOfflineModeButton() {
         subject.doOfflineModeButton(UIButton())
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived == [.offlineMode])
     }
 }

@@ -34,7 +34,7 @@ struct AlbumViewControllerTests {
     }
 
     @Test("viewDidLoad: sets background color, sets spinner, calls search configurator, configures table, right bbi")
-    func viewDidLoad() async throws {
+    func viewDidLoad() throws {
         subject.loadViewIfNeeded()
         #expect(subject.dataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .background)
@@ -49,11 +49,13 @@ struct AlbumViewControllerTests {
         #expect(item.action == #selector(subject.showPlaylist))
     }
 
-    @Test("viewIsAppearing: sends .initialData action")
-    func viewIsAppearing() async {
+    @Test("viewIsAppearing: sends .initialData action, only once")
+    func viewIsAppearing() {
         subject.viewIsAppearing(false)
-        await #while(processor.thingsReceived.last != .initialData)
         #expect(processor.thingsReceived.last == .initialData)
+        let count = processor.thingsReceived.count
+        subject.viewIsAppearing(false)
+        #expect(processor.thingsReceived.count == count)
     }
 
     @Test("receive scrollToZero: scrolls to zero")
@@ -107,7 +109,6 @@ struct AlbumViewControllerTests {
             )]
         )
         await subject.present(state)
-        await #while(mockDataSourceDelegate.methodsCalled.last != "present(_:)")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }
@@ -193,9 +194,8 @@ struct AlbumViewControllerTests {
     }
 
     @Test("showPlaylist: sends showPlaylist to processor")
-    func showPlaylist() async {
+    func showPlaylist() {
         subject.showPlaylist()
-        await #while(processor.thingsReceived.last != .showPlaylist)
         #expect(processor.thingsReceived.last == .showPlaylist)
     }
 }

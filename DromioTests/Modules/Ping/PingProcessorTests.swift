@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 import Foundation
-import WaitWhile
 
 struct PingProcessorTests {
     let subject = PingProcessor()
@@ -434,12 +433,10 @@ struct PingProcessorTests {
         await subject.receive(.pickFolder)
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"])
-        await #while(persistence.methodsCalled.isEmpty)
         #expect(persistence.methodsCalled.first == "save(currentFolder:suppressName:)")
         #expect(persistence.currentFolder == .init(id: 2, name: "Two"))
         #expect(persistence.suppressName == false)
         let cycler = try #require(subject.cycler as? MockCycler)
-        await #while(cycler.thingsReceived.isEmpty)
         #expect(cycler.thingsReceived == [.doPing(2)])
     }
 
@@ -494,7 +491,6 @@ struct PingProcessorTests {
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"])
         let cycler = try #require(subject.cycler as? MockCycler)
-        await #while(cycler.thingsReceived.isEmpty)
         #expect(cycler.thingsReceived == [.doPing()])
     }
 
@@ -525,7 +521,6 @@ struct PingProcessorTests {
         let mockCache = try #require(services.cache as? MockCache)
         #expect(mockCache.methodsCalled == ["clear()"]) // but the cache _is_ cleared
         let cycler = try #require(subject.cycler as? MockCycler)
-        await #while(cycler.thingsReceived.isEmpty)
         #expect(persistence.methodsCalled.last == "loadCurrentFolder()")
         #expect(cycler.thingsReceived == [.doPing(100)])
     }
@@ -559,7 +554,6 @@ struct PingProcessorTests {
         #expect(mockCache.methodsCalled == ["clear()"])
         #expect(download.methodsCalled == ["clear()"])
         let cycler = try #require(subject.cycler as? MockCycler)
-        await #while(cycler.thingsReceived.isEmpty)
         #expect(cycler.thingsReceived == [.doPing()])
     }
 

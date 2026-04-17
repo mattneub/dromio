@@ -40,9 +40,14 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
         tableView.sectionHeaderTopPadding = 0
     }
 
+    var viewDidAppear = false
     override func viewIsAppearing(_ animated: Bool) {
         super.viewIsAppearing(animated)
-        Task {
+        guard !viewDidAppear else {
+            return
+        }
+        viewDidAppear = true
+        Task.immediate {
             await processor?.receive(.initialData)
         }
     }
@@ -116,7 +121,7 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
     }
 
     @objc func showPlaylist() {
-        Task {
+        Task.immediate {
             await processor?.receive(.showPlaylist)
         }
     }

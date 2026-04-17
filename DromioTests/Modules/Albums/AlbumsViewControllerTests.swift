@@ -34,7 +34,7 @@ struct AlbumsViewControllerTests {
     }
 
     @Test("viewDidLoad: sets background color, sets spinner, makes right bar button item, calls configurator")
-    func viewDidLoad() async throws {
+    func viewDidLoad() throws {
         subject.loadViewIfNeeded()
         #expect(subject.dataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .background)
@@ -51,11 +51,13 @@ struct AlbumsViewControllerTests {
         #expect(configurator.updater === mockDataSourceDelegate)
     }
 
-    @Test("viewIsAppearing: sends .initialData action")
-    func viewIsAppearing() async {
+    @Test("viewIsAppearing: sends .initialData action, only once")
+    func viewIsAppearing() {
         subject.viewIsAppearing(false)
-        await #while(processor.thingsReceived.last != .initialData)
         #expect(processor.thingsReceived.last == .initialData)
+        let count = processor.thingsReceived.count
+        subject.viewIsAppearing(false)
+        #expect(processor.thingsReceived.count == count)
     }
 
     @Test("receive scrollToZero: scrolls to zero")
@@ -141,7 +143,6 @@ struct AlbumsViewControllerTests {
             let action = menu.children[0]
             #expect(action.title == "Random Albums")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .randomAlbums)
         }
         processor.thingsReceived.removeAll()
@@ -149,7 +150,6 @@ struct AlbumsViewControllerTests {
             let action = menu.children[1]
             #expect(action.title == "Artists")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .artists)
         }
         processor.thingsReceived.removeAll()
@@ -157,7 +157,6 @@ struct AlbumsViewControllerTests {
             let action = menu.children[2]
             #expect(action.title == "Server")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .server)
         }
     }
@@ -175,7 +174,6 @@ struct AlbumsViewControllerTests {
             let action = menu.children[0]
             #expect(action.title == "All Albums")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .allAlbums)
         }
         processor.thingsReceived.removeAll()
@@ -183,7 +181,6 @@ struct AlbumsViewControllerTests {
             let action = menu.children[1]
             #expect(action.title == "Artists")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .artists)
         }
         processor.thingsReceived.removeAll()
@@ -191,7 +188,6 @@ struct AlbumsViewControllerTests {
             let action = menu.children[2]
             #expect(action.title == "Server")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .server)
         }
     }
@@ -205,9 +201,8 @@ struct AlbumsViewControllerTests {
     }
 
     @Test("showPlaylist: sends showPlaylist to processor")
-    func showPlaylist() async {
+    func showPlaylist() {
         subject.showPlaylist()
-        await #while(processor.thingsReceived.last != .showPlaylist)
         #expect(processor.thingsReceived.last == .showPlaylist)
     }
 }

@@ -39,9 +39,14 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
         tableView.sectionIndexColor = .systemRed
     }
 
+    var viewDidAppear = false
     override func viewIsAppearing(_ animated: Bool) {
         super.viewIsAppearing(animated)
-        Task {
+        guard !viewDidAppear else {
+            return
+        }
+        viewDidAppear = true
+        Task.immediate {
             await processor?.receive(.initialData)
         }
     }
@@ -112,17 +117,17 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
         case .allAlbums:
             UIMenu(title: "", options: [], children: [
                 UIAction(title: "Random Albums", handler: { [weak self] _ in
-                    Task {
+                    Task.immediate {
                         await self?.processor?.receive(.randomAlbums)
                     }
                 }),
                 UIAction(title: "Artists", handler: { [weak self] _ in
-                    Task {
+                    Task.immediate {
                         await self?.processor?.receive(.artists)
                     }
                 }),
                 UIAction(title: "Server", handler: { [weak self] _ in
-                    Task {
+                    Task.immediate {
                         await self?.processor?.receive(.server)
                     }
                 }),
@@ -130,17 +135,17 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
         case .randomAlbums:
             UIMenu(title: "", options: [], children: [
                 UIAction(title: "All Albums", handler: { [weak self] _ in
-                    Task {
+                    Task.immediate {
                         await self?.processor?.receive(.allAlbums)
                     }
                 }),
                 UIAction(title: "Artists", handler: { [weak self] _ in
-                    Task {
+                    Task.immediate {
                         await self?.processor?.receive(.artists)
                     }
                 }),
                 UIAction(title: "Server", handler: { [weak self] _ in
-                    Task {
+                    Task.immediate {
                         await self?.processor?.receive(.server)
                     }
                 }),
@@ -151,7 +156,7 @@ final class AlbumsViewController: UITableViewController, ReceiverPresenter {
     }
 
     @objc func showPlaylist() {
-        Task {
+        Task.immediate {
             await processor?.receive(.showPlaylist)
         }
     }

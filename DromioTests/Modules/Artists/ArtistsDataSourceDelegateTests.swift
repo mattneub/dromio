@@ -1,7 +1,6 @@
 @testable import Dromio
 import Testing
 import UIKit
-import WaitWhile
 
 struct ArtistsDataSourceDelegateTests {
     var subject: ArtistsDataSourceDelegate!
@@ -15,7 +14,6 @@ struct ArtistsDataSourceDelegateTests {
 
     @Test("initializer: creates and sets the data source, sets the delegate")
     func initializer() async throws {
-        await #while(subject.datasource == nil)
         #expect(subject.datasource != nil)
         #expect(tableView.dataSource === subject.datasource)
         #expect(tableView.delegate === subject)
@@ -24,7 +22,6 @@ struct ArtistsDataSourceDelegateTests {
 
     @Test("present: datasource reflects `albums`, if `allArtists` then sorted and sectionalized")
     func presentWithDataDatasourceItemsAll() async {
-        await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .allArtists)
         state.artists = [
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
@@ -32,7 +29,6 @@ struct ArtistsDataSourceDelegateTests {
             .init(id: "3", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
         ]
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.listType == .allArtists)
         let snapshot = subject.datasource.snapshot()
         #expect(snapshot.sectionIdentifiers == ["t", "y"])
@@ -42,7 +38,6 @@ struct ArtistsDataSourceDelegateTests {
 
     @Test("present: datasource reflects `artists`, if `composers` then sorted and sectionalized")
     func presentWithDataDatasourceItemsComposers() async {
-        await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .composers)
         state.artists = [
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
@@ -50,7 +45,6 @@ struct ArtistsDataSourceDelegateTests {
             .init(id: "3", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
         ]
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.listType == .composers)
         let snapshot = subject.datasource.snapshot()
         #expect(snapshot.sectionIdentifiers == ["t", "y"])
@@ -60,13 +54,10 @@ struct ArtistsDataSourceDelegateTests {
 
     @Test("present: cells are correctly populated")
     func presentWithDataCell() async throws {
-        await #while(subject.datasource == nil)
         makeWindow(view: tableView)
         var state = ArtistsState()
         state.artists = [.init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho")]
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
         let configuration = try #require(cell?.contentConfiguration as? ArtistsCellContentConfiguration)
         let expected = ArtistsCellContentConfiguration(artist: .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"))
@@ -80,12 +71,9 @@ struct ArtistsDataSourceDelegateTests {
 
     @Test("present: does not call begin/endUpdates if we're not in a window")
     func presentWithDataCellNoWindow() async throws {
-        await #while(subject.datasource == nil)
         var state = ArtistsState()
         state.artists = [.init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho")]
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-        await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
         let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
         let configuration = try #require(cell?.contentConfiguration as? ArtistsCellContentConfiguration)
         let expected = ArtistsCellContentConfiguration(artist: .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"))
@@ -99,22 +87,17 @@ struct ArtistsDataSourceDelegateTests {
 
     @Test("present: whether cells end up hidden depends on state's animateSpinner")
     func presentAnimateSpinner() async {
-        await #while(subject.datasource == nil)
         var state = ArtistsState()
         state.artists = [.init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho")]
         do {
             state.animateSpinner = true
             await subject.present(state)
-            await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-            await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
             let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
             #expect(cell!.isHidden)
         }
         do {
             state.animateSpinner = false
             await subject.present(state)
-            await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
-            await #while(tableView.cellForRow(at: .init(row: 0, section: 0)) == nil)
             let cell = tableView.cellForRow(at: .init(row: 0, section: 0))
             #expect(!cell!.isHidden)
         }
@@ -122,21 +105,18 @@ struct ArtistsDataSourceDelegateTests {
 
     @Test("sectionIndexTitles: with allArtists, returns uppercased section identifiers")
     func sectionIndexTitlesAll() async throws {
-        await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .allArtists)
         state.artists = [
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
             .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: "teehee"),
         ]
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let result = try #require(subject.datasource.sectionIndexTitles(for: tableView))
         #expect(result == ["T", "Y"])
     }
 
     @Test("sectionIndexTitles: if searching, returns nil")
     func sectionIndexTitlesSearching() async throws {
-        await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .allArtists)
         state.artists = [
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
@@ -144,41 +124,34 @@ struct ArtistsDataSourceDelegateTests {
         ]
         subject.datasource.searching = true
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
     }
 
     @Test("sectionIndexTitles: with allArtists, but no actual albums, returns nil")
     func sectionIndexTitlesAllButNoData() async throws {
-        await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .allArtists)
         state.artists = []
         await subject.present(state)
-        await #while(subject.datasource.sectionIdentifier(for: 0) == "Dummy") // it will become nil
         #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
     }
 
     @Test("sectionIndexTitles: with composers, returns uppercased identifiers")
     func sectionIndexTitlesComposers() async throws {
-        await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .composers)
         state.artists = [
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
             .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: "teehee"),
         ]
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let result = try #require(subject.datasource.sectionIndexTitles(for: tableView))
         #expect(result == ["T", "Y"])
     }
 
     @Test("sectionIndexTitles: with composers, but no actual albums, returns nil")
     func sectionIndexTitlesComposersButNoData() async throws {
-        await #while(subject.datasource == nil)
         var state = ArtistsState(listType: .composers)
         state.artists = []
         await subject.present(state)
-        await #while(subject.datasource.sectionIdentifier(for: 0) == "Dummy") // it will become nil
         #expect(subject.datasource.sectionIndexTitles(for: tableView) == nil)
     }
 
@@ -189,14 +162,12 @@ struct ArtistsDataSourceDelegateTests {
         var state = ArtistsState()
         state.artists = [artist]
         await subject.present(state)
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == "yoho")
         subject.tableView(tableView, didSelectRowAt: IndexPath(row: 0, section: 0))
-        await #while(processor.thingsReceived.isEmpty)
         #expect(processor.thingsReceived.contains(.showAlbums(artistId: "1")))
     }
 
     @Test("updateSearchResults: if there is search bar text, filters data on it, updates datasource")
-    func updateSearchResults() async {
+    func updateSearchResults() {
         subject.originalData = [
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
             .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: "teehee"),
@@ -207,14 +178,13 @@ struct ArtistsDataSourceDelegateTests {
         #expect(subject.data == [
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
         ])
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
         #expect(snapshot.sectionIdentifiers == ["y"])
         #expect(snapshot.itemIdentifiers(inSection: "y") == ["1"])
     }
 
     @Test("updateSearchResults: if there is no search bar text, restores data, updates datasource")
-    func updateSearchResultsNoText() async {
+    func updateSearchResultsNoText() {
         subject.originalData = [
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
             .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: "teehee"),
@@ -226,7 +196,6 @@ struct ArtistsDataSourceDelegateTests {
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
             .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: "teehee"),
         ])
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
         #expect(snapshot.sectionIdentifiers == ["t", "y"])
         #expect(snapshot.itemIdentifiers(inSection: "y") == ["1"])
@@ -234,7 +203,7 @@ struct ArtistsDataSourceDelegateTests {
     }
 
     @Test("updateSearchResults: if there is no search bar text and no originalData, just updates datasource")
-    func updateSearchResultsNoTextNoOriginalData() async {
+    func updateSearchResultsNoTextNoOriginalData() {
         subject.data = [
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
             .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: "teehee"),
@@ -247,7 +216,6 @@ struct ArtistsDataSourceDelegateTests {
             .init(id: "1", name: "Yoho", albumCount: nil, album: nil, roles: nil, sortName: "yoho"),
             .init(id: "2", name: "Teehee", albumCount: nil, album: nil, roles: nil, sortName: "teehee"),
         ])
-        await #while(subject.datasource.itemIdentifier(for: .init(row: 0, section: 0)) == nil)
         let snapshot = subject.datasource.snapshot()
         #expect(snapshot.sectionIdentifiers == ["t", "y"])
         #expect(snapshot.itemIdentifiers(inSection: "y") == ["1"])

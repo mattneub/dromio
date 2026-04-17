@@ -34,7 +34,7 @@ struct ArtistsViewControllerTests {
     }
 
     @Test("viewDidLoad: sets background color, sets spinner, bar button items, table view, search")
-    func viewDidLoad() async throws {
+    func viewDidLoad() throws {
         subject.loadViewIfNeeded()
         #expect(subject.dataSourceDelegate.processor === subject.processor)
         #expect(subject.view.backgroundColor == .background)
@@ -59,11 +59,13 @@ struct ArtistsViewControllerTests {
         #expect(configurator.updater === mockDataSourceDelegate)
     }
 
-    @Test("viewIsAppearing: sends .viewIsAppearing action")
-    func viewIsAppearing() async {
+    @Test("viewIsAppearing: sends .initialData action, only once")
+    func viewIsAppearing() {
         subject.viewIsAppearing(false)
-        await #while(processor.thingsReceived.last != .viewIsAppearing)
         #expect(processor.thingsReceived.last == .viewIsAppearing)
+        let count = processor.thingsReceived.count
+        subject.viewIsAppearing(false)
+        #expect(processor.thingsReceived.count == count)
     }
 
     @Test("receive scrollToZero: scrolls to zero")
@@ -102,7 +104,6 @@ struct ArtistsViewControllerTests {
     func present() async {
         let state = ArtistsState(artists: [.init(id: "1", name: "Name", albumCount: nil, album: nil, roles: ["artist"], sortName: nil)])
         await subject.present(state)
-        await #while(mockDataSourceDelegate.methodsCalled.last != "present(_:)")
         #expect(mockDataSourceDelegate.methodsCalled.last == "present(_:)")
         #expect(mockDataSourceDelegate.state == state)
     }
@@ -151,7 +152,6 @@ struct ArtistsViewControllerTests {
             let action = menu.children[0]
             #expect(action.title == "Composers")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .composers)
         }
         processor.thingsReceived.removeAll()
@@ -159,7 +159,6 @@ struct ArtistsViewControllerTests {
             let action = menu.children[1]
             #expect(action.title == "Albums")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .albums)
         }
         processor.thingsReceived.removeAll()
@@ -167,7 +166,6 @@ struct ArtistsViewControllerTests {
             let action = menu.children[2]
             #expect(action.title == "Server")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .server)
         }
     }
@@ -186,7 +184,6 @@ struct ArtistsViewControllerTests {
             let action = menu.children[0]
             #expect(action.title == "Artists")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .allArtists)
         }
         processor.thingsReceived.removeAll()
@@ -194,7 +191,6 @@ struct ArtistsViewControllerTests {
             let action = menu.children[1]
             #expect(action.title == "Albums")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .albums)
         }
         processor.thingsReceived.removeAll()
@@ -202,15 +198,13 @@ struct ArtistsViewControllerTests {
             let action = menu.children[2]
             #expect(action.title == "Server")
             (action as! any UIMenuLeaf).performWithSender(nil, target: nil)
-            await #while(processor.thingsReceived.isEmpty)
             #expect(processor.thingsReceived.last == .server)
         }
     }
 
     @Test("showPlaylist: sends showPlaylist to processor")
-    func showPlaylist() async {
+    func showPlaylist() {
         subject.showPlaylist()
-        await #while(processor.thingsReceived.last != .showPlaylist)
         #expect(processor.thingsReceived.last == .showPlaylist)
     }
 }

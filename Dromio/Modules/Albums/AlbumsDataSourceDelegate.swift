@@ -112,7 +112,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        Task {
+        Task.immediate {
             guard let id = datasource.itemIdentifier(for: indexPath) else { return }
             await processor?.receive(.showAlbum(albumId: id))
         }
@@ -134,7 +134,7 @@ final class AlbumsDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITa
                 data = originalData
             }
         }
-        Task {
+        Task.immediate {
             await updateTableView(data: data)
         }
     }

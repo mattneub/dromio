@@ -109,7 +109,7 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITab
         guard let song = data.first(where: { $0.id == identifier }) else {
             return
         }
-        Task {
+        Task.immediate {
             await processor?.receive(.tapped(song))
         }
     }
@@ -130,7 +130,7 @@ final class AlbumDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITab
                 data = originalData
             }
         }
-        Task {
+        Task.immediate {
             await updateTableView(data: data)
         }
     }

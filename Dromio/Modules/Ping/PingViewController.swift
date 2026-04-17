@@ -50,7 +50,7 @@ class PingViewController: UIViewController, ReceiverPresenter {
 
     override func viewIsAppearing(_ animated: Bool) {
         super.viewIsAppearing(animated)
-        Task {
+        Task.immediate {
             guard firstTime else {
                 await processor?.receive(.choices)
                 return
@@ -97,31 +97,31 @@ class PingViewController: UIViewController, ReceiverPresenter {
     }
 
     @IBAction func doReenterButton (_ sender: UIButton) {
-        Task {
+        Task.immediate {
             await processor?.receive(.reenterServerInfo)
         }
     }
 
     @IBAction func doPickServerButton (_ sender: UIButton) {
-        Task {
+        Task.immediate {
             await processor?.receive(.pickServer)
         }
     }
 
     @IBAction func doPickFolderButton(_ sender: UIButton) {
-        Task {
+        Task.immediate {
             await processor?.receive(.pickFolder)
         }
     }
 
     @IBAction func doDeleteServerButton (_ sender: UIButton) {
-        Task {
+        Task.immediate {
             await processor?.receive(.deleteServer)
         }
     }
 
     @IBAction func doOfflineModeButton (_ sender: UIButton) {
-        Task {
+        Task.immediate {
             await processor?.receive(.offlineMode)
         }
     }
