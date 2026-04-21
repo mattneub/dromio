@@ -205,13 +205,13 @@ final class PlaylistProcessor: Processor {
         dump(status)
     }
 
-    /// Configure our pipelines, just once. Called from `receive(.initialData)`. If it were to be called
-    /// a second time, nothing would happen.
+    /// Configure our pipelines. Called from `receive(.initialData)`.
     private func setUpPipelines() {
-        guard task1 == nil, task2 == nil, task3 == nil else {
-            // TODO: Reconsider this
-            return
-        }
+        // New strategy; the tasks can outlive the view controller, so if we're told to set them
+        // up again, delete and recreate them.
+        task1?.cancel(); task1 = nil
+        task2?.cancel(); task2 = nil
+        task3?.cancel(); task3 = nil
         do {
             let observations = Observations {
                 return services.networker.progress
