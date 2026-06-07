@@ -7,11 +7,19 @@ protocol PlayerType: Observable {
     var currentSongIdPublisher: String? { get }
     var playerStatePublisher: Player.PlayerState { get }
     func play(url: URL, song: SubsonicSong)
+    func play(url: URL, song: SubsonicSong, seconds: Double?)
     func playNext(url: URL, song: SubsonicSong)
     func playPause()
     func clear()
     func backgrounding()
     func foregrounding()
+}
+
+/// Extension that allows the caller to drop the `seconds` parameter from the `play` method.
+extension PlayerType {
+    func play(url: URL, song: SubsonicSong) {
+        play(url: url, song: song, seconds: nil)
+    }
 }
 
 /// Class that handles playing songs.
@@ -184,11 +192,15 @@ protocol PlayerType: Observable {
     }
 
     /// Stop playing, remove the existing queue, and create a new queue starting with the resource
-    /// at the given URL, and start playing.
+    /// at the given URL, and start playing. If the `seconds` parameter is not nil, we are resuming.
     /// - Parameters:
-    ///   - url: URL of the resource. May be local (file) or remote (http(s)).
+    ///   - url: URL of the resource. May be local (file) or remote (http(s)). But if the `seconds`
+    ///   parameter is not nil, expected to be local (file); we cannot resume a song that
+    ///   has not been downloaded beforehand.
     ///   - song: SubsonicSong info associated with this URL.
-    func play(url: URL, song: SubsonicSong) {
+    ///   - seconds: The position, in seconds, at which to begin playing. If nil, we
+    ///   simply start playing.
+    func play(url: URL, song: SubsonicSong, seconds: Double?) {
         removePeriodicObservation()
         player.pause()
         services.nowPlayingInfo.clear()
@@ -197,7 +209,18 @@ protocol PlayerType: Observable {
         player.actionAtItemEnd = .advance
         logger.debug("playing! \(url, privacy: .public)")
         knownSongs[song.id] = song // order matters
-        doPlay(updateOnly: false)
+        Task.immediate { @MainActor in
+            if let seconds {
+                // This is the only point at which the `seconds` parameter matters. If zero, we
+                // skip this step; we just start playing. But if not zero, do mild seek-then-play dance.
+                let targetTime = CMTime(seconds: seconds, preferredTimescale: 1)
+                _ = await player.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero)
+                try? await unlessTesting {
+                    try? await Task.sleep(for: .seconds(0.1))
+                }
+            }
+            doPlay(updateOnly: false)
+        }
     }
 
     /// Without pausing (or playing), queue the resource at the given URL at the end of the
@@ -227,7 +250,7 @@ protocol PlayerType: Observable {
         if let song = currentSong {
             if player.rate == 0 {
                 services.nowPlayingInfo.paused(song: song, at: player.currentTime().seconds)
-                playerStatePublisher = .paused
+                playerStatePublisher = .paused(at: player.currentTime().seconds)
             } else {
                 services.nowPlayingInfo.playing(song: song, at: player.currentTime().seconds)
                 playerStatePublisher = .playing
@@ -316,7 +339,7 @@ protocol PlayerType: Observable {
     enum PlayerState: Equatable {
         case empty
         case playing
-        case paused
+        case paused(at: Double)
     }
 }
 

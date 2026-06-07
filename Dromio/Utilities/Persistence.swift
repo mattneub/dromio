@@ -9,6 +9,9 @@ protocol PersistenceType {
     func save(currentFolder: SubsonicFolder?, suppressName: Bool)
     func loadCurrentFolder() -> Int?
     func loadCurrentFolderName() -> String?
+    func saveCurrentPaused(currentSongId: String?, currentSongSeconds: Double?)
+    func loadCurrentPausedId() -> String?
+    func loadCurrentPausedSeconds() -> Double?
 }
 extension PersistenceType {
     func save(currentFolder: SubsonicFolder?) {
@@ -103,6 +106,25 @@ struct Persistence: PersistenceType {
     func loadCurrentFolderName() -> String? {
         Self.defaults.object(forKey: PersistenceKey.currentFolderName.rawValue) as? String
     }
+    
+    /// Save info about the currently paused and resumable position.
+    /// - Parameters:
+    ///   - currentSongId: The id of the currently paused and resumable song; nil if none.
+    ///   - currentSongSeconds: The position with the paused and resumable song: nil if none.
+    func saveCurrentPaused(currentSongId: String?, currentSongSeconds: Double?) {
+        Self.defaults.set(currentSongId, forKey: PersistenceKey.currentSongId.rawValue)
+        Self.defaults.set(currentSongSeconds, forKey: PersistenceKey.currentSongSeconds.rawValue)
+    }
+
+    /// Fetch the currently paused and resumable song id, if any.
+    func loadCurrentPausedId() -> String? {
+        Self.defaults.object(forKey: PersistenceKey.currentSongId.rawValue) as? String
+    }
+
+    /// Fetch the currently paused and resumable song position, if any.
+    func loadCurrentPausedSeconds() -> Double? {
+        Self.defaults.object(forKey: PersistenceKey.currentSongSeconds.rawValue) as? Double
+    }
 }
 
 /// Keys for saving/fetching into/from UserDefaults.
@@ -111,4 +133,6 @@ enum PersistenceKey: String {
     case currentFolderName
     case currentPlaylist
     case servers
+    case currentSongId
+    case currentSongSeconds
 }

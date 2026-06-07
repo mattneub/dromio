@@ -36,6 +36,7 @@ protocol NetworkerType: Sendable, Observable {
         } else {
             let config = URLSessionConfiguration.ephemeral
             config.timeoutIntervalForRequest = 10
+            config.timeoutIntervalForResource = 60 // in case there is no network at all, for example
             config.waitsForConnectivity = true // in case local network dialog appears during connect
             let session = URLSession(configuration: config)
             self.session = session

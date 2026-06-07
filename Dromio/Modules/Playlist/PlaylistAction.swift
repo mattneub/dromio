@@ -16,6 +16,8 @@ enum PlaylistAction: Equatable {
     case move(from: Int, to: Int)
     /// The user tapped the playpause button.
     case playPause
+    /// The user tapped the resume button.
+    case resume
     /// The user tapped a song.
     case tapped(SubsonicSong)
 }

@@ -70,6 +70,7 @@ final class PlaylistProcessor: Processor {
         case .initialData:
             try? await configureSongs()
             services.currentPlaylist.setList(state.songs) // they must always be in sync, and we may have just filtered the list
+            await checkForResumability()
             await presenter?.present(state)
             setUpPipelines()
         case .jukeboxButton:
@@ -88,8 +89,34 @@ final class PlaylistProcessor: Processor {
         case .playPause:
             services.haptic.impact()
             services.player.playPause()
+        case .resume:
+            guard let currentSongId = state.resumableSong?.id,
+                  let currentSongSeconds = state.resumableSong?.seconds else {
+                state.resumableSong = nil
+                await presenter?.present(state)
+                services.persistence.saveCurrentPaused(currentSongId: nil, currentSongSeconds: nil)
+                return
+            }
+            let sequence = state.songs.buildSequence(startingWith: currentSongId)
+            guard sequence.count > 0, await checkAllSongsDownloaded(songs: sequence) else {
+                state.resumableSong = nil
+                await presenter?.present(state)
+                services.persistence.saveCurrentPaused(currentSongId: nil, currentSongSeconds: nil)
+                return
+            }
+            services.player.clear()
+            await services.networker.clear()
+            services.haptic.success()
+            try? await unlessTesting {
+                try? await Task.sleep(for: .seconds(0.3))
+            }
+            await presenter?.receive(.deselectAll)
+            try? await play(sequence: sequence, seconds: currentSongSeconds)
+            state.resumableSong = nil
+            await presenter?.present(state)
+            services.persistence.saveCurrentPaused(currentSongId: nil, currentSongSeconds: nil)
         case .tapped(let song):
-            let sequence = state.songs.buildSequence(startingWith: song)
+            let sequence = state.songs.buildSequence(startingWith: song.id)
             guard sequence.count > 0 else {
                 return
             }
@@ -142,6 +169,70 @@ final class PlaylistProcessor: Processor {
         }
     }
 
+    /// Given a sequence (array) of _already downloaded_ songs, line them all up to be played in order
+    /// by appending each one to the player's queue, except for the first one which
+    /// should start playing at the given position. Called by `.resume`.
+    /// - Parameters:
+    ///   - sequence: The sequence (array) of songs.
+    ///   - seconds: The position within the first song at which to start playing.
+    ///
+    private func play(sequence: [SubsonicSong], seconds: Double) async throws {
+        var sequence = sequence
+        let song = sequence.removeFirst()
+        guard let url = try await services.download.downloadedURL(for: song) else {
+            return
+        }
+        services.player.play(url: url, song: song, seconds: seconds)
+        for song in sequence {
+            guard let url = try await services.download.downloadedURL(for: song) else {
+                return
+            }
+            services.player.playNext(url: url, song: song)
+        }
+    }
+
+    /// Check for resumability and set the state accordingly. We are resumable if (1) there are
+    /// current paused id and paused seconds in persistence, (2) that song is in the state's `songs`,
+    /// and (3) that song and all subsequent songs in the state's `songs` are already downloaded.
+    /// If any of those tests fails, set the state's `resumableSong` to `nil` and bail out.
+    /// Called by `.initialData`.
+    private func checkForResumability() async {
+        guard let currentId = services.persistence.loadCurrentPausedId() else {
+            state.resumableSong = nil
+            return
+        }
+        guard let currentSeconds = services.persistence.loadCurrentPausedSeconds() else {
+            state.resumableSong = nil
+            return
+        }
+        let songs = state.songs.buildSequence(startingWith: currentId)
+        guard !songs.isEmpty else {
+            state.resumableSong = nil
+            return
+        }
+        guard await checkAllSongsDownloaded(songs: songs) else {
+            state.resumableSong = nil
+            return
+        }
+        state.resumableSong = .init(id: currentId, seconds: currentSeconds)
+    }
+
+    /// Utility method: given an array of songs, report whether they are all downloaded.
+    /// Called by `checkForResumability` in `.initialData` and also directly by `.resume`.
+    /// Does not throw; an error simply returns `false`.
+    private func checkAllSongsDownloaded(songs: [SubsonicSong]) async -> Bool {
+        do {
+            let sequence = SimpleAsyncSequence(array: songs)
+            let downloadedSongs = sequence.filter {
+                await services.download.isDownloaded(song: $0)
+            }
+            let downloadedSongsArray = try await downloadedSongs.array()
+            return downloadedSongsArray.count == songs.count
+        } catch {
+            return false
+        }
+    }
+
     /// Set `state.songs` based on the current playlist and what has been downloaded. This method
     /// promises not to generate any presentation of the state to the presenter; if the caller wants
     /// to present after calling this method, that is up to the caller.
@@ -189,20 +280,16 @@ final class PlaylistProcessor: Processor {
         try await stopAndClearJukebox()
         // TODO: we are not actually using the status returned for anything
         for song in sequence {
-            let status = try await services.requestMaker.jukebox(action: .add, songId: song.id)
-            dump(status)
+            _ = try await services.requestMaker.jukebox(action: .add, songId: song.id)
         }
-        let status = try await services.requestMaker.jukebox(action: .start)
-        dump(status)
+        _ = try await services.requestMaker.jukebox(action: .start)
     }
 
     /// Tell the jukebox to stop playing and to empty its queue.
     private func stopAndClearJukebox() async throws {
         // TODO: we are not actually using the status returned for anything
-        var status = try await services.requestMaker.jukebox(action: .stop)
-        dump(status)
-        status = try await services.requestMaker.jukebox(action: .clear)
-        dump(status)
+        _ = try await services.requestMaker.jukebox(action: .stop)
+        _ = try await services.requestMaker.jukebox(action: .clear)
     }
 
     /// Configure our pipelines. Called from `receive(.initialData)`.
@@ -236,6 +323,12 @@ final class PlaylistProcessor: Processor {
                     }
                     if let self {
                         state.currentSongId = songId
+                        if state.currentSongId != nil {
+                            // in case user taps to start playing while Resume button is showing;
+                            // since we are going to be presenting anyway, we may as well
+                            // hitch a ride here
+                            state.resumableSong = nil
+                        }
                         await presenter?.present(state)
                     }
                     if let songId {
@@ -254,6 +347,25 @@ final class PlaylistProcessor: Processor {
                         break
                     }
                     await self?.presenter?.receive(.playerState(playerState))
+                    switch playerState {
+                    case let .paused(seconds):
+                        try? await unlessTesting {
+                            try? await Task.sleep(for: .seconds(0.2)) // let current song id propagate
+                        }
+                        if let currentSongId = self?.state.currentSongId {
+                            services.persistence.saveCurrentPaused(
+                                currentSongId: currentSongId,
+                                currentSongSeconds: seconds
+                            )
+                        } else {
+                            fallthrough
+                        }
+                    case .empty, .playing:
+                        services.persistence.saveCurrentPaused(
+                            currentSongId: nil,
+                            currentSongSeconds: nil
+                        )
+                    }
                 }
             }
         }

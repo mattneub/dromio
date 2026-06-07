@@ -275,7 +275,7 @@ struct PlaylistDataSourceDelegateTests {
             #expect(result == true)
         }
         do {
-            player.playerStatePublisher = .paused
+            player.playerStatePublisher = .paused(at: 2)
             let result = subject.datasource.tableView(tableView, canEditRowAt: .init(row: 0, section: 0))
             #expect(result == true)
         }

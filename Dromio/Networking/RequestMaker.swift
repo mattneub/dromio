@@ -311,7 +311,9 @@ final class RequestMaker: RequestMakerType {
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<JukeboxResponse>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)
         if let error = jsonResponse.subsonicResponse.error {
-            dump(error)
+            unlessTesting {
+                dump(error) // TODO: we are not really looking at the error
+            }
         }
         return jsonResponse.subsonicResponse.jukeboxStatus
     }

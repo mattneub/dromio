@@ -48,10 +48,10 @@ struct ArrayTests {
     @Test("buildSequence: gives array from first match to end; if no match, returns empty array")
     func buildSequence() {
         var list = [song1, song2, song3]
-        var result = list.buildSequence(startingWith: song2)
+        var result = list.buildSequence(startingWith: song2.id)
         #expect(result == [song2, song3])
         list = [song2, song3]
-        result = list.buildSequence(startingWith: song1)
+        result = list.buildSequence(startingWith: song1.id)
         #expect(result == [])
     }
 }

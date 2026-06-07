@@ -13,12 +13,13 @@ struct NetworkerTests {
         return URLSession(configuration: configuration)
     }()
 
-    @Test("default session is URLSession with config request timeout 10 and waits for connectivity")
+    @Test("default session is URLSession with correct config")
     func session() throws {
         let subject = Networker()
         let session = try #require(subject.session as? URLSession)
         let config = session.configuration
         #expect(config.timeoutIntervalForRequest == 10)
+        #expect(config.timeoutIntervalForResource == 60)
         #expect(config.waitsForConnectivity == true)
     }
 

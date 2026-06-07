@@ -95,6 +95,9 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
             $0.minimumScaleFactor = 0.8
             $0.adjustsFontSizeToFitWidth = true
         }
+        let resumeItem = UIBarButtonItem(title: "Resume", image: nil, target: self, action: #selector(doResume))
+        toolbarItems = [resumeItem]
+        hidesBottomBarWhenPushed = true
         if userHasJukeboxRole {
             tableView.tableHeaderView = tableHeaderView
         }
@@ -142,6 +145,10 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
         } else { // if there is currently a selection, postpone presentation until there isn't
             self.postponedState = state
         }
+        navigationController?.setToolbarHidden(
+            !state.showResumeButton,
+            animated: unlessTesting(true)
+        )
     }
 
     func receive(_ effect: PlaylistEffect) async {
@@ -190,6 +197,12 @@ final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     @objc func doEdit() {
         Task.immediate {
             await processor?.receive(.editButton)
+        }
+    }
+
+    @objc func doResume() {
+        Task.immediate {
+            await processor?.receive(.resume)
         }
     }
 }

@@ -13,6 +13,7 @@ struct PlaylistProcessorTests {
     let player = MockPlayer()
     let download = MockDownload()
     let networker = MockNetworker()
+    let persistence = MockPersistence()
 
     init() {
         subject.presenter = presenter
@@ -23,6 +24,7 @@ struct PlaylistProcessorTests {
         services.player = player
         services.download = download
         services.networker = networker
+        services.persistence = persistence
     }
 
     @Test("receive clear: tells the current playlist, player, and download to clear, sets the state, call popPlaylist")
@@ -449,24 +451,70 @@ struct PlaylistProcessorTests {
                 downloaded: false
             )]
         )
+        /// there are three tasks
         #expect(subject.task1 != nil)
         #expect(subject.task2 != nil)
         #expect(subject.task3 != nil)
+        /// task1 responds to networker progress by sending .progress to presenter
         networker.progress = (id: "2", fraction: 0.5)
         await #while(!presenter.thingsReceived.contains(.progress("2", 0.5)))
         #expect(presenter.thingsReceived.contains(.progress("2", 0.5)))
+        /// task2 responds to player current song id by presenting state to presenter;
+        /// if there is a current song id (i.e. not nil), state resumable song is nil
+        /// also scrobbles
         presenter.statePresented = nil
+        subject.state.resumableSong = .init(id: "yoho", seconds: 100)
         player.currentSongIdPublisher = "10"
         await #while(presenter.statePresented == nil)
         #expect(presenter.statePresented?.currentSongId == "10")
+        #expect(presenter.statePresented?.resumableSong == nil)
         await #while(requestMaker.methodsCalled.isEmpty)
         #expect(requestMaker.methodsCalled.contains("scrobble(songId:)"))
         #expect(requestMaker.songId == "10")
+        /// task3 responds to player state by sending playerState to presenter
+        /// also calls persistence saveCurrentPaused to paused song or nil
+        /// case 1: .playing
+        persistence.currentSongId = "yoho"
+        persistence.currentSongSeconds = 100
+        presenter.thingsReceived = []
         player.playerStatePublisher = .playing
         await #while(!presenter.thingsReceived.contains(.playerState(.playing)))
         #expect(presenter.thingsReceived.contains(.playerState(.playing)))
-        #expect(playlist.methodsCalled.contains("setList(_:)"))
-        #expect(playlist.list == subject.state.songs) // still in sync
+        #expect(persistence.methodsCalled.last == "saveCurrentPaused(currentSongId:currentSongSeconds:)")
+        #expect(persistence.currentSongId == nil)
+        #expect(persistence.currentSongSeconds == nil)
+        /// case 2: .empty
+        persistence.currentSongId = "yoho"
+        persistence.currentSongSeconds = 100
+        presenter.thingsReceived = []
+        player.playerStatePublisher = .empty
+        await #while(!presenter.thingsReceived.contains(.playerState(.empty)))
+        #expect(presenter.thingsReceived.contains(.playerState(.empty)))
+        #expect(persistence.methodsCalled.last == "saveCurrentPaused(currentSongId:currentSongSeconds:)")
+        #expect(persistence.currentSongId == nil)
+        #expect(persistence.currentSongSeconds == nil)
+        /// case 3: .paused, when state current song id exists
+        persistence.currentSongId = nil
+        persistence.currentSongSeconds = nil
+        presenter.thingsReceived = []
+        subject.state.currentSongId = "yoho"
+        player.playerStatePublisher = .paused(at: 200)
+        await #while(!presenter.thingsReceived.contains(.playerState(.paused(at: 200))))
+        #expect(presenter.thingsReceived.contains(.playerState(.paused(at: 200))))
+        #expect(persistence.methodsCalled.last == "saveCurrentPaused(currentSongId:currentSongSeconds:)")
+        #expect(persistence.currentSongId == "yoho")
+        #expect(persistence.currentSongSeconds == 200)
+        /// case 3b: .paused, when state current song is nil (shouldn't happen but test logic anyway)
+        persistence.currentSongId = "yoho"
+        persistence.currentSongSeconds = 100
+        presenter.thingsReceived = []
+        subject.state.currentSongId = nil
+        player.playerStatePublisher = .paused(at: 300)
+        await #while(!presenter.thingsReceived.contains(.playerState(.paused(at: 300))))
+        #expect(presenter.thingsReceived.contains(.playerState(.paused(at: 300))))
+        #expect(persistence.methodsCalled.last == "saveCurrentPaused(currentSongId:currentSongSeconds:)")
+        #expect(persistence.currentSongId == nil)
+        #expect(persistence.currentSongSeconds == nil)
     }
 
     @Test("receive initialData: current song id and player state pipelines remove duplicates")
@@ -663,6 +711,63 @@ struct PlaylistProcessorTests {
         #expect(playlist.list == subject.state.songs) // still in sync
     }
 
+    @Test("receive initialData: checks for resumability and sets the state accordingly")
+    func receiveInitialDataResumability() async {
+        // We are resumable if (1) there are current paused id and paused seconds in persistence,
+        // (2) that song is in the state's `songs`,
+        // and (3) that song and all subsequent songs in the state's `songs` are already downloaded.
+        persistence.currentSongId = "1"
+        persistence.currentSongSeconds = 100
+        download.bools = ["1": true, "2": true]
+        playlist.list = [.init(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        ), .init(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )]
+        await subject.receive(.initialData)
+        #expect(presenter.statesPresented.last?.resumableSong == .init(id: "1", seconds: 100))
+        // now let's falsify the conditions one at a time
+        persistence.currentSongId = nil
+        await subject.receive(.initialData)
+        #expect(presenter.statesPresented.last?.resumableSong == nil)
+        //
+        persistence.currentSongId = "1"
+        persistence.currentSongSeconds = nil
+        await subject.receive(.initialData)
+        #expect(presenter.statesPresented.last?.resumableSong == nil)
+        //
+        persistence.currentSongSeconds = 100
+        persistence.currentSongId = "3"
+        await subject.receive(.initialData)
+        #expect(presenter.statesPresented.last?.resumableSong == nil)
+        //
+        persistence.currentSongSeconds = 100
+        persistence.currentSongId = "1"
+        download.bools = ["1": true, "2": false]
+        await subject.receive(.initialData)
+        #expect(presenter.statesPresented.last?.resumableSong == nil)
+    }
+
     @Test("receive jukeboxButton: toggles state jukeboxMode, call haptic")
     func receiveJukebox() async {
         #expect(subject.state.jukeboxMode == false)
@@ -737,6 +842,193 @@ struct PlaylistProcessorTests {
         await subject.receive(.playPause)
         #expect(haptic.methodsCalled == ["impact()"])
         #expect(player.methodsCalled == ["playPause()"])
+    }
+
+    @Test("receive resume: if resumable, calls haptic, clears player and networker, sends .deselectAll")
+    func receiveResume() async {
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        let song2 = SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        subject.state.songs = [song, song2]
+        download.bools = ["1": true, "2": true]
+        subject.state.resumableSong = .init(id: "1", seconds: 100)
+        await subject.receive(.resume)
+        #expect(haptic.methodsCalled == ["success()"])
+        #expect(presenter.thingsReceived[0] == .deselectAll)
+        #expect(player.methodsCalled.first == "clear()")
+        #expect(networker.methodsCalled.first == "clear()")
+    }
+
+    @Test("receive resume: if not resumable, resumable song becomes nil in state and persistence, presents")
+    func receiveResumeNotResumable() async {
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        let song2 = SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        subject.state.songs = [song, song2]
+        download.bools = ["1": true, "2": false] // *
+        subject.state.resumableSong = .init(id: "1", seconds: 100)
+        persistence.currentSongId = "yoho"
+        persistence.currentSongSeconds = 100
+        await subject.receive(.resume)
+        #expect(haptic.methodsCalled.isEmpty)
+        #expect(presenter.thingsReceived.isEmpty)
+        #expect(player.methodsCalled.isEmpty)
+        #expect(networker.methodsCalled.isEmpty)
+        #expect(presenter.statesPresented.last?.resumableSong == nil)
+        #expect(persistence.methodsCalled == ["saveCurrentPaused(currentSongId:currentSongSeconds:)"])
+        #expect(persistence.currentSongId == nil)
+        #expect(persistence.currentSongSeconds == nil)
+        //
+        persistence.methodsCalled = []
+        download.bools = ["1": true, "2": true]
+        presenter.statesPresented = []
+        subject.state.resumableSong = .init(id: "3", seconds: 100)
+        await subject.receive(.resume)
+        #expect(haptic.methodsCalled.isEmpty)
+        #expect(presenter.thingsReceived.isEmpty)
+        #expect(player.methodsCalled.isEmpty)
+        #expect(networker.methodsCalled.isEmpty)
+        #expect(presenter.statesPresented.last?.resumableSong == nil)
+        #expect(persistence.methodsCalled == ["saveCurrentPaused(currentSongId:currentSongSeconds:)"])
+        #expect(persistence.currentSongId == nil)
+        #expect(persistence.currentSongSeconds == nil)
+        //
+        persistence.methodsCalled = []
+        presenter.statesPresented = []
+        subject.state.resumableSong = nil
+        await subject.receive(.resume)
+        #expect(haptic.methodsCalled.isEmpty)
+        #expect(presenter.thingsReceived.isEmpty)
+        #expect(player.methodsCalled.isEmpty)
+        #expect(networker.methodsCalled.isEmpty)
+        #expect(presenter.statesPresented.last?.resumableSong == nil)
+        #expect(persistence.methodsCalled == ["saveCurrentPaused(currentSongId:currentSongSeconds:)"])
+        #expect(persistence.currentSongId == nil)
+        #expect(persistence.currentSongSeconds == nil)
+    }
+
+    @Test("receive resume: calls downloadedURL for all songs, calls play seconds for first, playNext for rest")
+    func resumePlays() async {
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        let song2 = SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        subject.state.songs = [song, song2]
+        download.bools = ["1": true, "2": true]
+        subject.state.resumableSong = .init(id: "1", seconds: 100)
+        await subject.receive(.resume)
+        #expect(download.methodsCalled == ["downloadedURL(for:)", "downloadedURL(for:)"])
+        #expect(player.methodsCalled == ["clear()", "play(url:song:seconds:)", "playNext(url:song:)"])
+        #expect(player.urls.map { $0.scheme } == ["file", "file"])
+        #expect(player.songs == [song, song2])
+        #expect(player.seconds == 100)
+    }
+
+    @Test("receive resume: when resumable and plays, resumable song becomes nil in state and persistence, presents")
+    func receiveResumeNilifies() async {
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        let song2 = SubsonicSong(
+            id: "2",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        subject.state.songs = [song, song2]
+        download.bools = ["1": true, "2": true]
+        subject.state.resumableSong = .init(id: "1", seconds: 100)
+        await subject.receive(.resume)
+        #expect(presenter.statesPresented.count == 1)
+        #expect(presenter.statesPresented[0].resumableSong == nil)
+        #expect(persistence.methodsCalled == ["saveCurrentPaused(currentSongId:currentSongSeconds:)"])
+        #expect(persistence.currentSongId == nil)
+        #expect(persistence.currentSongSeconds == nil)
     }
 
     @Test("receive tapped: calls haptic, clears player and networker, sends .deselectAll", .mockBackgroundTask)
@@ -823,6 +1115,7 @@ struct PlaylistProcessorTests {
         #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
         #expect(player.methodsCalled == ["clear()", "play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
         #expect(player.urls.map { $0.scheme } == ["http", "file", "file"])
+        #expect(player.songs == [song, song2, song3])
         #expect(presenter.statePresented?.songs.filter { $0.downloaded == true }.count == 3)
         #expect(try operatedOnBackgroundTask() == 3)
     }
@@ -875,6 +1168,7 @@ struct PlaylistProcessorTests {
         #expect(download.methodsCalled == ["downloadedURL(for:)", "download(song:)", "download(song:)", "download(song:)"])
         #expect(player.methodsCalled == ["clear()", "play(url:song:)", "playNext(url:song:)", "playNext(url:song:)"])
         #expect(player.urls.map { $0.scheme } == ["file", "file", "file"])
+        #expect(player.songs == [song, song2, song3])
         #expect(presenter.statePresented?.songs.filter { $0.downloaded == true }.count == 3)
         #expect(try operatedOnBackgroundTask() == 3)
     }

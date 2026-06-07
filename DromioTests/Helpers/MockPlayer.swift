@@ -7,13 +7,26 @@ import Foundation
     var url: URL?
     var urls = [URL]()
     var song: SubsonicSong?
+    var songs = [SubsonicSong]()
     var methodsCalled = [String]()
+    var seconds: Double?
 
     func play(url: URL, song: SubsonicSong) {
         methodsCalled.append(#function)
         self.url = url
         self.urls.append(url)
         self.song = song
+        self.songs.append(song)
+        self.seconds = nil
+    }
+
+    func play(url: URL, song: SubsonicSong, seconds: Double?) {
+        methodsCalled.append(#function)
+        self.url = url
+        self.urls.append(url)
+        self.song = song
+        self.songs.append(song)
+        self.seconds = seconds
     }
 
     func playNext(url: URL, song: SubsonicSong) {
@@ -21,6 +34,7 @@ import Foundation
         self.url = url
         self.urls.append(url)
         self.song = song
+        self.songs.append(song)
     }
 
     func clear() {

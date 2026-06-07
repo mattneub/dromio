@@ -114,6 +114,17 @@ struct PlaylistViewControllerTests {
         #expect(subject.navigationItem.leftItemsSupplementBackButton == true)
     }
 
+    @Test("viewDidLoad: configures the toolbar")
+    func viewDidLoadToolbar() throws {
+        subject.loadViewIfNeeded()
+        #expect(subject.toolbarItems?.count == 1)
+        let resumeButton = try #require(subject.toolbarItems?.first)
+        #expect(resumeButton.title == "Resume")
+        #expect(resumeButton.target === subject)
+        #expect(resumeButton.action == #selector(subject.doResume))
+        #expect(subject.hidesBottomBarWhenPushed == true)
+    }
+
     @Test("viewWillAppear: sends .initialData, first time only")
     func viewWillAppear() {
         subject.viewWillAppear(false)
@@ -249,6 +260,17 @@ struct PlaylistViewControllerTests {
         #expect(!subject.isEditing)
     }
 
+    @Test("present: sets visibility of toolbar")
+    func presentToolbar() async {
+        let navigationController = UINavigationController(rootViewController: subject)
+        var state = PlaylistState(resumableSong: .init(id: "yoho", seconds: 100))
+        await subject.present(state)
+        #expect(navigationController.isToolbarHidden == false)
+        state.resumableSong = nil
+        await subject.present(state)
+        #expect(navigationController.isToolbarHidden == true)
+    }
+
     @Test("receive deselectAll: tells the table view to select nil")
     func receiveDeselectAll() async {
         subject.tableView.selectRow(at: IndexPath(row: 0, section: 0), animated: false, scrollPosition: .none)
@@ -288,7 +310,7 @@ struct PlaylistViewControllerTests {
         let button = try #require(subject.navigationItem.rightBarButtonItems?[2])
         await subject.receive(.playerState(.playing))
         #expect(button.image == UIImage(systemName: "pause.fill"))
-        await subject.receive(.playerState(.paused))
+        await subject.receive(.playerState(.paused(at: 2)))
         #expect(button.image == UIImage(systemName: "play.fill"))
         await subject.receive(.playerState(.empty))
         #expect(button.image == UIImage(systemName: "playpause.fill"))
@@ -323,5 +345,11 @@ struct PlaylistViewControllerTests {
     func doEdit() {
         subject.doEdit()
         #expect(processor.thingsReceived.last == .editButton)
+    }
+
+    @Test("doResume: sends .resume to the processor")
+    func doResume() {
+        subject.doResume()
+        #expect(processor.thingsReceived.last == .resume)
     }
 }

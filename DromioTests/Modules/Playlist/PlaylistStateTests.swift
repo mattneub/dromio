@@ -45,4 +45,14 @@ struct PlaylistStateTests {
         subject.currentSongId = "1"
         #expect(subject.showPlayPauseButton == false)
     }
+
+    @Test("logic of show resume button is correct")
+    func showResumeButton() {
+        var subject = PlaylistState()
+        #expect(subject.showResumeButton == false)
+        subject.resumableSong = .init(id: "yoho", seconds: 200)
+        #expect(subject.showResumeButton == true)
+        subject.resumableSong = nil
+        #expect(subject.showResumeButton == false)
+    }
 }

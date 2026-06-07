@@ -184,4 +184,41 @@ struct PersistenceTests {
         #expect(defaults.key == "currentFolderName")
         #expect(result == "Folder")
     }
+
+    @Test("saveCurrentPaused saves currentSongId and currentSongSeconds")
+    func saveCurrentPaused() {
+        subject.saveCurrentPaused(currentSongId: "yoho", currentSongSeconds: 200)
+        #expect(defaults.methodsCalled == ["set(_:forKey:)", "set(_:forKey:)"])
+        #expect(defaults.thingsSet["currentSongId"] as? String == "yoho")
+        #expect(defaults.thingsSet["currentSongSeconds"] as? Double == 200)
+    }
+
+    @Test("loadCurrentPausedId fetches value")
+    func loadCurrentPausedId() {
+        defaults.value = nil
+        var result = subject.loadCurrentPausedId()
+        #expect(defaults.methodsCalled == ["object(forKey:)"])
+        #expect(defaults.key == "currentSongId")
+        #expect(result == nil)
+        defaults.value = "yoho"
+        result = subject.loadCurrentPausedId()
+        #expect(defaults.methodsCalled == ["object(forKey:)", "object(forKey:)"])
+        #expect(defaults.key == "currentSongId")
+        #expect(result == "yoho")
+    }
+
+    @Test("loadCurrentPausedSeconds fetches value")
+    func loadCurrentPausedSeconds() {
+        defaults.value = nil
+        var result = subject.loadCurrentPausedSeconds()
+        #expect(defaults.methodsCalled == ["object(forKey:)"])
+        #expect(defaults.key == "currentSongSeconds")
+        #expect(result == nil)
+        defaults.value = 200.0
+        result = subject.loadCurrentPausedSeconds()
+        #expect(defaults.methodsCalled == ["object(forKey:)", "object(forKey:)"])
+        #expect(defaults.key == "currentSongSeconds")
+        #expect(result == 200.0)
+    }
+
 }

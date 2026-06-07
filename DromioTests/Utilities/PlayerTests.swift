@@ -175,7 +175,7 @@ struct PlayerTests {
     }
 
     @Test("if the queue player changes rate to 0, calls now playing info `paused`, sets playerState and currentSongIdPublisher, activates")
-    func rateChangesToZero() async {
+    func rateChangesToZero() async throws {
         let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }, trampoline: trampoline) // real player!
         subject.playerStatePublisher = .playing
         subject.knownSongs["4"] = SubsonicSong(
@@ -203,7 +203,10 @@ struct PlayerTests {
         #expect(subject.currentSongIdPublisher == "4")
         #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
         #expect(audioSession.active == true)
-        #expect(subject.playerStatePublisher == .paused)
+        guard case .paused(let seconds) = subject.playerStatePublisher else {
+            throw NSError(domain: "expected .paused", code: 0)
+        }
+        #expect(seconds < 0.1)
     }
 
     @Test("play(url:song:) calls removeAllItems, calls insertAfter nil, sets category active, calls play, sets action to advance, adds to known songs")
@@ -224,7 +227,9 @@ struct PlayerTests {
         let url = URL(string: "http://example.com")!
         audioPlayer.rate = 0
         subject.play(url: url, song: song)
-        #expect(audioPlayer.methodsCalled == ["pause()", "removeAllItems()", "insert(_:after:)", "play()"])
+        #expect(audioPlayer.methodsCalled == [
+            "pause()", "removeAllItems()", "insert(_:after:)", "play()"
+        ])
         #expect(audioPlayer.actionAtItemEnd == .advance)
         #expect((audioPlayer.item?.asset as? AVURLAsset)?.url == url)
         #expect(subject.knownSongs["1"] == song)
@@ -255,6 +260,64 @@ struct PlayerTests {
         #expect(nowPlayingInfo.methodsCalled == ["clear()", "playing(song:at:)"])
         #expect(nowPlayingInfo.song == song)
         #expect(nowPlayingInfo.time == 10)
+        #expect(subject.currentSongIdPublisher == "1")
+        #expect(subject.playerStatePublisher == .playing)
+    }
+
+    @Test("play(url:song:seconds:) just like play except calls seek before playing")
+    func playSeconds() {
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: nil,
+            contributors: nil
+        )
+        let url = URL(string: "http://example.com")!
+        audioPlayer.rate = 0
+        subject.play(url: url, song: song, seconds: 1)
+        #expect(audioPlayer.methodsCalled == [
+            "pause()", "removeAllItems()", "insert(_:after:)",
+            "seek(to:toleranceBefore:toleranceAfter:)", "play()"
+        ])
+        #expect(audioPlayer.time == 1)
+        #expect(audioPlayer.toleranceBefore == .zero)
+        #expect(audioPlayer.toleranceAfter == .zero)
+        #expect(audioPlayer.actionAtItemEnd == .advance)
+        #expect((audioPlayer.item?.asset as? AVURLAsset)?.url == url)
+        #expect(subject.knownSongs["1"] == song)
+    }
+
+    @Test("play(url:song:seconds:) configures now playing info, sets player state and current item publisher")
+    func playSecondsNowPlayingInfo() {
+        let song = SubsonicSong(
+            id: "1",
+            title: "Title",
+            album: "Album",
+            artist: "Artist",
+            displayComposer: "Me",
+            track: 1,
+            year: 1970,
+            albumId: "2",
+            suffix: nil,
+            duration: 100,
+            contributors: nil
+        )
+        let url = URL(string: "http://example.com")!
+        audioPlayer.rate = 0
+        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/1.what")!))
+        subject.play(url: url, song: song, seconds: 1)
+        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
+        #expect(audioSession.active == true)
+        #expect(nowPlayingInfo.methodsCalled == ["clear()", "playing(song:at:)"])
+        #expect(nowPlayingInfo.song == song)
+        #expect(nowPlayingInfo.time == 1)
         #expect(subject.currentSongIdPublisher == "1")
         #expect(subject.playerStatePublisher == .playing)
     }
@@ -327,7 +390,7 @@ struct PlayerTests {
         #expect(nowPlayingInfo.methodsCalled.last == "paused(song:at:)")
         #expect(nowPlayingInfo.time == 30)
         #expect(subject.currentSongIdPublisher == "4")
-        #expect(subject.playerStatePublisher == .paused)
+        #expect(subject.playerStatePublisher == .paused(at: 30))
     }
 
     @Test("skip: false, when playing tells player to seek to 30 seconds back, then same as doPlay update only true")

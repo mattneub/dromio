@@ -9,6 +9,8 @@ final class MockPersistence: PersistenceType {
     var suppressName: Bool?
     var currentFolderId: Int?
     var currentFolderName: String?
+    var currentSongId: String?
+    var currentSongSeconds: Double?
 
     func saveCurrentPlaylist(songList: [SubsonicSong]) throws {
         methodsCalled.append(#function)
@@ -45,4 +47,21 @@ final class MockPersistence: PersistenceType {
         methodsCalled.append(#function)
         return self.currentFolderName
     }
+
+    func saveCurrentPaused(currentSongId: String?, currentSongSeconds: Double?) {
+        methodsCalled.append(#function)
+        self.currentSongId = currentSongId
+        self.currentSongSeconds = currentSongSeconds
+    }
+
+    func loadCurrentPausedId() -> String? {
+        methodsCalled.append(#function)
+        return currentSongId
+    }
+
+    func loadCurrentPausedSeconds() -> Double? {
+        methodsCalled.append(#function)
+        return currentSongSeconds
+    }
+
 }
