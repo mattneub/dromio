@@ -473,7 +473,7 @@ struct PlaylistProcessorTests {
         #expect(requestMaker.songId == "10")
         /// task3 responds to player state by sending playerState to presenter
         /// also calls persistence saveCurrentPaused to paused song or nil
-        /// case 1: .playing
+        /// case 1: .playing - nilifies persistence current song paused
         persistence.currentSongId = "yoho"
         persistence.currentSongSeconds = 100
         presenter.thingsReceived = []
@@ -483,7 +483,7 @@ struct PlaylistProcessorTests {
         #expect(persistence.methodsCalled.last == "saveCurrentPaused(currentSongId:currentSongSeconds:)")
         #expect(persistence.currentSongId == nil)
         #expect(persistence.currentSongSeconds == nil)
-        /// case 2: .empty
+        /// case 2: .empty - does nothing to persistence current song paused
         persistence.currentSongId = "yoho"
         persistence.currentSongSeconds = 100
         presenter.thingsReceived = []
@@ -491,24 +491,24 @@ struct PlaylistProcessorTests {
         await #while(!presenter.thingsReceived.contains(.playerState(.empty)))
         #expect(presenter.thingsReceived.contains(.playerState(.empty)))
         #expect(persistence.methodsCalled.last == "saveCurrentPaused(currentSongId:currentSongSeconds:)")
-        #expect(persistence.currentSongId == nil)
-        #expect(persistence.currentSongSeconds == nil)
-        /// case 3: .paused, when state current song id exists
+        #expect(persistence.currentSongId == "yoho")
+        #expect(persistence.currentSongSeconds == 100)
+        /// case 3: .paused, when player current song id exists - sets persistence song paused
         persistence.currentSongId = nil
         persistence.currentSongSeconds = nil
         presenter.thingsReceived = []
-        subject.state.currentSongId = "yoho"
+        player.currentSongIdPublisher = "yoho"
         player.playerStatePublisher = .paused(at: 200)
         await #while(!presenter.thingsReceived.contains(.playerState(.paused(at: 200))))
         #expect(presenter.thingsReceived.contains(.playerState(.paused(at: 200))))
         #expect(persistence.methodsCalled.last == "saveCurrentPaused(currentSongId:currentSongSeconds:)")
         #expect(persistence.currentSongId == "yoho")
         #expect(persistence.currentSongSeconds == 200)
-        /// case 3b: .paused, when state current song is nil (shouldn't happen but test logic anyway)
+        /// case 3b: .paused, when player current song id is nil (shouldn't happen but test logic anyway)
         persistence.currentSongId = "yoho"
         persistence.currentSongSeconds = 100
         presenter.thingsReceived = []
-        subject.state.currentSongId = nil
+        player.currentSongIdPublisher = nil
         player.playerStatePublisher = .paused(at: 300)
         await #while(!presenter.thingsReceived.contains(.playerState(.paused(at: 300))))
         #expect(presenter.thingsReceived.contains(.playerState(.paused(at: 300))))

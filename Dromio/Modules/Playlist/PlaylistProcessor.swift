@@ -349,10 +349,7 @@ final class PlaylistProcessor: Processor {
                     await self?.presenter?.receive(.playerState(playerState))
                     switch playerState {
                     case let .paused(seconds):
-                        try? await unlessTesting {
-                            try? await Task.sleep(for: .seconds(0.2)) // let current song id propagate
-                        }
-                        if let currentSongId = self?.state.currentSongId {
+                        if let currentSongId = services.player.currentSongIdPublisher {
                             services.persistence.saveCurrentPaused(
                                 currentSongId: currentSongId,
                                 currentSongSeconds: seconds
@@ -360,11 +357,12 @@ final class PlaylistProcessor: Processor {
                         } else {
                             fallthrough
                         }
-                    case .empty, .playing:
+                    case .playing:
                         services.persistence.saveCurrentPaused(
                             currentSongId: nil,
                             currentSongSeconds: nil
                         )
+                    case .empty: break // merely glancing at unbegun queue does nothing
                     }
                 }
             }
