@@ -73,12 +73,22 @@ final class RequestMaker: RequestMakerType {
         try await services.responseValidator.validateResponse(jsonResponse)
     }
 
-    /// Get information about the user. We do this at launch as soon as we have a successful ping;
+    /// Get information about the user; in theory if the user is an admin we can ask for info
+    /// about _any_ user, but in this call we ask for info about the _current_ user, i.e. "self".
+    /// We do this at launch as soon as we have a successful ping;
     /// we are interested only in the user's `downloadRole`, `streamRole`, and `jukeboxRole`. We
     /// should probably also be interested in the `scrobblingEnabled`; at present I always scrobble.
     /// - Returns: The user.
     func getUser() async throws -> SubsonicUser {
-        let url = try services.urlMaker.urlFor(action: "getUser")
+        guard let username = services.urlMaker.currentServerInfo?.username else {
+            throw NetworkerError.message("There is no current user.")
+        }
+        let url = try services.urlMaker.urlFor(
+            action: "getUser",
+            additional: [
+                URLQueryItem(name: "username", value: username),
+            ],
+        )
         let data = try await services.networker.performRequest(url: url)
         let jsonResponse = try JSONDecoder().decode(SubsonicResponse<UserResponse>.self, from: data)
         try await services.responseValidator.validateResponse(jsonResponse)

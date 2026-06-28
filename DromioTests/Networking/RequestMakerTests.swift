@@ -113,8 +113,25 @@ struct RequestMakerTests {
         }
     }
 
+    @Test("getUser: if there is no current server info, just throws immediately")
+    func getUserNoCurrentServerInfo() async throws {
+        urlMaker.currentServerInfo = nil
+        await #expect {
+            _ = try await subject.getUser()
+        } throws: { error in
+            error as! NetworkerError == .message("There is no current user.")
+        }
+    }
+
     @Test("getUser: calls url maker with action getUser, calls networker, calls validator")
     func getUser() async throws {
+        urlMaker.currentServerInfo = try! .init(
+            scheme: "http",
+            host: "host",
+            port: "1",
+            username: "username",
+            password: "password"
+        )
         let payload = SubsonicResponse(
             subsonicResponse: UserResponse(
                 status: "ok",
@@ -130,7 +147,11 @@ struct RequestMakerTests {
         let user = try await subject.getUser()
         #expect(urlMaker.methodsCalled == ["urlFor(action:additional:folderRestrictable:)"])
         #expect(urlMaker.action == "getUser")
-        #expect(urlMaker.additional == nil)
+        let expectedAdditional: [URLQueryItem] = [
+            .init(name: "username", value: "username"),
+        ]
+        let additional = try #require(urlMaker.additional)
+        #expect(additional == expectedAdditional)
         #expect(urlMaker.folderRestrictable == false)
         #expect(networker.methodsCalled == ["performRequest(url:)"])
         #expect(responseValidator.methodsCalled == ["validateResponse(_:)"])
@@ -139,6 +160,13 @@ struct RequestMakerTests {
 
     @Test("getUser: rethrows urlMaker throw")
     func getUserUrlMakerThrow() async throws {
+        urlMaker.currentServerInfo = try! .init(
+            scheme: "http",
+            host: "host",
+            port: "1",
+            username: "username",
+            password: "password"
+        )
         urlMaker.errorToThrow = NetworkerError.message("oops")
         await #expect {
             try await subject.getUser()
@@ -149,6 +177,13 @@ struct RequestMakerTests {
 
     @Test("getUser: rethrows networker throw")
     func getUserNetworkerThrow() async throws {
+        urlMaker.currentServerInfo = try! .init(
+            scheme: "http",
+            host: "host",
+            port: "1",
+            username: "username",
+            password: "password"
+        )
         networker.errorToThrow = NetworkerError.message("darn")
         await #expect {
             try await subject.getUser()
@@ -159,6 +194,13 @@ struct RequestMakerTests {
 
     @Test("getUser: rethrows decode error")
     func getUserDecoderThrow() async throws {
+        urlMaker.currentServerInfo = try! .init(
+            scheme: "http",
+            host: "host",
+            port: "1",
+            username: "username",
+            password: "password"
+        )
         networker.dataToReturn = [try! JSONEncoder().encode(#"{"howdy": "hey"}"#)]
         await #expect {
             try await subject.getUser()
@@ -169,6 +211,13 @@ struct RequestMakerTests {
 
     @Test("getUser: rethrows validator error")
     func getUserValidatorThrow() async throws {
+        urlMaker.currentServerInfo = try! .init(
+            scheme: "http",
+            host: "host",
+            port: "1",
+            username: "username",
+            password: "password"
+        )
         let payload = SubsonicResponse(
             subsonicResponse: UserResponse(
                 status: "ok",
