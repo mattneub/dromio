@@ -47,11 +47,11 @@ struct PingViewControllerTests {
         #expect(processor.thingsReceived == [.launch, .choices])
     }
 
-    @Test("present: sets the labels and buttons as expected")
-    func present() async {
+    @Test("present: sets the labels and buttons as expected", arguments: [true, false])
+    func present(showOffline: Bool) async {
         subject.loadViewIfNeeded()
 
-        await subject.present(.init(status: .empty))
+        await subject.present(.init(status: .empty, showOfflineModeButton: showOffline))
         #expect(subject.pingingLabel.isHidden)
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
@@ -59,9 +59,13 @@ struct PingViewControllerTests {
         #expect(subject.pickFolderButton.isHidden)
         #expect(subject.pickServerButton.isHidden)
         #expect(subject.deleteServerButton.isHidden)
-        #expect(subject.offlineModeButton.isHidden)
+        switch showOffline {
+        case true: #expect(!subject.offlineModeButton.isHidden)
+        case false: #expect(subject.offlineModeButton.isHidden)
+        }
+        #expect(subject.offlineModeButton.isEnabled)
 
-        await subject.present(.init(status: .unknown))
+        await subject.present(.init(status: .unknown, showOfflineModeButton: showOffline))
         #expect(!subject.pingingLabel.isHidden)
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
@@ -69,9 +73,13 @@ struct PingViewControllerTests {
         #expect(subject.pickFolderButton.isHidden)
         #expect(subject.pickServerButton.isHidden)
         #expect(subject.deleteServerButton.isHidden)
-        #expect(subject.offlineModeButton.isHidden)
+        switch showOffline {
+        case true: #expect(!subject.offlineModeButton.isHidden)
+        case false: #expect(subject.offlineModeButton.isHidden)
+        }
+        #expect(subject.offlineModeButton.isEnabled)
 
-        await subject.present(.init(status: .success))
+        await subject.present(.init(status: .success, showOfflineModeButton: showOffline))
         #expect(!subject.pingingLabel.isHidden)
         #expect(!subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
@@ -79,9 +87,13 @@ struct PingViewControllerTests {
         #expect(subject.pickFolderButton.isHidden)
         #expect(subject.pickServerButton.isHidden)
         #expect(subject.deleteServerButton.isHidden)
-        #expect(subject.offlineModeButton.isHidden)
+        switch showOffline {
+        case true: #expect(!subject.offlineModeButton.isHidden)
+        case false: #expect(subject.offlineModeButton.isHidden)
+        }
+        #expect(!subject.offlineModeButton.isEnabled)
 
-        await subject.present(.init(status: .failure(message: "oops")))
+        await subject.present(.init(status: .failure(message: "oops"), showOfflineModeButton: showOffline))
         #expect(!subject.pingingLabel.isHidden)
         #expect(subject.successLabel.isHidden)
         #expect(!subject.failureLabel.isHidden)
@@ -90,9 +102,13 @@ struct PingViewControllerTests {
         #expect(!subject.pickFolderButton.isHidden)
         #expect(!subject.pickServerButton.isHidden)
         #expect(!subject.deleteServerButton.isHidden)
-        #expect(!subject.offlineModeButton.isHidden)
+        switch showOffline {
+        case true: #expect(!subject.offlineModeButton.isHidden)
+        case false: #expect(subject.offlineModeButton.isHidden)
+        }
+        #expect(subject.offlineModeButton.isEnabled)
 
-        await subject.present(.init(status: .choices))
+        await subject.present(.init(status: .choices, showOfflineModeButton: showOffline))
         #expect(subject.pingingLabel.isHidden)
         #expect(subject.successLabel.isHidden)
         #expect(subject.failureLabel.isHidden)
@@ -100,7 +116,11 @@ struct PingViewControllerTests {
         #expect(!subject.pickFolderButton.isHidden)
         #expect(!subject.pickServerButton.isHidden)
         #expect(!subject.deleteServerButton.isHidden)
-        #expect(!subject.offlineModeButton.isHidden)
+        switch showOffline {
+        case true: #expect(!subject.offlineModeButton.isHidden)
+        case false: #expect(subject.offlineModeButton.isHidden)
+        }
+        #expect(subject.offlineModeButton.isEnabled)
     }
 
     @Test("present: enables the pickFolderButton as expected")

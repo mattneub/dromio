@@ -69,9 +69,8 @@ class PingViewController: UIViewController, ReceiverPresenter {
         pickServerButton.isHidden = true
         deleteServerButton.isHidden = true
         pickFolderButton.isHidden = true
-        offlineModeButton.isHidden = true
         switch state.status {
-        case .empty: break
+        case .empty: break // all hidden
         case .unknown:
             pingingLabel.isHidden = false
         case .success:
@@ -85,15 +84,15 @@ class PingViewController: UIViewController, ReceiverPresenter {
             pickServerButton.isHidden = false
             deleteServerButton.isHidden = false
             pickFolderButton.isHidden = false
-            offlineModeButton.isHidden = false
         case .choices:
             reenterButton.isHidden = false
             pickServerButton.isHidden = false
             deleteServerButton.isHidden = false
             pickFolderButton.isHidden = false
-            offlineModeButton.isHidden = false
         }
         pickFolderButton.isEnabled = state.enablePickFolderButton && state.status == .choices
+        offlineModeButton.isHidden = !state.showOfflineModeButton
+        offlineModeButton.isEnabled = state.status != .success // no taps during transition
     }
 
     @IBAction func doReenterButton (_ sender: UIButton) {

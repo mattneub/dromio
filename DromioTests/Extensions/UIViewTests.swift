@@ -51,7 +51,7 @@ final class MockUIView: UIView {
     static var options: UIView.AnimationOptions = []
     static var completion: ((Bool) -> Void)? = nil
     static var animation: Animation?
-    override static func animate(withDuration duration: TimeInterval, delay: TimeInterval, options: UIView.AnimationOptions = [], animations: @escaping () -> Void, completion: ((Bool) -> Void)? = nil) {
+    override static func animate(withDuration duration: TimeInterval, delay: TimeInterval, options: UIView.AnimationOptions = [], animations: () -> Void, completion: ((Bool) -> Void)? = nil) {
         self.duration = duration
         self.delay = delay
         self.options = options

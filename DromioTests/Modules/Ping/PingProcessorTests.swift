@@ -13,6 +13,7 @@ struct PingProcessorTests {
     let currentPlaylist = MockPlaylist()
     let haptic = MockHaptic()
     let player = MockPlayer()
+    let allower = MockPingOfflineAllower()
 
     init() {
         services.requestMaker = requestMaker
@@ -26,12 +27,18 @@ struct PingProcessorTests {
         subject.coordinator = coordinator
         requestMaker.user = .init(adminRole: true, scrobblingEnabled: false, downloadRole: true, streamRole: true, jukeboxRole: true)
         subject.cycler = MockCycler(processor: subject)
+        subject.offlineAllower = allower
     }
 
-    @Test("receive choices: sets the status to choices, clears the player")
-    func receiveChoices() async {
+    @Test(
+        "receive choices: checks offline visibility, sets the status to choices, clears the player",
+        arguments: [true, false]
+    )
+    func receiveChoices(allow: Bool) async {
+        allower.boolToReturn = allow
         await subject.receive(.choices)
         #expect(presenter.statePresented?.status == .choices)
+        #expect(presenter.statePresented?.showOfflineModeButton == allow)
         #expect(player.methodsCalled == ["clear()"])
     }
 
@@ -102,17 +109,28 @@ struct PingProcessorTests {
         #expect(persistence.currentFolder == .init(id: 1, name: "Ho"))
     }
 
-    @Test("receive doPing: sets status to empty; if current server is nil, tries to load the server")
-    func receiveDoPingNilCurrentServer() async {
+    @Test(
+        "receive doPing: sets status to empty; if current server is nil, tries to load the server",
+        arguments: [true, false]
+    )
+    func receiveDoPingNilCurrentServer(allow: Bool) async {
+        allower.boolToReturn = allow
         await subject.receive(.doPing())
         #expect(presenter.statesPresented.first?.status == .empty)
+        #expect(presenter.statesPresented.first?.showOfflineModeButton == false) // regardless of allower
+        #expect(presenter.statesPresented.first?.showOfflineModeButton == false)
         #expect(persistence.methodsCalled[0] == "loadServers()")
     }
 
-    @Test("receive doPing: if current server is nil, and there is no stored server, shows the server interface")
-    func receiveDoPingNilCurrentServerNoStored() async {
+    @Test(
+        "receive doPing: if current server is nil, and there is no stored server, shows the server interface",
+        arguments: [true, false]
+    )
+    func receiveDoPingNilCurrentServerNoStored(allow: Bool) async {
+        allower.boolToReturn = allow
         await subject.receive(.doPing())
         #expect(presenter.statesPresented.first?.status == .empty)
+        #expect(presenter.statesPresented.first?.showOfflineModeButton == false) // regardless of allower
         #expect(coordinator.methodsCalled[0] == "showServer(delegate:)")
         #expect(coordinator.delegate === subject)
     }
@@ -128,15 +146,20 @@ struct PingProcessorTests {
         #expect(urlMaker.currentServerInfo == ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"))
     }
 
-    @Test("receive doPing: with current server sets status to unknown, calls networker ping")
-    func receiveDoPing() async {
+    @Test(
+        "receive doPing: with current server sets status to unknown, calls networker ping",
+        arguments: [true, false]
+    )
+    func receiveDoPing(allow: Bool) async {
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
+        allower.boolToReturn = allow
         await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled[0] == "ping()")
         #expect(presenter.statesPresented[1].status == .unknown)
+        #expect(presenter.statesPresented[1].showOfflineModeButton == allow)
     }
 
     @Test("receive doPing: with no ping issues call networker getUser, sets global user jukebox info, calls networker getFolders")
@@ -283,52 +306,72 @@ struct PingProcessorTests {
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
     }
 
-    @Test("receive doPing: with no issues call networker getUser, barfs if user cannot stream and download")
-    func receiveDoPingGetUserNoDownload() async {
+    @Test(
+        "receive doPing: with no issues call networker getUser, barfs if user cannot stream and download",
+        arguments: [true, false]
+    )
+    func receiveDoPingGetUserNoDownload(allow: Bool) async {
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         requestMaker.user = .init(adminRole: true, scrobblingEnabled: false, downloadRole: false, streamRole: true, jukeboxRole: true)
+        allower.boolToReturn = allow
         await subject.receive(.doPing())
         #expect(presenter.statePresented?.status == .failure(message: "User needs stream and download privileges."))
+        #expect(presenter.statesPresented.dropFirst(1).allSatisfy { $0.showOfflineModeButton == allow })
         #expect(coordinator.methodsCalled.isEmpty)
         requestMaker.user = .init(adminRole: true, scrobblingEnabled: false, downloadRole: true, streamRole: false, jukeboxRole: true)
+        presenter.statesPresented = []
         await subject.receive(.doPing())
         #expect(presenter.statePresented?.status == .failure(message: "User needs stream and download privileges."))
+        #expect(presenter.statesPresented.dropFirst(1).allSatisfy { $0.showOfflineModeButton == allow })
         #expect(coordinator.methodsCalled.isEmpty)
     }
 
-    @Test("receive doPing: with no issues sets state status to .success if no throw and calls coordinator showAlbums")
-    func receiveDoPingSuccess() async {
+    @Test(
+        "receive doPing: with no issues sets state status to .success if no throw and calls coordinator showAlbums",
+        arguments: [true, false]
+    )
+    func receiveDoPingSuccess(allow: Bool) async {
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         requestMaker.pingError = nil
+        allower.boolToReturn = allow
         await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled[0] == "ping()")
         #expect(requestMaker.methodsCalled[1] == "getUser()")
         #expect(requestMaker.methodsCalled[2] == "getFolders()")
         #expect(presenter.statePresented?.status == .success)
+        #expect(presenter.statesPresented.dropFirst(1).allSatisfy { $0.showOfflineModeButton == allow })
         #expect(coordinator.methodsCalled[0] == "showAlbums()")
     }
 
-    @Test("receive doPing: with current server calls networker ping, sets state status to .failure and message if throw NetworkerError")
-    func receiveDoPingFailure() async {
+    @Test(
+        "receive doPing: with current server calls networker ping, sets state status to .failure and message if throw NetworkerError",
+        arguments: [true, false]
+    )
+    func receiveDoPingFailure(allow: Bool) async {
         persistence.servers = [
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
         requestMaker.pingError = NetworkerError.message("test")
+        allower.boolToReturn = allow
         await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled == ["ping()"])
         #expect(presenter.statePresented?.status == .failure(message: "test"))
+        #expect(presenter.statesPresented.dropFirst(1).allSatisfy { $0.showOfflineModeButton == allow })
         #expect(coordinator.methodsCalled.isEmpty)
     }
 
-    @Test("receive doPing: with current server calls networker ping, sets state status to .failure and localized description if throw other error")
-    func receiveDoPingFailure2() async {
+    @Test(
+        "receive doPing: with current server calls networker ping, sets state status to .failure and localized description if throw other error",
+        arguments: [true, false]
+    )
+    func receiveDoPingFailure2(allow: Bool) async {
         nonisolated
         class MyError: NSError, @unchecked Sendable {
             override var localizedDescription: String { "oops" }
@@ -337,10 +380,12 @@ struct PingProcessorTests {
             ServerInfo(scheme: "http", host: "h", port: 1, username: "u", password: "p", version: "v"),
             ServerInfo(scheme: "http", host: "hh", port: 1, username: "uu", password: "p", version: "v"),
         ]
+        allower.boolToReturn = allow
         requestMaker.pingError = MyError(domain: "domain", code: 0)
         await subject.receive(.doPing())
         #expect(requestMaker.methodsCalled == ["ping()"])
         #expect(presenter.statePresented?.status == .failure(message: "oops"))
+        #expect(presenter.statesPresented.dropFirst(1).allSatisfy { $0.showOfflineModeButton == allow })
         #expect(coordinator.methodsCalled.isEmpty)
     }
 
@@ -362,24 +407,8 @@ struct PingProcessorTests {
         #expect(cycler.thingsReceived == [.doPing(nil)])
     }
 
-    @Test("receive offlineMode: intersects current playlist with downloads, balks with alert if empty")
-    func offlineModePlaylistAndDownloads() async {
-        currentPlaylist.list = [
-            .init(id: "1", title: "1", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
-        ]
-        download.bools["2"] = true
-        await subject.receive(.offlineMode)
-        #expect(coordinator.methodsCalled == ["showAlert(title:message:)"])
-        #expect(coordinator.title == "No downloads to play.")
-        #expect(coordinator.message == "You can’t enter offline mode, because you have no downloaded playlist items.")
-    }
-
-    @Test("receive offlineMode: if all is well, calls showPlaylist with state offlinemode")
+    @Test("receive offlineMode: calls showPlaylist with state offlinemode")
     func offlineMode() async {
-        currentPlaylist.list = [
-            .init(id: "1", title: "1", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
-        ]
-        download.bools["1"] = true
         await subject.receive(.offlineMode)
         #expect(coordinator.methodsCalled == ["showPlaylist(state:)"])
         #expect(coordinator.playlistState == .init(offlineMode: true))

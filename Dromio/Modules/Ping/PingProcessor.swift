@@ -15,9 +15,14 @@ final class PingProcessor: Processor {
     /// Cycler, so that we can dispatch actions to ourself and test that we did so.
     lazy var cycler: Cycler = Cycler(processor: self)
 
+    /// Object containing logic for whether offline mode is allowed. It's a var so we can
+    /// slot in a mock here for testing.
+    var offlineAllower: any PingOfflineAllowerType = PingOfflineAllower()
+
     func receive(_ action: PingAction) async {
         switch action {
         case .choices:
+            state.showOfflineModeButton = await offlineAllower.canShowOfflineModeButton()
             state.status = .choices
             await presenter?.present(state)
             services.player.clear()
@@ -44,6 +49,7 @@ final class PingProcessor: Processor {
     private func ping(restrictToFolder restrictedFolder: Int? = nil) async {
         do {
             state.status = .empty
+            state.showOfflineModeButton = false
             await presenter?.present(state)
             await Task.yield()
             if services.urlMaker.currentServerInfo == nil {
@@ -53,6 +59,7 @@ final class PingProcessor: Processor {
                 }
                 services.urlMaker.currentServerInfo = server
             }
+            await state.showOfflineModeButton = offlineAllower.canShowOfflineModeButton()
             state.status = .unknown
             await presenter?.present(state)
             await Task.yield()
@@ -169,15 +176,7 @@ final class PingProcessor: Processor {
 
     /// Utility saying what to do when we receive `.offlineMode`.
     private func offlineMode() async {
-        // intersect the current playlist with downloads
-        var intersection = [URL?]()
-        for song in services.currentPlaylist.list {
-            intersection.append(try? await services.download.downloadedURL(for: song))
-        }
-        guard !intersection.compactMap({$0}).isEmpty else {
-            coordinator?.showAlert(title: "No downloads to play.", message: "You can’t enter offline mode, because you have no downloaded playlist items.")
-            return
-        }
+        await services.networker.clear()
         coordinator?.showPlaylist(state: PlaylistState(offlineMode: true))
     }
 }

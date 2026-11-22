@@ -5,6 +5,8 @@ struct PingState: Equatable {
 
     var enablePickFolderButton = false
 
+    var showOfflineModeButton = false
+
     var folders = [SubsonicFolder]()
 
     /// States that the view can be in.

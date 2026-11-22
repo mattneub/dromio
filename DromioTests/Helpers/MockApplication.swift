@@ -1,7 +1,7 @@
 @testable import Dromio
 import UIKit
 
-final class MockApplication: ApplicationType {
+final class MockApplication: @MainActor ApplicationType {
     var methodsCalled = [String]()
     var identifierToReturn: UIBackgroundTaskIdentifier = .init(rawValue: 1)
     var identifierAtEnd: UIBackgroundTaskIdentifier?
