@@ -16,8 +16,8 @@ struct SceneDelegateTests {
         #expect(window.isKeyWindow)
         #expect(mockRootCoordinator.methodsCalled == ["createInitialInterface(window:)"])
         #expect(restrictor.scene === scene)
-        #expect(restrictor.minimumSize == .init(width: 390, height: 844))
-        #expect(restrictor.maximumSize == .init(width: 450, height: 1000))
+        #expect(restrictor.minimumSize == .init(width: 500, height: 800))
+        #expect(restrictor.maximumSize == .init(width: 600, height: 1000))
     }
 
     @Test("sceneWillEnterForeground: calls player foregrounding")
@@ -40,5 +40,17 @@ struct SceneDelegateTests {
         let subject = SceneDelegate()
         subject.sceneDidEnterBackground(scene)
         #expect(player.methodsCalled == ["backgrounding()"])
+    }
+
+    @Test("preferred windowing control style is correct")
+    func controlStyle() throws {
+        let scene = try #require(UIApplication.shared.connectedScenes.first as? UIWindowScene)
+        let subject = SceneDelegate()
+        let result = subject.preferredWindowingControlStyle(for: scene)
+        // for some reason, this value is not equatable in the way you'd expect
+        // so we take advantage of the way it prints itself
+        // (perhaps could have jumped into Objective-C, but not worth finding out_
+        let description = String(describing: result)
+        #expect(description.contains("type: minimal"))
     }
 }

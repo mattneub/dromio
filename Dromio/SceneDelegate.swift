@@ -29,8 +29,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.makeKeyAndVisible()
         services.sceneSizeRestrictor.restrict(
             scene: scene,
-            minimumSize: .init(width: 390, height: 844),
-            maximumSize: .init(width: 450, height: 1000)
+            minimumSize: .init(width: 500, height: 800),
+            maximumSize: .init(width: 600, height: 1000)
         )
     }
 
@@ -40,6 +40,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneDidEnterBackground(_ scene: UIScene) {
         services.player.backgrounding()
+    }
+
+    func preferredWindowingControlStyle(for windowScene: UIWindowScene) -> UIWindowScene.WindowingControlStyle {
+        .minimal
     }
 }
 

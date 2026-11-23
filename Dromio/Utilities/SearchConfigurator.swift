@@ -15,7 +15,12 @@ class SearchConfigurator {
         controller.searchBar.spellCheckingType = .no
         controller.searchBar.inlinePredictionType = .no
         viewController.navigationItem.searchBarPlacementAllowsToolbarIntegration = true
-        viewController.navigationItem.preferredSearchBarPlacement = .integratedButton
+        if viewController.traitCollection.userInterfaceIdiom == .phone {
+            viewController.navigationItem.preferredSearchBarPlacement = .integratedButton
+        } else {
+            viewController.navigationItem.preferredSearchBarPlacement = .stacked
+            viewController.navigationItem.hidesSearchBarWhenScrolling = true
+        }
         let spacer = UIBarButtonItem.flexibleSpace()
         let searchbarPlacer = viewController.navigationItem.searchBarPlacementBarButtonItem
         viewController.toolbarItems = [spacer, searchbarPlacer]
