@@ -1,4 +1,5 @@
 import MediaPlayer
+import os.log
 
 /// Protocol describing the Player, as seen by the PlayerTrampoline.
 @objc protocol PlayerTrampolineTargetType: AnyObject {
@@ -9,7 +10,7 @@ import MediaPlayer
 
 /// Public face of the PlayerTrampoline type, so we can mock it for testing.
 @objc protocol PlayerTrampolineType: AnyObject {
-    var player: (any PlayerTrampolineTargetType)? { get set }
+    var player: any PlayerTrampolineTargetType? { get set }
     @objc func doPlay(_ event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus
     @objc func doPause(_ event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus
     @objc func doSkipBack(_ event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus
@@ -19,7 +20,7 @@ import MediaPlayer
 /// Class whose instance acts as the recipient of remote command events. This greatly
 /// simplifies testing to prove that the methods here behave as expected.
 final class PlayerTrampoline: NSObject, PlayerTrampolineType {
-    weak var player: (any PlayerTrampolineTargetType)?
+    weak var player: any PlayerTrampolineTargetType?
 
     /// Response to the remote command center saying "play".
     @objc func doPlay(_ event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus {

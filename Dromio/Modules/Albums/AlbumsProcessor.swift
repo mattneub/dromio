@@ -1,12 +1,13 @@
 import Foundation
+import os.log
 
 /// Processor containing logic for the AlbumsViewController.
 final class AlbumsProcessor: Processor {
     /// Reference to the coordinator, set by coordinator on creation.
-    weak var coordinator: (any RootCoordinatorType)?
+    weak var coordinator: any RootCoordinatorType?
 
     /// Reference to the view controller, set by coordinator on creation.
-    weak var presenter: (any ReceiverPresenter<AlbumsEffect, AlbumsState>)?
+    weak var presenter: any ReceiverPresenter<AlbumsEffect, AlbumsState>?
 
     /// Cycler, so that we can dispatch actions to ourself and test that we did so.
     lazy var cycler: Cycler = Cycler(processor: self)

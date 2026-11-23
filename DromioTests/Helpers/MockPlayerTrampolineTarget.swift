@@ -6,7 +6,7 @@ final class MockPlayerTrampolineTarget: PlayerTrampolineTargetType {
     var methodsCalled = [String]()
     var updateOnly: Bool?
     var forward: Bool?
-    var event: (any RemoteCommandEventType)?
+    var event: any RemoteCommandEventType?
     var status: MPRemoteCommandHandlerStatus = .success
 
     func doPlay(updateOnly: Bool) {

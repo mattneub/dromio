@@ -4,10 +4,10 @@ import Observation
 /// Processor containing logic for the PlaylistViewController.
 final class PlaylistProcessor: Processor {
     /// Reference to the coordinator, set by coordinator on creation.
-    weak var coordinator: (any RootCoordinatorType)?
+    weak var coordinator: any RootCoordinatorType?
 
     /// Reference to the view controller, set by coordinator on creation.
-    weak var presenter: (any ReceiverPresenter<PlaylistEffect, PlaylistState>)?
+    weak var presenter: any ReceiverPresenter<PlaylistEffect, PlaylistState>?
 
     /// State to be presented to the presenter.
     var state = PlaylistState()

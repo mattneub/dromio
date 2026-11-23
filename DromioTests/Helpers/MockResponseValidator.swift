@@ -3,7 +3,7 @@ import Foundation
 
 final class MockResponseValidator: ResponseValidatorType {
     var methodsCalled = [String]()
-    var errorToThrow: (any Error)?
+    var errorToThrow: any Error?
 
     func validateResponse<T: InnerResponse>(_ jsonResponse: SubsonicResponse<T>) async throws {
         methodsCalled.append(#function)

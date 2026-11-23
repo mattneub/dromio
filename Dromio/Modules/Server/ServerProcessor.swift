@@ -3,13 +3,13 @@ import Foundation
 /// Processor containing the logic for the server view controller.
 final class ServerProcessor: Processor {
     /// Reference to the coordinator, set by the coordinator on creation.
-    weak var coordinator: (any RootCoordinatorType)?
+    weak var coordinator: any RootCoordinatorType?
 
     /// Reference to the presenter, set by the coordinator on creation.
-    weak var presenter: (any ReceiverPresenter<Void, ServerState>)?
+    weak var presenter: any ReceiverPresenter<Void, ServerState>?
 
     /// Reference to the delegate, set by the coordinator on creation.
-    weak var delegate: (any ServerDelegate)?
+    weak var delegate: any ServerDelegate?
 
     /// State that holds the user's changes in the form. It is never presented; it's just our scratchpad.
     var state = ServerState()

@@ -35,9 +35,10 @@ extension UIView {
     ///   - animations: Function containing animatable changes to commit to the views.
     ///
     static func animate(withDuration duration: Double, delay: Double, options: UIView.AnimationOptions, animations: @escaping () -> Void) async {
-        await withCheckedContinuation { continuation in
+        await withContinuation(of: Void.self) { continuation in
+            var continuation = Optional(continuation)
             Self.animate(withDuration: duration, delay: delay, options: options, animations: animations) { _ in
-                continuation.resume(returning: ())
+                continuation.take()?.resume()
             }
         }
     }
@@ -49,9 +50,10 @@ extension UIView {
     ///   - animation: The SwiftUI Animation.
     ///   - changes: Function containing animatable changes to commit to the views.
     static func animate(_ animation: Animation, changes: () -> Void) async {
-        await withCheckedContinuation { continuation in
+        await withContinuation(of: Void.self) { continuation in
+            var continuation = Optional(continuation)
             Self.animate(animation, changes: changes) {
-                continuation.resume(returning: ())
+                continuation.take()?.resume()
             }
         }
     }

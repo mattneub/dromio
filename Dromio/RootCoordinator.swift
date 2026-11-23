@@ -60,15 +60,15 @@ protocol RootCoordinatorType: AnyObject {
 final class RootCoordinator: RootCoordinatorType {
     // Processors are rooted here. They are all expressed as protocols, for testability.
 
-    var pingProcessor: (any Processor<PingAction, PingState, Void>)?
-    var albumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
-    var albumProcessor: (any Processor<AlbumAction, AlbumState, AlbumEffect>)?
-    var artistsProcessor: (any Processor<ArtistsAction, ArtistsState, ArtistsEffect>)?
+    var pingProcessor: any Processor<PingAction, PingState, Void>?
+    var albumsProcessor: any Processor<AlbumsAction, AlbumsState, AlbumsEffect>?
+    var albumProcessor: any Processor<AlbumAction, AlbumState, AlbumEffect>?
+    var artistsProcessor: any Processor<ArtistsAction, ArtistsState, ArtistsEffect>?
     // The albums module can appear in two places simultaneously, so we need a place to root
     // a second instance of the albums processor.
-    var artistAlbumsProcessor: (any Processor<AlbumsAction, AlbumsState, AlbumsEffect>)?
-    var playlistProcessor: (any Processor<PlaylistAction, PlaylistState, PlaylistEffect>)?
-    var serverProcessor: (any Processor<ServerAction, ServerState, Void>)?
+    var artistAlbumsProcessor: any Processor<AlbumsAction, AlbumsState, AlbumsEffect>?
+    var playlistProcessor: any Processor<PlaylistAction, PlaylistState, PlaylistEffect>?
+    var serverProcessor: any Processor<ServerAction, ServerState, Void>?
 
     /// Reference to the root view controller of the app.
     weak var rootViewController: UIViewController?
@@ -195,15 +195,16 @@ final class RootCoordinator: RootCoordinatorType {
     }
 
     func showActionSheet(title: String, options: [String]) async -> String? {
-        await withCheckedContinuation { continuation in
+        await withContinuation(of: String?.self) { continuation in
+            var continuation = Optional(continuation)
             let alert = UIAlertController(title: title, message: nil, preferredStyle: .actionSheet)
             for option in options {
                 alert.addAction(UIAlertAction(title: option, style: .default, handler: { action in
-                    continuation.resume(returning: action.title)
+                    continuation.take()?.resume(returning: action.title)
                 }))
             }
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
-                continuation.resume(returning: nil)
+                continuation.take()?.resume(returning: nil)
             }))
             rootViewController?.present(alert, animated: unlessTesting(true))
         }

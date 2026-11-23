@@ -1,4 +1,5 @@
 import MediaPlayer
+import os.log
 
 /// Protocol that represents the public face of our NowPlayingInfo type.
 protocol NowPlayingInfoType {

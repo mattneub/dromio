@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import os.log
 
 /// Error enum that carries a message suitable for display to the user.
 enum NetworkerError: Error, Equatable {
@@ -30,7 +31,7 @@ protocol NetworkerType: Sendable, Observable {
     /// Initializer.
     /// - Parameter session: Optional session, to be used by tests. The app itself should supply nothing
     ///   here, so the Networker instance configures the session itself.
-    init(session: (any URLSessionType)? = nil) {
+    init(session: any URLSessionType? = nil) {
         if let session {
             self.session = session
         } else {

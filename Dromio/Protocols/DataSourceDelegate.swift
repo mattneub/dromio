@@ -8,7 +8,7 @@ protocol DataSourceDelegate<ProcessorAction, State, Received>: NSObjectProtocol,
     associatedtype ProcessorAction
 
     /// Processor to whom to send any action messages.
-    var processor: (any Receiver<ProcessorAction>)? { get set }
+    var processor: any Receiver<ProcessorAction>? { get set }
 
     /// Weak reference back to the table view, mostly for testing purposes.
     var tableView: UITableView? { get }

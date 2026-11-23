@@ -1,4 +1,6 @@
 import UIKit
+import os.log
+import SwiftUI
 
 /// View controller that displays a list of all songs in an album.
 final class AlbumViewController: UITableViewController, ReceiverPresenter {
@@ -9,7 +11,7 @@ final class AlbumViewController: UITableViewController, ReceiverPresenter {
     lazy var searchConfigurator: SearchConfigurator = SearchConfigurator()
 
     /// Reference to the processor, set by coordinator on creation.
-    weak var processor: (any Receiver<AlbumAction>)?
+    weak var processor: any Receiver<AlbumAction>?
 
     let activity = UIActivityIndicatorView(style: .large).applying { activity in
         activity.color = .label

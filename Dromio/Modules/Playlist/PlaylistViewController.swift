@@ -3,10 +3,10 @@ import UIKit
 /// View controller that displays a list of all songs in an album.
 final class PlaylistViewController: UITableViewController, ReceiverPresenter {
     /// Data source and delegate object, created in `init`.
-    var dataSourceDelegate: (any DataSourceDelegate<PlaylistAction, PlaylistState, PlaylistEffect>)?
+    var dataSourceDelegate: any DataSourceDelegate<PlaylistAction, PlaylistState, PlaylistEffect>?
 
     /// Reference to the processor, set by coordinator on creation; setting it passes the same processor to the data source.
-    weak var processor: (any Receiver<PlaylistAction>)? {
+    weak var processor: any Receiver<PlaylistAction>? {
         didSet {
             dataSourceDelegate?.processor = processor
         }

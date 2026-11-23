@@ -1,12 +1,13 @@
 import Foundation
+import os.log
 
 /// Processor containing logic for the AlbumViewController.
 final class AlbumProcessor: Processor {
     /// Reference to the coordinator, set by coordinator on creation.
-    weak var coordinator: (any RootCoordinatorType)?
+    weak var coordinator: any RootCoordinatorType?
 
     /// Reference to the view controller, set by coordinator on creation.
-    weak var presenter: (any ReceiverPresenter<AlbumEffect, AlbumState>)?
+    weak var presenter: any ReceiverPresenter<AlbumEffect, AlbumState>?
 
     /// State to be presented to the presenter.
     var state: AlbumState = AlbumState()

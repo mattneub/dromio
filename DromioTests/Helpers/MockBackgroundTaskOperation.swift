@@ -19,7 +19,7 @@ final class MockBackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationTyp
 }
 
 final class MockBackgroundTaskOperationMaker: nonisolated BackgroundTaskOperationMakerType {
-    var mockBackgroundTaskOperation: (any BackgroundTaskOperationType)?
+    var mockBackgroundTaskOperation: any BackgroundTaskOperationType?
     var timesCalled = 0
 
     func make<T: Sendable>(

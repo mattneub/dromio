@@ -6,7 +6,7 @@ final class MockURLMaker: URLMakerType {
     var additional: [URLQueryItem]?
     var currentServerInfo: ServerInfo?
     var methodsCalled = [String]()
-    var errorToThrow: (any Error)?
+    var errorToThrow: any Error?
     var folderRestrictable: Bool = false
     var urlToReturn: URL?
 

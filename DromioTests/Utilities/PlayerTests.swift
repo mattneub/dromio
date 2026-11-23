@@ -132,7 +132,7 @@ struct PlayerTests {
             duration: 100,
             contributors: nil
         )
-        let url = Bundle(for: MockPlayer.self).url(forResource: "4", withExtension: "mp3")! // real song!
+        let url = #bundle.url(forResource: "4", withExtension: "mp3")! // real song!
         let item = AVPlayerItem(asset: AVURLAsset(url: url))
         subject.player.insert(item, after: nil)
         subject.player.play()
@@ -162,7 +162,7 @@ struct PlayerTests {
             duration: 100,
             contributors: nil
         )
-        let url = Bundle(for: MockPlayer.self).url(forResource: "4", withExtension: "mp3")! // real song!
+        let url = #bundle.url(forResource: "4", withExtension: "mp3")! // real song!
         let item = AVPlayerItem(asset: AVURLAsset(url: url))
         subject.player.insert(item, after: nil)
         subject.player.play() // play the whole thing so it ends in good order
@@ -191,7 +191,7 @@ struct PlayerTests {
             duration: 100,
             contributors: nil
         )
-        let url = Bundle(for: MockPlayer.self).url(forResource: "4", withExtension: "mp3")! // real song!
+        let url = #bundle.url(forResource: "4", withExtension: "mp3")! // real song!
         let item = AVPlayerItem(asset: AVURLAsset(url: url))
         subject.player.insert(item, after: nil)
         subject.player.play()

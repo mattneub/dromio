@@ -4,7 +4,7 @@ import UIKit
 final class AlbumDataSourceDelegate: NSObject, DataSourceDelegateSearcher, UITableViewDelegate {
 
     /// Processor to whom we can send action messages.
-    weak var processor: (any Receiver<AlbumAction>)?
+    weak var processor: any Receiver<AlbumAction>?
 
     /// Weak reference to the table view, set in the initializer.
     weak var tableView: UITableView?

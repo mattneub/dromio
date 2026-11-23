@@ -27,6 +27,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = window
         rootCoordinator.createInitialInterface(window: window)
         window.makeKeyAndVisible()
+        services.sceneSizeRestrictor.restrict(
+            scene: scene,
+            minimumSize: .init(width: 390, height: 844),
+            maximumSize: .init(width: 450, height: 1000)
+        )
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {

@@ -7,12 +7,12 @@ protocol URLSessionType: Sendable {
 
     func data(
         for request: URLRequest,
-        delegate: (any URLSessionTaskDelegate)?
+        delegate: any URLSessionTaskDelegate?
     ) async throws -> (Data, URLResponse)
 
     func download(
         for request: URLRequest,
-        delegate: (any URLSessionTaskDelegate)?
+        delegate: any URLSessionTaskDelegate?
     ) async throws -> (URL, URLResponse)
 }
 

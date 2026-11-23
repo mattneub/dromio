@@ -1,6 +1,7 @@
 import UIKit
 import AVFoundation
 import MediaPlayer
+import os.log
 
 /// Protocol expressing the public face of our Player class.
 protocol PlayerType: Observable {
@@ -55,7 +56,7 @@ extension PlayerType {
 
     /// Observation of the audio session interruption notification, so we are notified when interruption
     /// starts or ends.
-    private var interruptionObservation: (any NSObjectProtocol)?
+    private var interruptionObservation: any NSObjectProtocol?
 
     /// Observation of the player periodically while it has items. We are currently not using this,
     /// and with luck we will not have to use it.

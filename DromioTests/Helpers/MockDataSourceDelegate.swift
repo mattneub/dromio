@@ -4,7 +4,7 @@ import UIKit
 final class MockDataSourceDelegate<StateType, ActionType, EffectType>: NSObject, nonisolated DataSourceDelegateSearcher {
     var methodsCalled = [String]()
     var thingsReceived = [EffectType]()
-    var processor: (any Receiver<ActionType>)?
+    var processor: any Receiver<ActionType>?
     var state: StateType?
     var tableView: UITableView?
     var datum: String?

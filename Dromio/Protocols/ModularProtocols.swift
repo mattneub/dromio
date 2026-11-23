@@ -37,5 +37,5 @@ protocol ReceiverPresenter<Received, State>: Receiver, Presenter {}
 protocol Processor<Received, PresenterState, Effect>: Receiver {
     associatedtype PresenterState
     associatedtype Effect
-    var presenter: (any ReceiverPresenter<Effect, PresenterState>)? { get set }
+    var presenter: any ReceiverPresenter<Effect, PresenterState>? { get set }
 }

@@ -6,7 +6,7 @@ import Foundation
     var progress: (id: String, fraction: Double?) = (id: "-1", fraction: nil)
 
     var dataToReturn = [Data()]
-    var errorToThrow: (any Error)?
+    var errorToThrow: any Error?
     var methodsCalled = [String]()
     var url: URL?
     var urlToReturn = URL(string: "http://example.com")!

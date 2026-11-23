@@ -27,7 +27,7 @@ final class MockReceiverPresenter<T, U>: UIViewController, @MainActor ReceiverPr
 final class MockProcessor<T, U, V>: @MainActor Processor {
     var thingsReceived: [T] = []
 
-    var presenter: (any ReceiverPresenter<V, U>)?
+    var presenter: any ReceiverPresenter<V, U>?
 
     func receive(_ thingReceived: T) async {
         thingsReceived.append(thingReceived)

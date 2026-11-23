@@ -1,4 +1,5 @@
 import UIKit
+import os.log
 
 /// View controller that displays a list of all artists.
 final class ArtistsViewController: UITableViewController, ReceiverPresenter {
@@ -9,7 +10,7 @@ final class ArtistsViewController: UITableViewController, ReceiverPresenter {
     lazy var searchConfigurator: SearchConfigurator = SearchConfigurator()
 
     /// Reference to the processor, set by coordinator on creation.
-    weak var processor: (any Receiver<ArtistsAction>)?
+    weak var processor: any Receiver<ArtistsAction>?
 
     let activity = UIActivityIndicatorView(style: .large).applying { activity in
         activity.color = .label

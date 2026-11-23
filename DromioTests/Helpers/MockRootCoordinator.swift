@@ -10,7 +10,7 @@ final class MockRootCoordinator: RootCoordinatorType {
     var optionToReturn: String?
     var albumsState: AlbumsState?
     var playlistState: PlaylistState?
-    var delegate: (any ServerDelegate)?
+    var delegate: any ServerDelegate?
 
     func createInitialInterface(window: UIWindow) {
         methodsCalled.append(#function)

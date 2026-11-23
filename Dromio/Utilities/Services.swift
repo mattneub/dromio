@@ -21,5 +21,6 @@ final class Services {
     var player: any PlayerType = Player()
     var requestMaker: any RequestMakerType = RequestMaker()
     var responseValidator: any ResponseValidatorType = ResponseValidator()
+    var sceneSizeRestrictor: any SceneSizeRestrictorType = SceneSizeRestrictor()
     var urlMaker: any URLMakerType = URLMaker()
 }

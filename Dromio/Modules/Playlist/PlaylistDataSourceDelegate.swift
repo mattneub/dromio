@@ -4,7 +4,7 @@ import UIKit
 final class PlaylistDataSourceDelegate: NSObject, DataSourceDelegate, Receiver, UITableViewDelegate {
 
     /// Processor to whom we can send action messages.
-    weak var processor: (any Receiver<PlaylistAction>)?
+    weak var processor: any Receiver<PlaylistAction>?
 
     /// Weak reference to the table view; set by initializer.
     weak var tableView: UITableView?

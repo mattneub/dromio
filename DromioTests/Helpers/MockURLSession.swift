@@ -13,12 +13,12 @@ final class MockURLSession: URLSessionType {
         return tasks
     }
     
-    func data(for request: URLRequest, delegate: (any URLSessionTaskDelegate)?) async throws -> (Data, URLResponse) {
+    func data(for request: URLRequest, delegate: any URLSessionTaskDelegate?) async throws -> (Data, URLResponse) {
         methodsCalled.append(#function)
         return (data, urlResponse)
     }
     
-    func download(for request: URLRequest, delegate: (any URLSessionTaskDelegate)?) async throws -> (URL, URLResponse) {
+    func download(for request: URLRequest, delegate: any URLSessionTaskDelegate?) async throws -> (URL, URLResponse) {
         methodsCalled.append(#function)
         return (url, urlResponse)
     }

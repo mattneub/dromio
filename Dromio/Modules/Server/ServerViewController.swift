@@ -4,7 +4,7 @@ import UIKit
 final class ServerViewController: UIViewController, ReceiverPresenter {
 
     /// Reference to the processor, set by the coordinator on creation.
-    weak var processor: (any Receiver<ServerAction>)?
+    weak var processor: any Receiver<ServerAction>?
 
     @IBOutlet var scheme: UISegmentedControl!
     @IBOutlet var host: UITextField!

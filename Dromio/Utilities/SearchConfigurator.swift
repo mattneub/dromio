@@ -4,7 +4,7 @@ import UIKit
 class SearchConfigurator {
     init() {}
 
-    func configure(viewController: UIViewController, updater: (any SearchHandler)?) {
+    func configure(viewController: UIViewController, updater: any SearchHandler?) {
         let controller = UISearchController(searchResultsController: nil)
         controller.hidesNavigationBarDuringPresentation = false
         controller.obscuresBackgroundDuringPresentation = false

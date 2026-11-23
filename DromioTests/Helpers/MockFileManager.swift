@@ -3,7 +3,7 @@ import Foundation
 
 final class MockFileManager: FileManagerType {
     nonisolated(unsafe) var methodsCalled = [String]()
-    nonisolated(unsafe) var whatToThrow: (any Error)?
+    nonisolated(unsafe) var whatToThrow: any Error?
     nonisolated(unsafe) var urls = [URL: [URL]]() // directory: contents
     nonisolated(unsafe) var moveAt: URL?
     nonisolated(unsafe) var moveTo: URL?

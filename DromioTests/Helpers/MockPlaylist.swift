@@ -4,7 +4,7 @@ import Foundation
 final class MockPlaylist: PlaylistType {
     nonisolated(unsafe) var list = [SubsonicSong]()
     nonisolated(unsafe) var methodsCalled = [String]()
-    nonisolated(unsafe) var errorToThrow: (any Error)?
+    nonisolated(unsafe) var errorToThrow: any Error?
     nonisolated(unsafe) var song: SubsonicSong?
     nonisolated(unsafe) var fromRow: Int?
     nonisolated(unsafe) var toRow: Int?

@@ -4,10 +4,10 @@ import Foundation
 ///
 final class PingProcessor: Processor {
     /// A reference to the root coordinator, set by the coordinator on creation.
-    weak var coordinator: (any RootCoordinatorType)?
+    weak var coordinator: any RootCoordinatorType?
 
     /// A reference to our presenter (the Ping view controller), set by the coordinator on creation.
-    weak var presenter: (any ReceiverPresenter<Void, PingState>)?
+    weak var presenter: any ReceiverPresenter<Void, PingState>?
 
     /// The state, to be presented by the presenter.
     var state = PingState()

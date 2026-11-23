@@ -5,7 +5,7 @@ import MediaPlayer
 final class MockPlayerTrampoline: PlayerTrampolineType {
     /// Dummy reference to the player — dummy so that we never retain one by mistake,
     /// which would be disastrous during testing.
-    var player: (any PlayerTrampolineTargetType)? {
+    var player: any PlayerTrampolineTargetType? {
         get { nil }
         set {}
     }
