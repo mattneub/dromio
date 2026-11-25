@@ -34,7 +34,7 @@ final class NowPlayingInfo: NowPlayingInfoType {
             }
             // now set the entire center now playing info
             unlessTesting {
-                logger.debug("telling npi: \(centerInfo, privacy: .public)")
+                logger.info("telling npi: \(centerInfo, privacy: .public)")
             }
             center.nowPlayingInfo = centerInfo
         }

@@ -10,10 +10,10 @@ protocol PlayerType: Observable {
     func play(url: URL, song: SubsonicSong)
     func play(url: URL, song: SubsonicSong, seconds: Double?)
     func playNext(url: URL, song: SubsonicSong)
-    func playPause()
-    func clear()
-    func backgrounding()
-    func foregrounding()
+    func playPause() async
+    func clear() async
+    func backgrounding() async
+    func foregrounding() async
 }
 
 /// Extension that allows the caller to drop the `seconds` parameter from the `play` method.
@@ -44,6 +44,9 @@ extension PlayerType {
     /// Set in the initializer.
     let trampoline: any PlayerTrampolineType
 
+    /// Actor who talks to the audio session for us. Set in the initializer.
+    let audioSessionActor: any AudioSessionActorType
+
     /// Observation of the queue player's current item, so we are notified when it changes.
     private var queuePlayerCurrentItemObservation: NSKeyValueObservation?
 
@@ -57,6 +60,10 @@ extension PlayerType {
     /// Observation of the audio session interruption notification, so we are notified when interruption
     /// starts or ends.
     private var interruptionObservation: any NSObjectProtocol?
+
+    /// Observation of the audio session resumption notification, so we are notified when
+    /// interruption ends.
+    private var resumptionObservation: any NSObjectProtocol?
 
     /// Observation of the player periodically while it has items. We are currently not using this,
     /// and with luck we will not have to use it.
@@ -83,11 +90,13 @@ extension PlayerType {
     init(
         player: any QueuePlayerType = AVQueuePlayer(),
         commandCenterProvider: @Sendable @escaping () -> any RemoteCommandCenterType = { MPRemoteCommandCenter.shared() },
-        trampoline: any PlayerTrampolineType = PlayerTrampoline()
+        trampoline: any PlayerTrampolineType = PlayerTrampoline(),
+        audioSessionActor: any AudioSessionActorType = AudioSessionActor()
     ) {
         self.player = player
         self.commandCenterProvider = commandCenterProvider
         self.trampoline = trampoline
+        self.audioSessionActor = audioSessionActor
         super.init()
         // finishing configuring the trampoline
         trampoline.player = self
@@ -103,43 +112,34 @@ extension PlayerType {
         // prepare our various observations
         queuePlayerCurrentItemObservation = (player as? AVPlayer)?.observe(\.currentItem, options: [.new]) { [weak self] _, item in
             Task.immediate {
-                await logger.debug("current item change: \(String(describing: item.newValue), privacy: .public)")
+                await logger.info("current item change: \(String(describing: item.newValue), privacy: .public)")
                 await self?.adjustNowPlayingItemToCurrentItem()
             }
         }
         queuePlayerRateObservation = (player as? AVPlayer)?.observe(\.rate, options: [.new]) { [weak self] _, item in
             Task.immediate {
-                await logger.debug("rate change: \(String(describing: item.newValue), privacy: .public)")
+                await logger.info("rate change: \(String(describing: item.newValue), privacy: .public)")
                 await self?.adjustNowPlayingItemToCurrentItem()
             }
         }
-        interruptionObservation = NotificationCenter.default.addObserver(
-            forName: AVAudioSession.interruptionNotification, object: nil, queue: .main
+        // adopt new resumption notification; I would have preferred to use the MainActorMessage,
+        // but discovered I couldn't make one to post it in the test (and it doesn't auto-convert)
+        resumptionObservation = NotificationCenter.default.addObserver(
+            forName: AVAudioSession.resumptionRecommendationNotification, object: nil, queue: .main
         ) { [weak self] notification in
-            var type: AVAudioSession.InterruptionType?
-            if let info = notification.userInfo {
-                if let interruptionType = info[AVAudioSessionInterruptionTypeKey] as? UInt {
-                    type = .init(rawValue: interruptionType)
+            MainActor.assumeIsolated { // I said `.main`
+                unlessTesting {
+                    logger.info("interruption ended")
                 }
-            }
-            MainActor.assumeIsolated { // safe because I did say `.main` a moment ago
-                switch type {
-                case .began:
-                    unlessTesting {
-                        logger.debug("interruption started")
+                if self?.player.rate == 0 {
+                    // "prime the pump" by activating session, signalling info center
+                    Task.immediate {
+                        unlessTesting {
+                            logger.info("priming the pump")
+                        }
+                        await self?.doPlay(updateOnly: false)
+                        await self?.doPause()
                     }
-                case .ended:
-                    unlessTesting {
-                        logger.debug("interruption ended")
-                    }
-                    if self?.player.rate == 0 {
-                        // "prime the pump" by activating session, signalling info center
-                        logger.debug("priming the pump")
-                        self?.doPlay(updateOnly: false)
-                        self?.doPause()
-                    }
-                case .none: break
-                case .some(_): break
                 }
             }
         }
@@ -156,11 +156,11 @@ extension PlayerType {
     }
 
     /// Called by observations, when the player's current item or rate changes.
-    private func adjustNowPlayingItemToCurrentItem() {
+    private func adjustNowPlayingItemToCurrentItem() async {
         if currentSong != nil {
-            doPlay(updateOnly: true)
+            await doPlay(updateOnly: true)
         } else if player.currentItem == nil && player.rate == 1 { // reached end of queue
-            clear()
+            await clear()
         }
         currentSongIdPublisher = currentSongId
     }
@@ -208,7 +208,7 @@ extension PlayerType {
         player.removeAllItems()
         player.insert(AVPlayerItem(url: url), after: nil)
         player.actionAtItemEnd = .advance
-        logger.debug("playing! \(url, privacy: .public)")
+        logger.info("playing! \(url, privacy: .public)")
         knownSongs[song.id] = song // order matters
         Task.immediate { @MainActor in
             if let seconds {
@@ -220,7 +220,7 @@ extension PlayerType {
                     try? await Task.sleep(for: .seconds(0.1))
                 }
             }
-            doPlay(updateOnly: false)
+            await doPlay(updateOnly: false)
         }
     }
 
@@ -238,13 +238,13 @@ extension PlayerType {
     /// playing info; and update our current song publisher.
     /// - Parameter updateOnly: Flag. If true, do all the updating, but don't actually play.
     ///   If false, the caller means _really_ play.
-    func doPlay(updateOnly: Bool) {
+    func doPlay(updateOnly: Bool) async {
         unlessTesting {
-            logger.debug("activating session")
+            logger.info("activating session")
         }
-        try? services.audioSessionProvider.provide().setActive(true, options: [])
+        _ = try? await audioSessionActor.activate(options: [])
         if player.rate == 0 && !updateOnly {
-            logger.debug("telling player to play")
+            logger.info("telling player to play")
             player.play()
             configurePeriodicObservation()
         }
@@ -261,66 +261,54 @@ extension PlayerType {
     }
 
     /// Implementation of both `doSkipBack` and `doSkipForward`, i.e. combined response
-    /// to remote command center saying `skipBack` or `skipForward`. The response differs
-    /// only by a plus or minus sign, adding or subtracting the specified skip interval.
-    func skip(forward: Bool, event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus {
-        guard player.rate != 0 else {
-            return .commandFailed
-        }
-        // this dance to obtain `event.interval` is not really needed, as it will always be 30
-        guard let event = event as? any SkipIntervalCommandEventType else {
-            return .commandFailed
-        }
-        let interval = event.interval * (forward ? 1 : -1)
+    /// to remote command center saying `skipBack` or `skipForward`.
+    func skip(interval: TimeInterval) async {
         let targetTime = player.currentTime() + CMTime(seconds: interval, preferredTimescale: 1)
-        Task.immediate { @MainActor in
-            if await player.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero) {
-                self.doPlay(updateOnly: true)
-            }
+        if await player.seek(to: targetTime, toleranceBefore: .zero, toleranceAfter: .zero) {
+            await self.doPlay(updateOnly: true)
         }
-        return .success
     }
 
     /// Pause the queue player. If playing, this will trigger a rate change which will call `doPlay` to update everything.
-    func doPause() {
+    func doPause() async {
         player.pause()
     }
 
     /// Public toggle, used by the playpause button in the playlist interface.
-    func playPause() {
+    func playPause() async {
         if player.rate > 0 {
-            doPause()
+            await doPause()
         } else {
-            doPlay(updateOnly: false)
+            await doPlay(updateOnly: false)
         }
     }
 
     /// Tear down everything: stop playing and empty the queue, throw away the known songs,
     /// remove our info from the now playing info center, deactivate the session, notify that
     /// there is now no current song.
-    func clear() {
+    func clear() async {
         removePeriodicObservation()
         player.pause()
         player.removeAllItems()
         knownSongs.removeAll()
         services.nowPlayingInfo.clear()
-        unlessTesting {
-            logger.debug("deactivating session")
-        }
-        try? services.audioSessionProvider.provide().setActive(false, options: [])
         currentSongIdPublisher = nil
         playerStatePublisher = .empty
+        unlessTesting {
+            logger.info("deactivating session")
+        }
+        _ = try? await audioSessionActor.deactivate(options: [])
     }
 
     /// We are advised to deactivate on backgrounding if not actively playing, to avoid
     /// a confusing extra "interruption" notification later. So this method is called from
     /// the scene delegate, and we do exactly that.
-    func backgrounding() {
+    func backgrounding() async {
         if player.rate == 0 {
             unlessTesting {
-                logger.debug("deactivating session")
+                logger.info("deactivating session")
             }
-            try? services.audioSessionProvider.provide().setActive(false, options: [])
+            _ = try? await audioSessionActor.deactivate(options: [])
         }
     }
 
@@ -329,10 +317,10 @@ extension PlayerType {
     /// do nothing, because we don't want to grab the now playing info center and audio session
     /// away from someone else who may have it. If the user wants to resume playing, that's what
     /// the playpause button is for.
-    func foregrounding() {
-        try? services.audioSessionProvider.provide().setCategory(.playback, mode: .default, options: [])
+    func foregrounding() async {
+        try? await audioSessionActor.setCategory(.playback)
         if player.rate > 0 {
-            doPlay(updateOnly: true)
+            await doPlay(updateOnly: true)
         }
     }
 
@@ -363,8 +351,8 @@ extension Player {
             forInterval: CMTime(value: 1, timescale: 2),
             queue: .main
         ) { [weak self] time in
-            MainActor.assumeIsolated {
-                self?.doPlay(updateOnly: true)
+            Task.immediate {
+                await self?.doPlay(updateOnly: true)
             }
         }
     }

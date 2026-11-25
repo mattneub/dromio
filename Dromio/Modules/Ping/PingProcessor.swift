@@ -25,7 +25,7 @@ final class PingProcessor: Processor {
             state.showOfflineModeButton = await offlineAllower.canShowOfflineModeButton()
             state.status = .choices
             await presenter?.present(state)
-            services.player.clear()
+            await services.player.clear()
         case .deleteServer:
             await deleteServer()
         case .doPing(let folderId):

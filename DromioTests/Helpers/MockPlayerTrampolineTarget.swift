@@ -5,24 +5,20 @@ import MediaPlayer
 final class MockPlayerTrampolineTarget: PlayerTrampolineTargetType {
     var methodsCalled = [String]()
     var updateOnly: Bool?
-    var forward: Bool?
-    var event: any RemoteCommandEventType?
-    var status: MPRemoteCommandHandlerStatus = .success
+    var interval: TimeInterval?
 
-    func doPlay(updateOnly: Bool) {
+    func doPlay(updateOnly: Bool) async {
         methodsCalled.append(#function)
         self.updateOnly = updateOnly
     }
 
-    func doPause() {
+    func doPause() async {
         methodsCalled.append(#function)
     }
 
-    func skip(forward: Bool, event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus {
+    func skip(interval: TimeInterval) async {
         methodsCalled.append(#function)
-        self.forward = forward
-        self.event = event
-        return status
+        self.interval = interval
     }
 
 }

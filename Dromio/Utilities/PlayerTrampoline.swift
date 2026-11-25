@@ -3,9 +3,9 @@ import os.log
 
 /// Protocol describing the Player, as seen by the PlayerTrampoline.
 @objc protocol PlayerTrampolineTargetType: AnyObject {
-    func doPlay(updateOnly: Bool)
-    func doPause()
-    func skip(forward: Bool, event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus
+    func doPlay(updateOnly: Bool) async
+    func doPause() async
+    func skip(interval: TimeInterval) async
 }
 
 /// Public face of the PlayerTrampoline type, so we can mock it for testing.
@@ -24,26 +24,46 @@ final class PlayerTrampoline: NSObject, PlayerTrampolineType {
 
     /// Response to the remote command center saying "play".
     @objc func doPlay(_ event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus {
-        logger.debug("doPlay")
-        player?.doPlay(updateOnly: false)
+        logger.info("doPlay")
+        Task.immediate {
+            await player?.doPlay(updateOnly: false)
+        }
         return .success
     }
 
     /// Response to the remote command center saying "pause".
     @objc func doPause(_ event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus {
-        logger.debug("doPause")
-        player?.doPause()
+        logger.info("doPause")
+        Task.immediate {
+            await player?.doPause()
+        }
         return .success
     }
 
     /// Response to the remote command center saying "skipBack".
     @objc func doSkipBack(_ event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus {
-        return player?.skip(forward: false, event: event) ?? .commandFailed
+        logger.info("doSkipBack")
+        guard let event = event as? any SkipIntervalCommandEventType else {
+            return .commandFailed
+        }
+        let interval = -event.interval // always 30 in fact
+        Task.immediate {
+            await player?.skip(interval: interval)
+        }
+        return .success
     }
 
     /// Response to the remote command center saying "skipForward".
     @objc func doSkipForward(_ event: any RemoteCommandEventType) -> MPRemoteCommandHandlerStatus {
-        return player?.skip(forward: true, event: event) ?? .commandFailed
+        logger.info("doSkipForward")
+        guard let event = event as? any SkipIntervalCommandEventType else {
+            return .commandFailed
+        }
+        let interval = event.interval // always 30 in fact
+        Task.immediate {
+            await player?.skip(interval: interval)
+        }
+        return .success
     }
 
 }

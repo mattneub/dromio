@@ -45,7 +45,7 @@ final class ArtistsProcessor: Processor {
                 state.animateSpinner = false
                 await presenter?.present(state)
             } catch {
-                logger.debug("\(error.localizedDescription, privacy: .public)")
+                logger.info("\(error.localizedDescription, privacy: .public)")
                 state.animateSpinner = false
                 await presenter?.present(state)
             }
@@ -75,7 +75,7 @@ final class ArtistsProcessor: Processor {
                 state.animateSpinner = false
                 await presenter?.present(state)
             } catch {
-                logger.debug("\(error.localizedDescription, privacy: .public)")
+                logger.info("\(error.localizedDescription, privacy: .public)")
                 state.animateSpinner = false
                 await presenter?.present(state)
             }

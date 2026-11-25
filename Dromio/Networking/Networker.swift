@@ -74,9 +74,9 @@ protocol NetworkerType: Sendable, Observable {
         // system times us out before the download completes, cancel the download in good order.
         let operation = services.backgroundTaskOperationMaker.make { [weak self] in
             guard let self else { fatalError("oop") }
-            await logger.debug("download started")
+            await logger.info("download started")
             let (url, response) = try await self.session.download(for: request, delegate: DownloadDelegate())
-            await logger.debug("download finished")
+            await logger.info("download finished")
             return (url, response)
         } cleanup: { [weak self] in
             guard let self else { return }

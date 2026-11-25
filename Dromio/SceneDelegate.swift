@@ -35,11 +35,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {
-        services.player.foregrounding()
+        Task.immediate {
+            await services.player.foregrounding()
+        }
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
-        services.player.backgrounding()
+        Task.immediate {
+            await services.player.backgrounding()
+        }
     }
 
     func preferredWindowingControlStyle(for windowScene: UIWindowScene) -> UIWindowScene.WindowingControlStyle {

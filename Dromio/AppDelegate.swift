@@ -10,6 +10,8 @@ var services: Services = Services.shared
 var userHasJukeboxRole = false
 
 /// Globally available Logger instance.
+///
+/// Having trouble seeing anything in Console app? Action > Include Info Messages!
 @MainActor
 let logger = Logger(subsystem: "dromio", category: "debugging")
 

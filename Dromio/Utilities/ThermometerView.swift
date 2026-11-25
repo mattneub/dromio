@@ -28,6 +28,11 @@ final class ThermometerView: UIView {
         }
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        setNeedsDisplay() // handle resizing while fractionally filled
+    }
+
     override func draw(_ rect: CGRect) {
         Self.thermometerFillColor.setFill()
         let path = UIBezierPath(rect: CGRect(x: 0, y: 0, width: progress * rect.width, height: rect.height))

@@ -5,6 +5,6 @@ import MediaPlayer
 
 nonisolated
 final class MockSkipIntervalCommandEvent: SkipIntervalCommandEventType {
-    var _interval: TimeInterval = 0
+    var _interval: TimeInterval = 30
     var interval: TimeInterval { _interval }
 }

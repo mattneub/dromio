@@ -9,16 +9,18 @@ struct PlayerTests {
     let audioPlayer = MockQueuePlayer()
     let nowPlayingInfo = MockNowPlayingInfo()
     var commandCenter: MockRemoteCommandCenter!
-    var audioSession: MockAudioSession!
     let trampoline = MockPlayerTrampoline()
+    let audioSessionActor = MockAudioSessionActor()
 
     init() {
         let commandCenter = MockRemoteCommandCenter()
-        subject = Player(player: audioPlayer, commandCenterProvider: { commandCenter }, trampoline: trampoline)
+        subject = Player(
+            player: audioPlayer,
+            commandCenterProvider: { commandCenter },
+            trampoline: trampoline,
+            audioSessionActor: audioSessionActor
+        )
         self.commandCenter = commandCenter
-        let audioSession = MockAudioSession()
-        services.audioSessionProvider = .init { audioSession }
-        self.audioSession = audioSession
         services.nowPlayingInfo = nowPlayingInfo
         services.player = MockPlayer() // because otherwise two players exists, messing up our notification/observation tests
     }
@@ -118,7 +120,12 @@ struct PlayerTests {
     @Test("if the queue player changes current item, calls now playing info `playing`, sets playerState and currentSongIdPublisher, activates")
     func itemChanges() async {
         subject.playerStatePublisher = .empty
-        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }, trampoline: trampoline) // real player!
+        let subject = Player(
+            player: AVQueuePlayer(), // real player!
+            commandCenterProvider: { commandCenter },
+            trampoline: trampoline,
+            audioSessionActor: audioSessionActor
+        )
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
             title: "Title",
@@ -136,18 +143,23 @@ struct PlayerTests {
         let item = AVPlayerItem(asset: AVURLAsset(url: url))
         subject.player.insert(item, after: nil)
         subject.player.play()
-        try? await Task.sleep(for: .seconds(0.1)) // give it a chance to start, then test
+        await #while(subject.currentSongIdPublisher != "4")
         #expect(nowPlayingInfo.methodsCalled.last == "playing(song:at:)")
         #expect(nowPlayingInfo.song == subject.knownSongs["4"]!)
         #expect(subject.currentSongIdPublisher == "4")
-        #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
-        #expect(audioSession.active == true)
+        #expect(await audioSessionActor.methodsCalled.contains("activate(options:)"))
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(subject.playerStatePublisher == .playing)
     }
 
     @Test("if the queue player changes current item to nil, calls clear, deactivates session, sets playerState and currentSongIdPublisher")
     func itemChangesToNil() async {
-        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }, trampoline: trampoline) // real player!
+        let subject = Player(
+            player: AVQueuePlayer(), // real player!
+            commandCenterProvider: { commandCenter },
+            trampoline: trampoline,
+            audioSessionActor: audioSessionActor
+        )
         subject.playerStatePublisher = .playing
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
@@ -168,15 +180,20 @@ struct PlayerTests {
         subject.player.play() // play the whole thing so it ends in good order
         await #while(!nowPlayingInfo.methodsCalled.contains("clear()"))
         #expect(nowPlayingInfo.methodsCalled.contains("clear()"))
-        #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
-        #expect(audioSession.active == false)
+        #expect(await audioSessionActor.methodsCalled.contains("deactivate(options:)"))
+        #expect(await audioSessionActor.deactivationOptions == [])
         #expect(subject.currentSongIdPublisher == nil)
         #expect(subject.playerStatePublisher == .empty)
     }
 
     @Test("if the queue player changes rate to 0, calls now playing info `paused`, sets playerState and currentSongIdPublisher, activates")
     func rateChangesToZero() async throws {
-        let subject = Player(player: AVQueuePlayer(), commandCenterProvider: { commandCenter }, trampoline: trampoline) // real player!
+        let subject = Player(
+            player: AVQueuePlayer(), // real player!
+            commandCenterProvider: { commandCenter },
+            trampoline: trampoline,
+            audioSessionActor: audioSessionActor
+        )
         subject.playerStatePublisher = .playing
         subject.knownSongs["4"] = SubsonicSong(
             id: "4",
@@ -197,20 +214,21 @@ struct PlayerTests {
         subject.player.play()
         try? await Task.sleep(for: .seconds(0.1)) // give it a chance to start, then test
         subject.player.rate = 0
-        try? await Task.sleep(for: .seconds(0.1))
+        await #while(nowPlayingInfo.methodsCalled.last != "paused(song:at:)")
         #expect(nowPlayingInfo.methodsCalled.last == "paused(song:at:)")
         #expect(nowPlayingInfo.song == subject.knownSongs["4"]!)
         #expect(subject.currentSongIdPublisher == "4")
-        #expect(audioSession.methodsCalled.contains("setActive(_:options:)"))
-        #expect(audioSession.active == true)
+        #expect(await audioSessionActor.methodsCalled.last == "activate(options:)")
+        #expect(await audioSessionActor.activationOptions == [])
         guard case .paused(let seconds) = subject.playerStatePublisher else {
             throw NSError(domain: "expected .paused", code: 0)
         }
         #expect(seconds < 0.1)
+        #expect(seconds < 0.1)
     }
 
     @Test("play(url:song:) calls removeAllItems, calls insertAfter nil, sets category active, calls play, sets action to advance, adds to known songs")
-    func play() {
+    func play() async {
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -227,6 +245,7 @@ struct PlayerTests {
         let url = URL(string: "http://example.com")!
         audioPlayer.rate = 0
         subject.play(url: url, song: song)
+        await #while(audioPlayer.methodsCalled.count < 4)
         #expect(audioPlayer.methodsCalled == [
             "pause()", "removeAllItems()", "insert(_:after:)", "play()"
         ])
@@ -236,7 +255,7 @@ struct PlayerTests {
     }
 
     @Test("play(url:song:) configures now playing info, sets player state and current item publisher")
-    func playNowPlayingInfo() {
+    func playNowPlayingInfo() async {
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -255,8 +274,8 @@ struct PlayerTests {
         audioPlayer.time = 10
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/1.what")!))
         subject.play(url: url, song: song)
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
+        #expect(await audioSessionActor.methodsCalled.contains("activate(options:)"))
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(nowPlayingInfo.methodsCalled == ["clear()", "playing(song:at:)"])
         #expect(nowPlayingInfo.song == song)
         #expect(nowPlayingInfo.time == 10)
@@ -265,7 +284,7 @@ struct PlayerTests {
     }
 
     @Test("play(url:song:seconds:) just like play except calls seek before playing")
-    func playSeconds() {
+    func playSeconds() async {
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -282,6 +301,7 @@ struct PlayerTests {
         let url = URL(string: "http://example.com")!
         audioPlayer.rate = 0
         subject.play(url: url, song: song, seconds: 1)
+        await #while(audioPlayer.methodsCalled.count < 5)
         #expect(audioPlayer.methodsCalled == [
             "pause()", "removeAllItems()", "insert(_:after:)",
             "seek(to:toleranceBefore:toleranceAfter:)", "play()"
@@ -295,7 +315,7 @@ struct PlayerTests {
     }
 
     @Test("play(url:song:seconds:) configures now playing info, sets player state and current item publisher")
-    func playSecondsNowPlayingInfo() {
+    func playSecondsNowPlayingInfo() async {
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -313,8 +333,8 @@ struct PlayerTests {
         audioPlayer.rate = 0
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/1.what")!))
         subject.play(url: url, song: song, seconds: 1)
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
+        #expect(await audioSessionActor.methodsCalled == ["activate(options:)"])
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(nowPlayingInfo.methodsCalled == ["clear()", "playing(song:at:)"])
         #expect(nowPlayingInfo.song == song)
         #expect(nowPlayingInfo.time == 1)
@@ -346,14 +366,14 @@ struct PlayerTests {
     }
 
     @Test("doPlay: activates audio session, calls play, tells now playing info playing at current time")
-    func doPlay() {
+    func doPlay() async {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
         audioPlayer.time = 30
         audioPlayer.rate = 0
-        subject.doPlay(updateOnly: false)
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
+        await subject.doPlay(updateOnly: false)
+        #expect(await audioSessionActor.methodsCalled == ["activate(options:)"])
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(audioPlayer.methodsCalled.contains("play()"))
         #expect(nowPlayingInfo.methodsCalled.last == "playing(song:at:)")
         #expect(nowPlayingInfo.time == 30)
@@ -362,14 +382,14 @@ struct PlayerTests {
     }
 
     @Test("doPlay: if update only true, activates audio session, doesn't call play, tells now playing info playing at current time")
-    func doPlayUpdateOnlyTrue() {
+    func doPlayUpdateOnlyTrue() async {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
         audioPlayer.time = 30
         audioPlayer.rate = 1
-        subject.doPlay(updateOnly: true) // *
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
+        await subject.doPlay(updateOnly: true) // *
+        #expect(await audioSessionActor.methodsCalled.contains("activate(options:)"))
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(!audioPlayer.methodsCalled.contains("play()")) // *
         #expect(nowPlayingInfo.methodsCalled.last == "playing(song:at:)")
         #expect(nowPlayingInfo.time == 30)
@@ -378,14 +398,14 @@ struct PlayerTests {
     }
 
     @Test("doPlay: when paused if update only true, activates audio session, doesn't call play, tells now playing info paused at current time")
-    func doPlayUpdateOnlyTruePaused() {
+    func doPlayUpdateOnlyTruePaused() async {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
         audioPlayer.time = 30
         audioPlayer.rate = 0 // *
-        subject.doPlay(updateOnly: true)
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
+        await subject.doPlay(updateOnly: true)
+        #expect(await audioSessionActor.methodsCalled.contains("activate(options:)"))
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(!audioPlayer.methodsCalled.contains("play()")) // *
         #expect(nowPlayingInfo.methodsCalled.last == "paused(song:at:)")
         #expect(nowPlayingInfo.time == 30)
@@ -393,23 +413,20 @@ struct PlayerTests {
         #expect(subject.playerStatePublisher == .paused(at: 30))
     }
 
-    @Test("skip: false, when playing tells player to seek to 30 seconds back, then same as doPlay update only true")
+    @Test("skip: false, tells player to seek to 30 seconds back, then same as doPlay update only true")
     func skipBack() async {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
         audioPlayer.time = 60
         audioPlayer.rate = 1
-        let event = MockSkipIntervalCommandEvent()
-        event._interval = 30
-        let result = subject.skip(forward: false, event: event)
+        await subject.skip(interval: -30)
         await #while(nowPlayingInfo.time == nil)
         #expect(audioPlayer.methodsCalled == ["currentTime()", "seek(to:toleranceBefore:toleranceAfter:)", "currentTime()"])
         #expect(audioPlayer.time == 30) // 60 - 30
         #expect(audioPlayer.toleranceAfter?.seconds == 0)
         #expect(audioPlayer.toleranceBefore?.seconds == 0)
-        #expect(result == .success)
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
+        #expect(await audioSessionActor.methodsCalled.contains("activate(options:)"))
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(!audioPlayer.methodsCalled.contains("play()"))
         #expect(nowPlayingInfo.methodsCalled.last == "playing(song:at:)")
         #expect(nowPlayingInfo.time == 30)
@@ -424,32 +441,13 @@ struct PlayerTests {
         audioPlayer.time = 60
         audioPlayer.rate = 1
         audioPlayer.boolToReturn = false
-        let event = MockSkipIntervalCommandEvent()
-        event._interval = 30
-        let result = subject.skip(forward: false, event: event)
-        try? await Task.sleep(for: .seconds(0.1))
+        await subject.skip(interval: -30)
+        await #while(audioPlayer.time != 30)
         #expect(audioPlayer.methodsCalled == ["currentTime()", "seek(to:toleranceBefore:toleranceAfter:)"]) // *
         #expect(audioPlayer.time == 30) // 60 - 30
         #expect(audioPlayer.toleranceAfter?.seconds == 0)
         #expect(audioPlayer.toleranceBefore?.seconds == 0)
-        #expect(result == .success)
-        #expect(audioSession.methodsCalled.isEmpty)
-        #expect(nowPlayingInfo.methodsCalled.isEmpty)
-    }
-
-    @Test("skip: false, when not playing, does nothing")
-    func skipBackNotPlaying() async {
-        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
-        subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
-        audioPlayer.time = 60
-        audioPlayer.rate = 0 // *
-        let event = MockSkipIntervalCommandEvent()
-        event._interval = 30
-        let result = subject.skip(forward: false, event: event)
-        try? await Task.sleep(for: .seconds(0.1))
-        #expect(audioPlayer.methodsCalled.isEmpty)
-        #expect(result == .commandFailed)
-        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(await audioSessionActor.methodsCalled.isEmpty)
         #expect(nowPlayingInfo.methodsCalled.isEmpty)
     }
 
@@ -459,17 +457,14 @@ struct PlayerTests {
         subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
         audioPlayer.time = 60
         audioPlayer.rate = 1
-        let event = MockSkipIntervalCommandEvent()
-        event._interval = 30
-        let result = subject.skip(forward: true, event: event)
+        await subject.skip(interval: 30)
         await #while(nowPlayingInfo.time == nil)
         #expect(audioPlayer.methodsCalled == ["currentTime()", "seek(to:toleranceBefore:toleranceAfter:)", "currentTime()"])
         #expect(audioPlayer.time == 90) // 60 + 30
         #expect(audioPlayer.toleranceAfter?.seconds == 0)
         #expect(audioPlayer.toleranceBefore?.seconds == 0)
-        #expect(result == .success)
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
+        #expect(await audioSessionActor.methodsCalled == ["activate(options:)"])
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(!audioPlayer.methodsCalled.contains("play()"))
         #expect(nowPlayingInfo.methodsCalled.last == "playing(song:at:)")
         #expect(nowPlayingInfo.time == 90)
@@ -484,52 +479,33 @@ struct PlayerTests {
         audioPlayer.time = 60
         audioPlayer.rate = 1
         audioPlayer.boolToReturn = false
-        let event = MockSkipIntervalCommandEvent()
-        event._interval = 30
-        let result = subject.skip(forward: true, event: event)
-        try? await Task.sleep(for: .seconds(0.1))
+        await subject.skip(interval: 30)
+        await #while(audioPlayer.time != 90)
         #expect(audioPlayer.methodsCalled == ["currentTime()", "seek(to:toleranceBefore:toleranceAfter:)"]) // *
         #expect(audioPlayer.time == 90) // 60 + 30
         #expect(audioPlayer.toleranceAfter?.seconds == 0)
         #expect(audioPlayer.toleranceBefore?.seconds == 0)
-        #expect(result == .success)
-        #expect(audioSession.methodsCalled.isEmpty)
-        #expect(nowPlayingInfo.methodsCalled.isEmpty)
-    }
-
-    @Test("skip: true, when not playing, does nothing")
-    func skipForwardNotPlaying() async {
-        audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
-        subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
-        audioPlayer.time = 60
-        audioPlayer.rate = 0 // *
-        let event = MockSkipIntervalCommandEvent()
-        event._interval = 30
-        let result = subject.skip(forward: false, event: event)
-        try? await Task.sleep(for: .seconds(0.1))
-        #expect(audioPlayer.methodsCalled.isEmpty)
-        #expect(result == .commandFailed)
-        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(await audioSessionActor.methodsCalled.isEmpty)
         #expect(nowPlayingInfo.methodsCalled.isEmpty)
     }
 
     @Test("doPause: calls pause")
-    func doPause() {
+    func doPause() async {
         audioPlayer.time = 30
-        subject.doPause()
+        await subject.doPause()
         #expect(audioPlayer.methodsCalled.contains("pause()"))
         // and then see `rateChangesToZero` test
     }
 
     @Test("playPause is like doPlay if rate is 0")
-    func playPause() {
+    func playPause() async {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
         audioPlayer.time = 30
         audioPlayer.rate = 0
-        subject.playPause()
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
+        await subject.playPause()
+        #expect(await audioSessionActor.methodsCalled == ["activate(options:)"])
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(audioPlayer.methodsCalled.contains("play()"))
         #expect(nowPlayingInfo.methodsCalled.last == "playing(song:at:)")
         #expect(nowPlayingInfo.time == 30)
@@ -537,19 +513,19 @@ struct PlayerTests {
     }
 
     @Test("playPause is like doPause if rate is 1")
-    func playPauseRate1() {
+    func playPauseRate1() async {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
         audioPlayer.time = 30
         audioPlayer.rate = 1
-        subject.playPause()
+        await subject.playPause()
         #expect(audioPlayer.methodsCalled.contains("pause()"))
     }
 
-    @Test("interruptionEnded: if we are playing, nothing happens")
-    func interruptionEndedRate1() {
+    @Test("resumptionRecommendation: if we are playing, nothing happens")
+    func resumptionRecommendationRate1() async {
         #expect(nowPlayingInfo.methodsCalled.isEmpty)
-        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(await audioSessionActor.methodsCalled.isEmpty)
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -567,18 +543,19 @@ struct PlayerTests {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/1.what")!))
         audioPlayer.time = 30
         audioPlayer.rate = 1
-        NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: nil, userInfo: [
-            AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.ended.rawValue
-        ])
+        NotificationCenter.default.post(
+            name: AVAudioSession.resumptionRecommendationNotification, object: nil
+        )
+        try? await Task.sleep(for: .seconds(0.1)) // give something a chance to happen
         #expect(nowPlayingInfo.methodsCalled.isEmpty)
-        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(await audioSessionActor.methodsCalled.isEmpty)
         #expect(audioPlayer.methodsCalled.isEmpty)
     }
 
-    @Test("interruptionEnded if we are paused, doPlay followed by doPause")
-    func interruptionEnded() {
+    @Test("resumptionRecommendation: if we are paused, doPlay followed by doPause")
+    func resumptionRecommendation() async {
         #expect(nowPlayingInfo.methodsCalled.isEmpty)
-        #expect(audioSession.methodsCalled.isEmpty)
+        #expect(await audioSessionActor.methodsCalled.isEmpty)
         let song = SubsonicSong(
             id: "1",
             title: "Title",
@@ -596,19 +573,20 @@ struct PlayerTests {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/1.what")!))
         audioPlayer.time = 30
         audioPlayer.rate = 0
-        NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: nil, userInfo: [
-            AVAudioSessionInterruptionTypeKey: AVAudioSession.InterruptionType.ended.rawValue
-        ])
+        NotificationCenter.default.post(
+            name: AVAudioSession.resumptionRecommendationNotification, object: nil
+        )
+        await #while(nowPlayingInfo.methodsCalled.isEmpty)
         #expect(nowPlayingInfo.methodsCalled == ["playing(song:at:)"])
         #expect(nowPlayingInfo.time == 30)
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == true)
+        #expect(await audioSessionActor.methodsCalled == ["activate(options:)"])
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(audioPlayer.methodsCalled == ["play()", "currentTime()", "pause()"])
         #expect(subject.currentSongIdPublisher == "1")
     }
 
     @Test("clear: call pause and removeAllItems, empties the known list, nilifies currentSongIdPublisher")
-    func clear() {
+    func clear() async {
         subject.currentSongIdPublisher = "10"
         subject.playerStatePublisher = .playing
         let song = SubsonicSong(
@@ -625,41 +603,41 @@ struct PlayerTests {
             contributors: nil
         )
         subject.knownSongs["1"] = song
-        subject.clear()
+        await subject.clear()
         #expect(audioPlayer.methodsCalled == ["pause()", "removeAllItems()"])
         #expect(subject.knownSongs.isEmpty)
         #expect(nowPlayingInfo.methodsCalled == ["clear()"])
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == false)
+        #expect(await audioSessionActor.methodsCalled == ["deactivate(options:)"])
+        #expect(await audioSessionActor.deactivationOptions == [])
         #expect(subject.currentSongIdPublisher == nil)
         #expect(subject.playerStatePublisher == .empty)
     }
 
     @Test("backgrounding: if rate is 0, sets audioSession inactive")
-    func backgrounding() {
+    func backgrounding() async {
         audioPlayer.rate = 0
-        audioSession.active = true
-        subject.backgrounding()
-        #expect(audioSession.methodsCalled == ["setActive(_:options:)"])
-        #expect(audioSession.active == false)
+        await subject.backgrounding()
+        #expect(await audioSessionActor.methodsCalled == ["deactivate(options:)"])
+        #expect(await audioSessionActor.deactivationOptions == [])
     }
 
     @Test("backgrounding: if rate is 1, does nothing")
-    func backgroundingRate1() {
+    func backgroundingRate1() async {
         audioPlayer.rate = 1
-        subject.backgrounding()
-        #expect(audioSession.methodsCalled.isEmpty)
+        await subject.backgrounding()
+        #expect(await audioSessionActor.methodsCalled.isEmpty)
     }
 
     @Test("foregrounding: if rate is 1, just like doPlay")
-    func foregroundingRate() {
+    func foregroundingRate() async {
         audioPlayer.currentItem = AVPlayerItem(asset: AVURLAsset(url: URL(string: "file://1/2/3/4.what")!))
         subject.knownSongs["4"] = SubsonicSong(id: "4", title: "title", album: nil, artist: nil, displayComposer: nil, track: nil, year: nil, albumId: nil, suffix: nil, duration: nil, contributors: nil)
         audioPlayer.time = 30
         audioPlayer.rate = 1
-        subject.foregrounding()
-        #expect(audioSession.methodsCalled == ["setCategory(_:mode:options:)", "setActive(_:options:)"])
-        #expect(audioSession.active == true)
+        await subject.foregrounding()
+        await #while(await audioSessionActor.methodsCalled.count < 2)
+        #expect(await audioSessionActor.methodsCalled == ["setCategory(_:)", "activate(options:)"])
+        #expect(await audioSessionActor.activationOptions == [])
         #expect(!audioPlayer.methodsCalled.contains("play()")) // *
         #expect(nowPlayingInfo.methodsCalled.last == "playing(song:at:)")
         #expect(nowPlayingInfo.time == 30)
@@ -668,11 +646,12 @@ struct PlayerTests {
     }
 
     @Test("foregrounding: if rate is 0, does nothing")
-    func foregroundingRate0() {
+    func foregroundingRate0() async {
         audioPlayer.rate = 0
-        subject.foregrounding()
+        await subject.foregrounding()
+        await #while(await audioSessionActor.methodsCalled.count < 1)
         #expect(nowPlayingInfo.methodsCalled.isEmpty)
-        #expect(audioSession.methodsCalled == ["setCategory(_:mode:options:)"])
+        #expect(await audioSessionActor.methodsCalled == ["setCategory(_:)"])
         #expect(audioPlayer.methodsCalled.isEmpty)
         #expect(subject.playerStatePublisher == .empty)
     }

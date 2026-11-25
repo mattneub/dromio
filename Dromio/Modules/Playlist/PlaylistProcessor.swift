@@ -24,7 +24,7 @@ final class PlaylistProcessor: Processor {
                 try? await stopAndClearJukebox()
             } else {
                 services.currentPlaylist.clear()
-                services.player.clear()
+                await services.player.clear()
                 await services.download.clear()
                 await services.networker.clear()
                 state.songs = services.currentPlaylist.list
@@ -37,7 +37,7 @@ final class PlaylistProcessor: Processor {
         case .delete(let row):
             guard row < state.songs.count else { return }
             let song = state.songs[row]
-            services.player.clear()
+            await services.player.clear()
             await services.networker.clear()
             do {
                 try await services.download.delete(song: song)
@@ -54,7 +54,7 @@ final class PlaylistProcessor: Processor {
                 }
             } catch {}
         case .editButton:
-            services.player.clear()
+            await services.player.clear()
             await services.networker.clear()
             state.updateTableView = false
             state.editMode.toggle()
@@ -88,7 +88,7 @@ final class PlaylistProcessor: Processor {
             await presenter?.present(state)
         case .playPause:
             services.haptic.impact()
-            services.player.playPause()
+            await services.player.playPause()
         case .resume:
             guard let currentSongId = state.resumableSong?.id,
                   let currentSongSeconds = state.resumableSong?.seconds else {
@@ -104,7 +104,7 @@ final class PlaylistProcessor: Processor {
                 services.persistence.saveCurrentPaused(currentSongId: nil, currentSongSeconds: nil)
                 return
             }
-            services.player.clear()
+            await services.player.clear()
             await services.networker.clear()
             services.haptic.success()
             try? await unlessTesting {
@@ -120,7 +120,7 @@ final class PlaylistProcessor: Processor {
             guard sequence.count > 0 else {
                 return
             }
-            services.player.clear()
+            await services.player.clear()
             await services.networker.clear()
             services.haptic.success()
             try? await unlessTesting {
