@@ -8,17 +8,19 @@ struct BackgroundTaskOperationTests {
     func start() async throws {
         let application = MockApplication()
         nonisolated(unsafe) var done = false
+        nonisolated(unsafe) var cleanupRan = false
         let subject = BackgroundTaskOperation(
             whatToDo: {
                 done = true
             },
             cleanup: {
-                throw TestError.codeShouldNotRun
+                cleanupRan = true
             },
             application: application
         )
         try await subject.start()
         #expect(done)
+        #expect(!cleanupRan)
         #expect(application.methodsCalled == ["beginBackgroundTask(expirationHandler:)", "endBackgroundTask(_:)"])
         #expect(application.identifierToReturn == application.identifierAtEnd)
     }
@@ -27,38 +29,39 @@ struct BackgroundTaskOperationTests {
     func startWithTimeout() async throws {
         let application = MockApplication()
         application.timeout = true
-        nonisolated(unsafe) var done = false
+        nonisolated(unsafe) var completed = false
+        nonisolated(unsafe) var cleanupRan = false
         let task = Task {
             try await Task.sleep(for: .seconds(1))
+            completed = true
         }
         let subject = BackgroundTaskOperation(
             whatToDo: {
                 try? await task.value
             },
             cleanup: {
-                done = true
+                cleanupRan = true
                 task.cancel()
             },
             application: application
         )
-        try await subject.start()
-        #expect(done)
-        // extra call to `endBackgroundTask`, because in the test we cannot prevent the `whatToDo`
-        // path from completing normally
-        #expect(application.methodsCalled == ["beginBackgroundTask(expirationHandler:)", "endBackgroundTask(_:)", "endBackgroundTask(_:)"])
+        try? await subject.start()
+        #expect(!completed)
+        #expect(cleanupRan)
+        #expect(application.methodsCalled == ["beginBackgroundTask(expirationHandler:)", "endBackgroundTask(_:)"])
         #expect(application.identifierToReturn == application.identifierAtEnd)
     }
 
-    @Test("start: if `whatToDo` throws, calls cleanup")
+    @Test("start: if `whatToDo` throws, calls cleanup, calls application end background task, rethrows")
     func startWithThrow() async throws {
         let application = MockApplication()
-        nonisolated(unsafe) var done = false
+        nonisolated(unsafe) var cleanupRan = false
         let subject = BackgroundTaskOperation(
             whatToDo: {
                 throw TestError.someActualError
             },
             cleanup: {
-                done = true
+                cleanupRan = true
             },
             application: application
         )
@@ -67,13 +70,12 @@ struct BackgroundTaskOperationTests {
         } throws: { error in
             (error as? TestError) == TestError.someActualError
         }
-        #expect(done)
+        #expect(cleanupRan)
         #expect(application.methodsCalled == ["beginBackgroundTask(expirationHandler:)", "endBackgroundTask(_:)"])
         #expect(application.identifierToReturn == application.identifierAtEnd)
     }
 }
 
 private enum TestError: Error {
-    case codeShouldNotRun
     case someActualError
 }

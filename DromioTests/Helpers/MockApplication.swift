@@ -9,8 +9,8 @@ final class MockApplication: @MainActor ApplicationType {
 
     func beginBackgroundTask(expirationHandler: (@MainActor @Sendable () -> Void)?) -> UIBackgroundTaskIdentifier {
         methodsCalled.append(#function)
-        if timeout {
-            Task {
+        defer {
+            if timeout {
                 expirationHandler?()
             }
         }

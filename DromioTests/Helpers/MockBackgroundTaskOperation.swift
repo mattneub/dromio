@@ -6,7 +6,7 @@ final class MockBackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationTyp
     var whatToDo: @Sendable () async throws -> T
     init(
         whatToDo: @Sendable @escaping () async throws -> T,
-        cleanup: (@Sendable () async throws -> ())?,
+        cleanup: (@Sendable () async -> ())?,
         application: any ApplicationType
     ) {
         self.whatToDo = whatToDo
@@ -24,7 +24,7 @@ final class MockBackgroundTaskOperationMaker: nonisolated BackgroundTaskOperatio
 
     func make<T: Sendable>(
         whatToDo: @Sendable @escaping () async throws -> T,
-        cleanup: (@Sendable () async throws -> ())?
+        cleanup: (@Sendable () async -> ())?
     ) -> any BackgroundTaskOperationType<T> {
         timesCalled += 1
         mockBackgroundTaskOperation = MockBackgroundTaskOperation(

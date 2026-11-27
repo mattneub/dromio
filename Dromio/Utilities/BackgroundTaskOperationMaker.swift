@@ -10,7 +10,7 @@ protocol BackgroundTaskOperationMakerType {
     /// - Returns: The BackgroundTaskOperation, fully initialized.
     func make<T: Sendable>(
         whatToDo: @Sendable @escaping () async throws -> T,
-        cleanup: (@Sendable () async throws -> ())?
+        cleanup: (@Sendable () async -> ())?
     ) -> any BackgroundTaskOperationType<T>
 }
 
@@ -28,7 +28,7 @@ extension BackgroundTaskOperationMakerType {
 final class BackgroundTaskOperationMaker: nonisolated BackgroundTaskOperationMakerType {
     func make<T: Sendable>(
         whatToDo: @Sendable @escaping () async throws -> T,
-        cleanup: (@Sendable () async throws -> ())?
+        cleanup: (@Sendable () async -> ())?
     ) -> any BackgroundTaskOperationType<T> {
         return BackgroundTaskOperation<T>(
             whatToDo: whatToDo,

@@ -5,7 +5,7 @@ protocol BackgroundTaskOperationType<T> {
     associatedtype T: Sendable
     init(
         whatToDo: @Sendable @escaping () async throws -> T,
-        cleanup: (@Sendable () async throws -> ())?,
+        cleanup: (@Sendable () async -> ())?,
         application: any ApplicationType
     )
     func start() async throws -> T
@@ -19,7 +19,7 @@ final class BackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationType {
     private let whatToDo: @Sendable () async throws -> T
 
     /// Optionally, what to do if the operation is interrupted.
-    private let cleanup: (@Sendable () async throws -> ())?
+    private let cleanup: (@Sendable () async -> ())?
 
     private let application: any ApplicationType
 
@@ -41,7 +41,7 @@ final class BackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationType {
     ///   - application: The application, typed through a protocol for testing purposes.
     init(
         whatToDo: @Sendable @escaping () async throws -> T,
-        cleanup: (@Sendable () async throws -> ())? = nil,
+        cleanup: (@Sendable () async -> ())? = nil,
         application: any ApplicationType = UIApplication.shared
     ) {
         self.whatToDo = whatToDo
@@ -49,33 +49,30 @@ final class BackgroundTaskOperation<T: Sendable>: BackgroundTaskOperationType {
         self.application = application
     }
 
-    /// Begin the time-consuming operation.
+    /// Begin the time-consuming operation. This routine is greatly simplified by the
+    /// advent of `async defer`, which ensures that we end the task in good order.
     /// - Returns: The value returned by the `whatToDo` function.
     func start() async throws -> T {
-        bti = application.beginBackgroundTask { [weak self] in
-            guard let self else { return }
-            Task.immediate { @MainActor in
-                try? await cleanup?()
-                if bti != .invalid {
-                    application.endBackgroundTask(bti)
-                }
+        var success = false
+        func end() async {
+            if !success {
+                await cleanup?()
             }
-        }
-        do {
-            let result = try await whatToDo()
             if bti != .invalid {
                 application.endBackgroundTask(bti)
             }
-            return result
-        } catch {
-            return try await Task.immediate { @MainActor in // this way we can throw and return nothing
-                try await cleanup?()
-                if bti != .invalid {
-                    application.endBackgroundTask(bti)
-                }
-                throw error
-            }.value
         }
+        bti = application.beginBackgroundTask {
+            Task.immediate { @MainActor in
+                await end()
+            }
+        }
+        defer {
+            await end()
+        }
+        let result = try await whatToDo()
+        success = true
+        return result
     }
 }
 
